@@ -1,0 +1,37 @@
+#+AUTHOR: Nicholas Knoblauch
+#+EMAIL: nwknoblauch@uchicago.edu
+#+OPTIONS: num:nil toc:2
+#+HTML_DOCTYPE: html5
+#+HTML_HEAD: <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://gongzhitaao.org/orgcss/org.css"/>
+
+
+
+#+begin_src emacs-lisp :results silent :tangle no
+  ;; (setq org-babel-post-tangle-hook nil)
+#+end_src
+
+#+begin_src emacs-lisp :results silent :tangle no
+  ;; (defun parent_plus (x)
+  ;;   (apply 'f-join (-take-last 2 (f-split x))))
+  ;; (defun re-root (new_directory bfn)
+  ;;   (f-long (f-join new_directory (parent_plus bfn))))
+  ;; (defun delete-copy (x y)
+  ;;   (if (f-exists? y)
+  ;;     (f-delete y))
+  ;;     (f-copy x y))
+
+  ;; (defun reroot-copy (new_directory buff-fn)
+  ;;   (let
+  ;;       ((new-root (re-root new_directory  buff-fn)))
+  ;;     (message "Copying file: %s to %s" buff-fn new-root)
+  ;;     (delete-copy buff-fn new-root)
+  ;;     (message "Copied file: %s to %s" buff-fn new-root)
+  ;;     ))
+
+  ;; (add-hook 'org-babel-post-tangle-hook
+  ;;           (lambda ()
+  ;;             (reroot-copy "/ssh:gardner:/scratch/t.cri.nknoblauch/polyg_scratch/" buffer-file-name)
+  ;;             ))
+
+#+end_src
