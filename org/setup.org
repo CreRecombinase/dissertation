@@ -6,6 +6,10 @@
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://gongzhitaao.org/orgcss/org.css"/>
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 6f0a2cc3bf14c6fe04704f431a06f6eabaebb1e2
 #+begin_src emacs-lisp :results silent :tangle no
   ;; (setq org-babel-post-tangle-hook nil)
 #+end_src
