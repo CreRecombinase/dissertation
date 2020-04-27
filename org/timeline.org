@@ -27,7 +27,6 @@ and for the rest of the work to go in the dissertation.
    DEADLINE: <2020-06-05 Fri>
 *** TODO Finish analyses
     DEADLINE: <2020-05-04 Mon>
-<<<<<<< HEAD
 **** TODO [#A] Finish up UK-Biobank GWAS Simulations
      DEADLINE: <2020-05-22 Fri>
 ***** TODO [#A]  Complete with vs without ldetect/ldshrink single-chromosome simulations 
@@ -52,21 +51,3 @@ My plan is to write up the analyses that I've already done (that went in to the 
 *** TODO [#B] Incorporate TF ChIP-seq annotations into a new model
 *** TODO [#A] Compare which loci are implicated by which models
 ** Write up analyses
-=======
-**** TODO [#A] Finish UK-Biobank Simulations
-     DEADLINE: <2020-05-22 Fri>
-+ Complete with vs without ldetect/ldshrink single-chromosome simulations
-**** TODO [#B] Finish UK-biobank/Genbank GWAS real-data analysis
-
-**** TODO [#B] Figure out what to do about inflated $\hat{h^2}$ estimate at high $h^2$
-     I have a few hypotheses about what's causing the inflation:
-+ 
-
-
-
-
-* Preterm Birth Fine Mapping
->>>>>>> 6f0a2cc3bf14c6fe04704f431a06f6eabaebb1e2
-
-
-
