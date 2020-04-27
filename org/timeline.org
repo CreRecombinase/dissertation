@@ -1,23 +1,27 @@
-g#+TITLE: Graduation Game Plan
+#+TITLE: Graduation Game Plan
 #+SETUPFILE: setup.org
-#+OPTIONS: toc:nil
+#+OPTIONS: toc:nil p:t pri:t tex:t
+
+I've put down times for when I would like to have certain items finished (~DEADLINE~). I believe the timeline is aggressive but achievable.
+~TODO~ items are highlighted in red, and where there are multiple items in a category, they are prioritized by letter, (with "A" being the highest)
+
 
 * Functional Genetics by Expectation Maximization Project 
-Plan is for this chapter to consist of a submitted paper (targeting Bioinformatics).
-** Write Paper 
-   DEADLINE: <2020-05-13 Wed>
+  Plan is for this chapter to consist of a submitted paper (targeting Bioinformatics).
+  DEADLINE: <2020-05-13 Wed>
 *** TODO Finish analyses
     DEADLINE: <2020-05-04 Mon>
-**** TODO [#A] Run FGEM on new set of genes
+**** TODO [#A] Run FGEM on genes from new ASD paper
      DEADLINE: <2020-05-01 Fri>
-**** TODO [#B] Make a decision about collinearity issue
+**** TODO [#B] Make a decision about feature collinearity issue
      DEADLINE: <2020-04-30 Thu>
 + FGEM currently can't handle collinearity in the gene annotations
 + Possible solutions (from easiest to hardest):
   + Add a check for collinear features 
   + Fit model via stochastic minibatch gradient descent (would need to come up with a new name because it would no longer be "Functional Genetics by Expectation Maximization")
-  + Prior on $\Beta$
-
+  + Prior on $\beta$
+*** TODO Finish first draft
+    DEADLINE: <2020-05-08 Fri>
 
 * Polygenic RSS
 As it stands there will probably more than one paper's worth of work to be written up for this project
@@ -44,10 +48,13 @@ Several UKB LDSC results with 1KG LD are already available so it might not be wo
 
 * Preterm Birth Fine Mapping
   DEADLINE: <2020-06-30 Tue>
-My plan is to write up the analyses that I've already done (that went in to the first March of Dimes paper) as my third chapter.  I
-
+My plan is to write up the analyses that I've already done (that went in to the first March of Dimes paper) as my third chapter.  Depending on how things go, additional 
+analyses that need to be done can go in to another paper or 
 ** Finish analyses
 *** TODO [#A] Incorporate TCM term vs preterm ATAC annotations into a new model
 *** TODO [#B] Incorporate TF ChIP-seq annotations into a new model
 *** TODO [#A] Compare which loci are implicated by which models
 ** Write up analyses
+
+
+
