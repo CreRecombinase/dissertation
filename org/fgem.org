@@ -15,7 +15,7 @@
 ** TODO Analyses [0%]
    DEADLINE: <2020-05-04 Mon>
 *** TODO Run FGEM on new set of genes
-From cite:satterstrom20_large_scale_exome_sequen_study 
+From cite:satterstrom
 *** TODO Characterize extent of collinearity issue
 ** TODO Code [66%]
 *** DONE Write Vignette

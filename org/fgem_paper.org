@@ -29,4 +29,27 @@
 
 
 
+* Model 
 
+Suppose we have gathered genetic data for a set of individuals to identify which genes are causally related to a disease or trait of interest.  For each gene $g \in \{1 \dots G\}$, let the indicator variable $Z_g=1$ indicate that
+gene $g$ is causaully related to our trait of interest.  We can summarise the evidence for and against our hypothesis that $Z_g=1$ using a bayes factor:
+
+$$B_g=\frac{P(x_g|Z_g=1)}{P(x_g|Z_g=0)}$$
+
+where $x_g$ is the aforementioned genetic data for gene $g$.
+
+Suppose we know a set of $F$ functional annotations or properties for each of our $G$ genes, such that $A_{f,g}$ with  is the value of annotation $f$ for gene $g$. Let us define the vector $\boldsymbol{\beta}$ and the function 
+$pi(\boldsymbol{\beta},\textbf{A})$ such that satisfies the following conditional probability that $Z_g=1$
+
+$$P(Z_g=1|\textbf{A}_{.,g},\boldsymbol{\beta}) = \frac{1}{1+e^{-(\beta_{0}+\sum_{f=1}^F{A_{f,g}\beta_f})}} = \pi(\boldsymbol{\beta},\textbf{A}_{.,g})$$
+
+
+$$ P(\textbf{x}|\boldsymbol{\beta},\textbf{A})=\prod_{g=1}^{G}P(x_g|\boldsymbol{\beta})=\prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{A}_{.,g}) P(x_g|Z_g=1)+(1-\pi(\boldsymbol{\beta},\textbf{A}_{.,g}))P(x_g|Z_g=0)]$$
+
+By factorizing out the term $\prod_{g=1}^{G} P(x_g|Z_g=0)$ which does not depend on $\boldsymbol{\beta}$, we can express the likelihood for $\boldsymbol{\beta}$ in terms of $\textbf{B}$:
+
+
+$$P(\textbf{x}|\boldsymbol{\beta},\textbf{A}) \propto \prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{A}_{.,g})B_g+(1-\pi(\boldsymbol{\beta},\textbf{A}_{.,g}))]$$
+
+
+Our goal is both to estimate $\boldsymbol{\beta}$ as well as $P(Z_g=1|\textbf{A}_{.,g},\boldsymbol{\beta},x_g)$ for each gene.  
