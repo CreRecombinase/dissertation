@@ -16,11 +16,110 @@
    DEADLINE: <2020-05-04 Mon>
 *** TODO Run FGEM on new set of genes
 From cite:satterstrom
+
+#+BEGIN_SRC R :tangle /home/nwknoblauch/Dropbox/Repos/FGEM/data-raw/TADA_BF.R :session tada :dir /home/nwknoblauch/Dropbox/Repos/FGEM/
+
+  ## code to prepare `TADA_BF` dataset goes here
+
+  library(dplyr)
+  library(readxl)
+  #Retrieve data for https://doi.org/10.1016/j.cell.2019.12.036
+  input_xl_df <- readxl::read_excel("~/Dropbox/Repos/dissertation/data/1-s2.0-S0092867419313984-mmc2.xlsx",sheet = 2)
+  xl_df <- input_xl_df%>% 
+    select(gene,
+           hugoGene,
+           entrez_id,
+           ensembl_gene_id,
+           chr,
+           start_hg38,
+           stop_hg38,
+           strand,
+           contains("BF"),
+           contains("pval"),
+           contains("qval"))
+
+  new_TADA_BF <- transmute(xl_df,gene=gene,BF=BF_dn.ptv*BF_dn.misa*BF_dn.misb*BF_cc.ptv)
+
+
+  ## head(feature_df)
+
+
+
+ # usethis::use_data(new_TADA_BF, overwrite = TRUE)
+#+END_SRC
+
+#+RESULTS:
+
+#+BEGIN_SRC R  :session tada :dir /home/nwknoblauch/Dropbox/Repos/FGEM/
+
+
+
+  library(dplyr)
+    library(readxl)
+    #Retrieve data for https://doi.org/10.1016/j.cell.2019.12.036
+    input_xl_df <- readxl::read_excel("~/Dropbox/Repos/dissertation/data/1-s2.0-S0092867419313984-mmc2.xlsx",sheet = 2)
+    xl_df <- input_xl_df%>% 
+      select(gene,
+             hugoGene,
+             entrez_id,
+             ensembl_gene_id,
+             chr,
+             start_hg38,
+             stop_hg38,
+             strand,
+             contains("BF"),
+             contains("pval"),
+             contains("qval"))
+
+  new_TADA_BF <- transmute(xl_df,gene=gene,BF=BF_dn.ptv*BF_dn.misa*BF_dn.misb*BF_cc.ptv)
+
+  TADA_BF_dn <- transmute(xl_df,gene=gene,BF=BF_dn.ptv*BF_dn.misa*BF_dn.misb*BF_cc.ptv)
+
+
+
+
+   feature_df <- select(input_xl_df,
+                         gene,
+                         pLI,
+  #                       ASC33_2014,
+   #                      SSC27_2014,
+    #                     ASC65_2015,
+     #                    ASC102_2018,
+                        Function) %>%
+     mutate(has_function=1L) %>%
+     tidyr::spread(key=Function,value=has_function,fill=0L) %>%
+     select(-.,-Other)
+
+  ibf_df <- select(xl_df,gene,contains("BF"))
+
+  colnames(ibf_df)[-1]
+  cn <- colnames(ibf_df)[-1][1]
+  #for(cn in colnames(ibf_df)[-1]){
+    tdf <- ibf_df[,c("gene",cn)] %>% magrittr::set_colnames(c("gene","BF"))
+    ixl_df <- inner_join(tdf,feature_df) %>% rename(Gene=gene)
+    tp_df <- select(ixl_df,Gene,BF,pLI) %>% fgem::FGEM_df(verbose=TRUE)
+  #}
+
+
+  for(
+
+
+#+END_SRC
+
+#+RESULTS:
+
+
+
+
+
+
 *** TODO Characterize extent of collinearity issue
 ** TODO Code [66%]
 *** DONE Write Vignette
 *** DONE Write R package
 *** TODO Submit to CRAN (or Bioconductor)
     DEADLINE: <2020-05-16 Sat>
+
+
 
 

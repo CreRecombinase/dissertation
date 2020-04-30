@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2020-04-27 Mon 15:23 -->
+<!-- 2020-04-30 Thu 09:41 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Functional Enrichment by Expectation Maximization Project</title>
@@ -283,10 +283,105 @@ for the JavaScript code in this tag.
 <h4 id="orge43cdb2"><span class="todo TODO">TODO</span> Run FGEM on new set of genes</h4>
 <div class="outline-text-4" id="text-orge43cdb2">
 <p>
-From <a class='org-ref-reference' href="#satterstrom20_large_scale_exome_sequen_study">satterstrom20_large_scale_exome_sequen_study</a> 
+From <a class='org-ref-reference' href="#satterstrom">satterstrom</a>
 </p>
+
+<div class="org-src-container">
+<pre class="src src-R">
+ <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">code to prepare `TADA_BF` dataset goes here</span>
+
+ <span style="color: #C04040;">library</span>(dplyr)
+ <span style="color: #C04040;">library</span>(readxl)
+ <span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">Retrieve data for https://doi.org/10.1016/j.cell.2019.12.036</span>
+ input_xl_df <span style="color: #C04040;">&lt;-</span> readxl::read_excel(<span style="color: #FFABAB;">"~/Dropbox/Repos/dissertation/data/1-s2.0-S0092867419313984-mmc2.xlsx"</span>,sheet = 2)
+ xl_df <span style="color: #C04040;">&lt;-</span> input_xl_df<span style="color: #C04040;">%&gt;%</span> 
+   select(gene,
+          hugoGene,
+          entrez_id,
+          ensembl_gene_id,
+          chr,
+          start_hg38,
+          stop_hg38,
+          strand,
+          contains(<span style="color: #FFABAB;">"BF"</span>),
+          contains(<span style="color: #FFABAB;">"pval"</span>),
+          contains(<span style="color: #FFABAB;">"qval"</span>))
+
+ new_TADA_BF <span style="color: #C04040;">&lt;-</span> transmute(xl_df,gene=gene,BF=BF_dn.ptv*BF_dn.misa*BF_dn.misb*BF_cc.ptv)
+
+
+ <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">head(feature_df)</span>
+
+
+
+<span style="color: #5D6A70;"># </span><span style="color: #5D6A70;">usethis::use_data(new_TADA_BF, overwrite = TRUE)</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">
+
+
+<span style="color: #C04040;">library</span>(dplyr)
+  <span style="color: #C04040;">library</span>(readxl)
+  <span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">Retrieve data for https://doi.org/10.1016/j.cell.2019.12.036</span>
+  input_xl_df <span style="color: #C04040;">&lt;-</span> readxl::read_excel(<span style="color: #FFABAB;">"~/Dropbox/Repos/dissertation/data/1-s2.0-S0092867419313984-mmc2.xlsx"</span>,sheet = 2)
+  xl_df <span style="color: #C04040;">&lt;-</span> input_xl_df<span style="color: #C04040;">%&gt;%</span> 
+    select(gene,
+           hugoGene,
+           entrez_id,
+           ensembl_gene_id,
+           chr,
+           start_hg38,
+           stop_hg38,
+           strand,
+           contains(<span style="color: #FFABAB;">"BF"</span>),
+           contains(<span style="color: #FFABAB;">"pval"</span>),
+           contains(<span style="color: #FFABAB;">"qval"</span>))
+
+new_TADA_BF <span style="color: #C04040;">&lt;-</span> transmute(xl_df,gene=gene,BF=BF_dn.ptv*BF_dn.misa*BF_dn.misb*BF_cc.ptv)
+
+TADA_BF_dn <span style="color: #C04040;">&lt;-</span> transmute(xl_df,gene=gene,BF=BF_dn.ptv*BF_dn.misa*BF_dn.misb*BF_cc.ptv)
+
+
+
+
+ feature_df <span style="color: #C04040;">&lt;-</span> select(input_xl_df,
+                       gene,
+                       pLI,
+<span style="color: #5D6A70;">#                       </span><span style="color: #5D6A70;">ASC33_2014,</span>
+ <span style="color: #5D6A70;">#                      </span><span style="color: #5D6A70;">SSC27_2014,</span>
+  <span style="color: #5D6A70;">#                     </span><span style="color: #5D6A70;">ASC65_2015,</span>
+   <span style="color: #5D6A70;">#                    </span><span style="color: #5D6A70;">ASC102_2018,</span>
+                      Function) <span style="color: #C04040;">%&gt;%</span>
+   mutate(has_function=1L) <span style="color: #C04040;">%&gt;%</span>
+   tidyr::spread(key=Function,value=has_function,fill=0L) <span style="color: #C04040;">%&gt;%</span>
+   select(-.,-Other)
+
+ibf_df <span style="color: #C04040;">&lt;-</span> select(xl_df,gene,contains(<span style="color: #FFABAB;">"BF"</span>))
+
+colnames(ibf_df)[-1]
+cn <span style="color: #C04040;">&lt;-</span> colnames(ibf_df)[-1][1]
+<span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">for(cn in colnames(ibf_df)[-1]){</span>
+  tdf <span style="color: #C04040;">&lt;-</span> ibf_df[,c(<span style="color: #FFABAB;">"gene"</span>,cn)] <span style="color: #C04040;">%&gt;%</span> magrittr::set_colnames(c(<span style="color: #FFABAB;">"gene"</span>,<span style="color: #FFABAB;">"BF"</span>))
+  ixl_df <span style="color: #C04040;">&lt;-</span> inner_join(tdf,feature_df) <span style="color: #C04040;">%&gt;%</span> rename(Gene=gene)
+  tp_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,Gene,BF,pLI) <span style="color: #C04040;">%&gt;%</span> fgem::FGEM_df(verbose=<span style="color: #99D6FF;">TRUE</span>)
+<span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">}</span>
+
+
+<span style="color: #C8FF03;">for</span>(
+
+
+</pre>
 </div>
 </div>
+</div>
+
+
+
+
+
+
 <div id="outline-container-org3549c4b" class="outline-4">
 <h4 id="org3549c4b"><span class="todo TODO">TODO</span> Characterize extent of collinearity issue</h4>
 </div>
@@ -311,7 +406,7 @@ From <a class='org-ref-reference' href="#satterstrom20_large_scale_exome_sequen_
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Nicholas Knoblauch</p>
-<p class="date">Created: 2020-04-27 Mon 15:23</p>
+<p class="date">Created: 2020-04-30 Thu 09:41</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

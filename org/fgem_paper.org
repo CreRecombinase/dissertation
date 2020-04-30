@@ -28,7 +28,6 @@
     If we start with some reasonable guess for $Z$ (like having $P(Z_i=1)$ be some function of $B_i$), we can calculate the posterior probability and estimates of $\beta$.   
 
 
-
 * Model 
 
 Suppose we have gathered genetic data for a set of individuals to identify which genes are causally related to a disease or trait of interest.  For each gene $g \in \{1 \dots G\}$, let the indicator variable $Z_g=1$ indicate that
