@@ -26,48 +26,80 @@
     
 # #     If we start with some reasonable guess for $Z$ (like having $P(Z_i=1)$ be some function of $B_i$), we can calculate the posterior probability and estimates of $\beta$.   
 
+* Introduction
 
 * Method
 
 ** Model
 
-Suppose we have gathered genetic data for a set of individuals to identify which genes are causally related to a disease or trait of interest.  For each gene $g \in \{1 \dots G\}$, let the indicator variable $Z_g=1$ indicate that
-gene $g$ is causaully related to our trait or disease of interest.  We can summarise the evidence for and against our hypothesis that $Z_g=1$ using a bayes factor:
+Suppose we have gathered genetic data for a set of individuals to identify which genes are causally related to a disease or trait of interest.  For each gene $g \in \{1 \dots G\}$, let the indicator variable $z_g=1$ indicate that
+gene $g$ is causaully related to our trait or disease of interest.  We can summarise the evidence for and against our hypothesis that $z_g=1$ using a bayes factor:
 
-$$B_g=\frac{P(x_g|Z_g=1)}{P(x_g|Z_g=0)}$$
+$$B_g=\frac{P(x_g|z_g=1)}{P(x_g|z_g=0)}$$
 
 where $x_g$ is the subset of the aforementioned genetic data corresponding to the $g$th gene.
 
-Suppose further that we know a set of $F$ functional annotations or properties for each of our $G$ genes.  Let $\textbf{A}$ denote the $F$ by $G$ matrix of annotations such that $A_{f,g}$ is the value of annotation $f$ for gene $g$.
-We define the vector $\boldsymbol{\beta}$ and the function $\pi(\boldsymbol{\beta},\textbf{A_{.,g}})$ such that:
+Suppose further that we know a set of $F$ functional annotations or properties for each of our $G$ genes.  Let $\textbf{a}_g$ denote the length $F$ vector of annotations for gene $g$, and $\textbf{A}$ denote the matrix with $F$ rows and $G$ 
+columns consisting of $\textbf{a}_1 ...  \textbf{a}_G$
+We define the vector $\boldsymbol{\beta}$ and the function $\pi(\boldsymbol{\beta},\textbf{a}_g)$ such that:
 
-$$P\pi(\boldsymbol{\beta},\textbf{A}_{.,g}) =  \frac{1}{1+e^{-(\beta_{0}+\sum_{f=1}^F{A_{f,g}\beta_f})}} =  (Z_g=1|\textbf{A}_{.,g},\boldsymbol{\beta})$$
+$$P\pi(\boldsymbol{\beta},\textbf{a}_g) =  \frac{1}{1+e^{-(\beta_{0}+\sum_{f=1}^F{A_{f,g}\beta_f})}} =  (z_g=1|\textbf{a}_g,\boldsymbol{\beta})$$
 
 We can compute the likelihood of a particular value of $\boldsymbol{\beta}$ as:
 
-$$ P(\textbf{x}|\boldsymbol{\beta},\textbf{A})=\prod_{g=1}^{G}P(x_g|\boldsymbol{\beta})=\prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{A}_{.,g}) P(x_g|Z_g=1)+(1-\pi(\boldsymbol{\beta},\textbf{A}_{.,g}))P(x_g|Z_g=0)]$$
+$$ P(\textbf{x}|\boldsymbol{\beta},\textbf{A})=\prod_{g=1}^{G}P(x_g|\boldsymbol{\beta})=\prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{a}_g) P(x_g|z_g=1)+(1-\pi(\boldsymbol{\beta},\textbf{a}_g))P(x_g|z_g=0)]$$
 
-By factorizing out the term $\prod_{g=1}^{G} P(x_g|Z_g=0)$ which does not depend on $\boldsymbol{\beta}$, we can express the likelihood for $\boldsymbol{\beta}$ in terms of $\textbf{B}$:
+By factorizing out the term $\prod_{g=1}^{G} P(x_g|z_g=0)$ which does not depend on $\boldsymbol{\beta}$, we can express the likelihood for $\boldsymbol{\beta}$ in terms of $\textbf{B}$:
 
 
-$$P(\textbf{x}|\boldsymbol{\beta},\textbf{A}) \propto \prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{A}_{.,g})B_g+(1-\pi(\boldsymbol{\beta},\textbf{A}_{.,g}))]$$
+$$P(\textbf{x}|\boldsymbol{\beta},\textbf{A}) \propto \prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{a}_g)B_g+(1-\pi(\boldsymbol{\beta},\textbf{a}_g))]$$
 
 
 Given a particular value of $\boldsymbol{\beta}$, we arrive at a new posterior:
 
-$$P(Z_g=1 | x_g,\boldsymbol{\beta},A_{.,g}) = \frac{\pi(\boldsymbol{\beta},\textbf{A}_{.,g}) B_g}{\pi(\boldsymbol{\beta} , \textbf{A}_{.,g}) B_g + 1-\pi(\boldsymbol{\beta},\textbf{A}_{.,g})}} $$
+$$P(z_g=1 | x_g, \boldsymbol{\beta},\textbf{a}_g) = \frac{\pi(\boldsymbol{\beta},\textbf{a}_g) B_g}{\pi(\boldsymbol{\beta} , \textbf{a}_g) B_g + 1 - \pi(\boldsymbol{\beta},\textbf{a}_g)}$$
+
+# } $$
 
 ** Algorithm
 
 
-Our goal is both to estimate $\boldsymbol{\beta}$ as well as $P(Z_g=1|\textbf{A}_{.,g},\boldsymbol{\beta},x_g)$ for each gene.  
+Our goal is both to estimate $\boldsymbol{\beta}$ as well as $P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)$ for each gene.  We use the EM algorithm cite:EM_algo to
+obtain a maximum likelihood estimate for $\boldsymbol{\beta}$.  If $\textbf{z}$ is our latent variable then our complete data likelihood is:
 
+$$P(\textbf{x},\textbf{z}|\boldsymbol{\beta},\textbf{A}) = 
+\prod_{g=1}^G \left[P(z_g|\boldsymbol{\beta},\textbf{a}_g) P(x_g|z_g)\right] = 
+\prod_{g=1}^G \left[\pi(\boldsymbol{\beta},\textbf{a}_g)^{z_g} (1-\pi(\boldsymbol{\beta},\textbf{a}_g))^{1-z_g}B_g^{z_g}\right]$$ 
+
+From which we form the $Q$ function
+
+$$ Q(\boldsymbol{\beta}|\boldsymbol{\beta}_n) = \sum_{g=1}^G \left[P(z_g=1|x_g,\boldsymbol{\beta}_n,\textbf{a}_g) \log\left(P(x_g,z_g=1|\boldsymbol{\beta})\right) +
+P(z_g=0|x_g,\boldsymbol{\beta}_n,\textbf{a}_g) \log\left(P(x_g,z_g=0|\boldsymbol{\beta})\right) \right] = 
+\sum_{g=1}^G \left [u_g(\log(\pi(\boldsymbol{\beta_n},\textbf{a}_g))+B_g)+(1-u_g)\log(1-\pi(\boldsymbol{\beta_n},\textbf{a}_g)) \right]$$
+
+Where $u_g=P(z_g=1|x_g,\boldsymbol{\beta_n},\textbf{a}_g) = \frac{\pi(\boldsymbol{\beta_n},\textbf{a}_g)B_g}{\pi(\boldsymbol{\beta_n},\textbf{a}_g)B_g+1-\pi(\boldsymbol{\beta_n},\textbf{a}_g)}$
 
 
 ** Data 
 
 
+** Software
 
+Our method is distributed as a freely available R package [[https://github.com/CreRecombinase/FGEM][FGEM]].  FGEM relies on the ~SQUAREM~ package to accelerate EM convergence  cite:squarem   
+and the hot-path functions are implemented as C++ functions using the ~RcppArmadillo~ cite:RcppArmadillo package.
+
+
+* Results
+
+* Discussion
+
+
+
+
+
+
+bibliographystyle:unsrt
+bibliography:references.bib
 
 
 

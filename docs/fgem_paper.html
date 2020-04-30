@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2020-04-30 Thu 13:11 -->
+<!-- 2020-04-30 Thu 15:21 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Functional Enrichment by Expectation Maximization</title>
@@ -256,17 +256,24 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
+<li><a href="#org7c05cae">Introduction</a></li>
 <li><a href="#org7dc987a">Method</a>
 <ul>
 <li><a href="#org07da710">Model</a></li>
 <li><a href="#orgcb1189c">Algorithm</a></li>
 <li><a href="#orgac60054">Data</a></li>
+<li><a href="#org3d7e31d">Software</a></li>
 </ul>
 </li>
+<li><a href="#org37638e0">Results</a></li>
+<li><a href="#org5c9eeca">Discussion</a></li>
 </ul>
 </div>
 </div>
 
+<div id="outline-container-org7c05cae" class="outline-2">
+<h2 id="org7c05cae">Introduction</h2>
+</div>
 
 <div id="outline-container-org7dc987a" class="outline-2">
 <h2 id="org7dc987a">Method</h2>
@@ -276,12 +283,12 @@ for the JavaScript code in this tag.
 <h3 id="org07da710">Model</h3>
 <div class="outline-text-3" id="text-org07da710">
 <p>
-Suppose we have gathered genetic data for a set of individuals to identify which genes are causally related to a disease or trait of interest.  For each gene \(g \in \{1 \dots G\}\), let the indicator variable \(Z_g=1\) indicate that
-gene \(g\) is causaully related to our trait or disease of interest.  We can summarise the evidence for and against our hypothesis that \(Z_g=1\) using a bayes factor:
+Suppose we have gathered genetic data for a set of individuals to identify which genes are causally related to a disease or trait of interest.  For each gene \(g \in \{1 \dots G\}\), let the indicator variable \(z_g=1\) indicate that
+gene \(g\) is causaully related to our trait or disease of interest.  We can summarise the evidence for and against our hypothesis that \(z_g=1\) using a bayes factor:
 </p>
 
 <p>
-\[B_g=\frac{P(x_g|Z_g=1)}{P(x_g|Z_g=0)}\]
+\[B_g=\frac{P(x_g|z_g=1)}{P(x_g|z_g=0)}\]
 </p>
 
 <p>
@@ -289,12 +296,13 @@ where \(x_g\) is the subset of the aforementioned genetic data corresponding to 
 </p>
 
 <p>
-Suppose further that we know a set of \(F\) functional annotations or properties for each of our \(G\) genes.  Let \(\textbf{A}\) denote the \(F\) by \(G\) matrix of annotations such that \(A_{f,g}\) is the value of annotation \(f\) for gene \(g\).
-We define the vector \(\boldsymbol{\beta}\) and the function \(\pi(\boldsymbol{\beta},\textbf{A_{.,g}})\) such that:
+Suppose further that we know a set of \(F\) functional annotations or properties for each of our \(G\) genes.  Let \(\textbf{a}_g\) denote the length \(F\) vector of annotations for gene \(g\), and \(\textbf{A}\) denote the matrix with \(F\) rows and \(G\) 
+columns consisting of \(\textbf{a}_1 ...  \textbf{a}_G\)
+We define the vector \(\boldsymbol{\beta}\) and the function \(\pi(\boldsymbol{\beta},\textbf{a}_g)\) such that:
 </p>
 
 <p>
-\[P\pi(\boldsymbol{\beta},\textbf{A}_{.,g}) =  \frac{1}{1+e^{-(\beta_{0}+\sum_{f=1}^F{A_{f,g}\beta_f})}} =  (Z_g=1|\textbf{A}_{.,g},\boldsymbol{\beta})\]
+\[P\pi(\boldsymbol{\beta},\textbf{a}_g) =  \frac{1}{1+e^{-(\beta_{0}+\sum_{f=1}^F{A_{f,g}\beta_f})}} =  (z_g=1|\textbf{a}_g,\boldsymbol{\beta})\]
 </p>
 
 <p>
@@ -302,16 +310,16 @@ We can compute the likelihood of a particular value of \(\boldsymbol{\beta}\) as
 </p>
 
 <p>
-\[ P(\textbf{x}|\boldsymbol{\beta},\textbf{A})=\prod_{g=1}^{G}P(x_g|\boldsymbol{\beta})=\prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{A}_{.,g}) P(x_g|Z_g=1)+(1-\pi(\boldsymbol{\beta},\textbf{A}_{.,g}))P(x_g|Z_g=0)]\]
+\[ P(\textbf{x}|\boldsymbol{\beta},\textbf{A})=\prod_{g=1}^{G}P(x_g|\boldsymbol{\beta})=\prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{a}_g) P(x_g|z_g=1)+(1-\pi(\boldsymbol{\beta},\textbf{a}_g))P(x_g|z_g=0)]\]
 </p>
 
 <p>
-By factorizing out the term \(\prod_{g=1}^{G} P(x_g|Z_g=0)\) which does not depend on \(\boldsymbol{\beta}\), we can express the likelihood for \(\boldsymbol{\beta}\) in terms of \(\textbf{B}\):
+By factorizing out the term \(\prod_{g=1}^{G} P(x_g|z_g=0)\) which does not depend on \(\boldsymbol{\beta}\), we can express the likelihood for \(\boldsymbol{\beta}\) in terms of \(\textbf{B}\):
 </p>
 
 
 <p>
-\[P(\textbf{x}|\boldsymbol{\beta},\textbf{A}) \propto \prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{A}_{.,g})B_g+(1-\pi(\boldsymbol{\beta},\textbf{A}_{.,g}))]\]
+\[P(\textbf{x}|\boldsymbol{\beta},\textbf{A}) \propto \prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{a}_g)B_g+(1-\pi(\boldsymbol{\beta},\textbf{a}_g))]\]
 </p>
 
 
@@ -320,7 +328,7 @@ Given a particular value of \(\boldsymbol{\beta}\), we arrive at a new posterior
 </p>
 
 <p>
-\[P(Z_g=1 | x_g,\boldsymbol{\beta},A_{.,g}) = \frac{\pi(\boldsymbol{\beta},\textbf{A}_{.,g}) B_g}{\pi(\boldsymbol{\beta} , \textbf{A}_{.,g}) B_g + 1-\pi(\boldsymbol{\beta},\textbf{A}_{.,g})}} \]
+\[P(z_g=1 | x_g, \boldsymbol{\beta},\textbf{a}_g) = \frac{\pi(\boldsymbol{\beta},\textbf{a}_g) B_g}{\pi(\boldsymbol{\beta} , \textbf{a}_g) B_g + 1 - \pi(\boldsymbol{\beta},\textbf{a}_g)}\]
 </p>
 </div>
 </div>
@@ -329,21 +337,67 @@ Given a particular value of \(\boldsymbol{\beta}\), we arrive at a new posterior
 <h3 id="orgcb1189c">Algorithm</h3>
 <div class="outline-text-3" id="text-orgcb1189c">
 <p>
-Our goal is both to estimate \(\boldsymbol{\beta}\) as well as \(P(Z_g=1|\textbf{A}_{.,g},\boldsymbol{\beta},x_g)\) for each gene.  
+Our goal is both to estimate \(\boldsymbol{\beta}\) as well as \(P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)\) for each gene.  We use the EM algorithm <a class='org-ref-reference' href="#EM_algo">EM_algo</a> to
+obtain a maximum likelihood estimate for \(\boldsymbol{\beta}\).  If \(\textbf{z}\) is our latent variable then our complete data likelihood is:
+</p>
+
+<p>
+\[P(\textbf{x},\textbf{z}|\boldsymbol{\beta},\textbf{A}) = 
+\prod_{g=1}^G \left[P(z_g|\boldsymbol{\beta},\textbf{a}_g) P(x_g|z_g)\right] = 
+\prod_{g=1}^G \left[\pi(\boldsymbol{\beta},\textbf{a}_g)^{z_g} (1-\pi(\boldsymbol{\beta},\textbf{a}_g))^{1-z_g}B_g^{z_g}\right]\] 
+</p>
+
+<p>
+From which we form the \(Q\) function
+</p>
+
+<p>
+\[ Q(\boldsymbol{\beta}|\boldsymbol{\beta}_n) = \sum_{g=1}^G \left[P(z_g=1|x_g,\boldsymbol{\beta}_n,\textbf{a}_g) \log\left(P(x_g,z_g=1|\boldsymbol{\beta})\right) +
+P(z_g=0|x_g,\boldsymbol{\beta}_n,\textbf{a}_g) \log\left(P(x_g,z_g=0|\boldsymbol{\beta})\right) \right] = 
+\sum_{g=1}^G \left [u_i(\log(\pi(\boldsymbol{\beta_n},\textbf{a}_g))+B_g)+(1-u_i)\log(1-\pi(\boldsymbol{\beta_n},\textbf{a}_g)) \right]\]
 </p>
 </div>
 </div>
 
 
-
 <div id="outline-container-orgac60054" class="outline-3">
 <h3 id="orgac60054">Data</h3>
+</div>
+
+
+<div id="outline-container-org3d7e31d" class="outline-3">
+<h3 id="org3d7e31d">Software</h3>
+<div class="outline-text-3" id="text-org3d7e31d">
+<p>
+Our method is distributed as a freely available R package <a href="https://github.com/CreRecombinase/FGEM">FGEM</a>.  FGEM relies on the <code>SQUAREM</code> package to accelerate EM convergence  <a class='org-ref-reference' href="#squarem">squarem</a>   
+and the hot-path functions are implemented as C++ functions using the <code>RcppArmadillo</code> <a class='org-ref-reference' href="#RcppArmadillo">RcppArmadillo</a> package.
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org37638e0" class="outline-2">
+<h2 id="org37638e0">Results</h2>
+</div>
+
+<div id="outline-container-org5c9eeca" class="outline-2">
+<h2 id="org5c9eeca">Discussion</h2>
+<div class="outline-text-2" id="text-org5c9eeca">
+<p>
+
+<h1 class='org-ref-bib-h1'>Bibliography</h1>
+<ul class='org-ref-bib'><li><a id="EM_algo">[EM_algo]</a> <a name="EM_algo"></a>Dempster, Laird & Rubin, Maximum Likelihood from Incomplete Data via the EM Algorithm, <i>Journal of the Royal Statistical Society. Series B (Methodological)</i>, <b>39(1)</b>, 1-38 (1977). <a href="http://www.jstor.org/stable/2984875">link</a>.</li>
+<li><a id="squarem">[squarem]</a> <a name="squarem"></a>Yu Du & Ravi Varadhan, SQUAREM: An R Package for Off-the-Shelf Acceleration  of EM, MM and Other EM-Like Monotone Algorithms, <i>Journal of Statistical Software</i>, <b>92(7)</b>, 1-41 (2020). <a href="http://dx.doi.org/10.18637/jss.v092.i07">doi</a>.</li>
+<li><a id="RcppArmadillo">[RcppArmadillo]</a> <a name="RcppArmadillo"></a>Dirk Eddelbuettel & Conrad Sanderson, RcppArmadillo: Accelerating R with high-performance C++ linear algebra, <i>Computational	Statistics and Data Analysis</i>, <b>71</b>, 1054-1063 (2014). <a href="http://dx.doi.org/10.1016/j.csda.2013.02.005">link</a>.</li>
+</ul>
+</p>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Nicholas Knoblauch</p>
-<p class="date">Created: 2020-04-30 Thu 13:11</p>
+<p class="date">Created: 2020-04-30 Thu 15:21</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
