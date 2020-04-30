@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2020-04-30 Thu 13:05 -->
+<!-- 2020-04-30 Thu 13:11 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Functional Enrichment by Expectation Maximization</title>
@@ -256,7 +256,6 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org31e11cb">Overview</a></li>
 <li><a href="#org7dc987a">Method</a>
 <ul>
 <li><a href="#org07da710">Model</a></li>
@@ -265,62 +264,6 @@ for the JavaScript code in this tag.
 </ul>
 </li>
 </ul>
-</div>
-</div>
-
-<div id="outline-container-org31e11cb" class="outline-2">
-<h2 id="org31e11cb">Overview</h2>
-<div class="outline-text-2" id="text-org31e11cb">
-<p>
-Combine gene-level Bayes-Factors from whole-exome sequencing studies with pre-existing biological knowledge in the form of genic and genomic annotation to identify causal genes and enriched pathways. 
-</p>
-</div>
-<div id="outline-container-orgad52fa0" class="outline-4">
-<h4 id="orgad52fa0">Rationale</h4>
-<div class="outline-text-4" id="text-orgad52fa0">
-<p>
-Preliminary results using data from an Autism Spectrum Disorder implicate previously identified and novel genes and annotations as being disease-related.  In ASD, transmitted and <i>de novo</i> variants are known to play a role in disease risk.  Among the top associated annotations are  several Gene Ontology terms related to neural development, and features related to mutational constraint (as defined by the ExAC missense Z score). 
-The combination of gene-level summaries of phenotypic association with relevant gene-level annotations can dramatically improve in the discrimination betweeen causal genes and pathways from non-causal ones.  We further hypothesize that explicitly modeling the inherently hierarchical nature of many gene-level annotations can further improve classification.  We believe that in the case of disease, that features related to mutational constraint,relevant tissue-level expression, and phylogenetic conservation will be enriched functional classes.
-</p>
-</div>
-</div>
-<div id="outline-container-orgbb0f9a3" class="outline-4">
-<h4 id="orgbb0f9a3">Genomic Annotation</h4>
-<div class="outline-text-4" id="text-orgbb0f9a3">
-<p>
-The gene-level annotations will come from several sources.  The Exome Aggregation Consortiom (ExAC) has created a list of gene-level constraint Z scores for every gene in the genome.  The constraint scores are based on the number of observed non-synonymous mutational events per-gene versus what would be expected from the length of the gene and the local mutation rate. The Gene Ontology Consortium maintains a database describing genes in a hierarchical manner according to their molecular function as well as  which biological processes they are thought to be involved in. Genes associated with a common biological process can be considered members of a gene set, which is a kind of binary gene-level annotation.  There also exist a large number of pre-existing datasets that can be used to create gene-level annotation.  The results of gene-expression profiling experiments can be summarised  by annotating a gene according to some summary of its expression level relative to other genes, or if differential gene-expression has been investigated in a context deemed relevant, a summary of that differential expression in the form of a gene-level Z-score can be incorporated.  More generally, the results of previous experiments can be summarised as a list of candidate genes.  
-</p>
-</div>
-</div>
-<div id="outline-container-orgedb8d96" class="outline-4">
-<h4 id="orgedb8d96">Model Outline</h4>
-<div class="outline-text-4" id="text-orgedb8d96">
-<p>
-For each gene, let \(Z_i=1\) indicate that this gene is "causal" for our phenotype of interest, and \(Z_i=0\) if it is not. If we have a gene-level model of whether or not a gene is a causal gene, we can define a gene-level Bayes factor \(B_i=\frac{P(x_i|Z_i=1)}{P(x_i|Z_i=0)}\).   The prior probability that a gene is causal \(P(Z_i=1)=\pi_i\) depends on a vector of gene-level annotations, \(A_i\), and a vector of effects of each feature \(\beta\):
-</p>
-
-<p>
-\[\text{logit}(P(Z_i=1))=A_i \beta_i\] 
-</p>
-
-<p>
-Conditioning on \(\beta\),or alternatively conditioning on \(pi_i\): (remember \(\pi\) is a function of \(\beta\), which is not known, and \(A\), which is known) 
-\[P(x|\pi) \propto \prod_i [\pi_i B_i+(1-\pi)]\]
-We can use the Expectation Maximization algorithm to estimate the posterior probability that \(Z_i=1\), as well as the $&beta;$s for each annotation
-</p>
-
-<p>
-The joint probability of both \(Z_i\) and \(x_i\) conditioning on \(\beta\) is :
-\[P(x_i,Z_i|\pi_i)=P(Z_i|\pi_i)P(x_i|Z_i)=\pi_i^{Z_i}(1-\pi)^{1-Z_i}B_i^{Z_i}\]
-The <b>E</b> Step is the expected value of the log likelihood function:
-\[Q(\beta|\beta^{(t)})=\sum_i \sum_{Z_i} P(Z_i|x_i,\beta^{(t)} \log(P(x,Z_i|\beta))\]
-This is the expectation of \(Z\) for each gene.  We can then find the \(\beta\) that maximizes the likelihood at the current estimate of \(Z\).
-</p>
-
-<p>
-If we start with some reasonable guess for \(Z\) (like having \(P(Z_i=1)\) be some function of \(B_i\)), we can calculate the posterior probability and estimates of \(\beta\).   
-</p>
-</div>
 </div>
 </div>
 
@@ -400,7 +343,7 @@ Our goal is both to estimate \(\boldsymbol{\beta}\) as well as \(P(Z_g=1|\textbf
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Nicholas Knoblauch</p>
-<p class="date">Created: 2020-04-30 Thu 13:05</p>
+<p class="date">Created: 2020-04-30 Thu 13:11</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
