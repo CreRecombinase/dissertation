@@ -1,3 +1,6 @@
 /data/omim/
 /org/ltximg/
 *.org_archive
+/docs/ltximg/
+/org/.Rhistory
+**~*

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2020-04-30 Thu 09:41 -->
+<!-- 2020-04-30 Thu 13:05 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Functional Enrichment by Expectation Maximization Project</title>
@@ -323,7 +323,8 @@ From <a class='org-ref-reference' href="#satterstrom">satterstrom</a>
 
 
 <span style="color: #C04040;">library</span>(dplyr)
-  <span style="color: #C04040;">library</span>(readxl)
+<span style="color: #C04040;">library</span>(readxl)
+<span style="color: #C04040;">library</span>(tidyr)
   <span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">Retrieve data for https://doi.org/10.1016/j.cell.2019.12.036</span>
   input_xl_df <span style="color: #C04040;">&lt;-</span> readxl::read_excel(<span style="color: #FFABAB;">"~/Dropbox/Repos/dissertation/data/1-s2.0-S0092867419313984-mmc2.xlsx"</span>,sheet = 2)
   xl_df <span style="color: #C04040;">&lt;-</span> input_xl_df<span style="color: #C04040;">%&gt;%</span> 
@@ -361,14 +362,31 @@ TADA_BF_dn <span style="color: #C04040;">&lt;-</span> transmute(xl_df,gene=gene,
 ibf_df <span style="color: #C04040;">&lt;-</span> select(xl_df,gene,contains(<span style="color: #FFABAB;">"BF"</span>))
 
 colnames(ibf_df)[-1]
-cn <span style="color: #C04040;">&lt;-</span> colnames(ibf_df)[-1][1]
+cn <span style="color: #C04040;">&lt;-</span> colnames(ibf_df)[-1][2]
 <span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">for(cn in colnames(ibf_df)[-1]){</span>
-  tdf <span style="color: #C04040;">&lt;-</span> ibf_df[,c(<span style="color: #FFABAB;">"gene"</span>,cn)] <span style="color: #C04040;">%&gt;%</span> magrittr::set_colnames(c(<span style="color: #FFABAB;">"gene"</span>,<span style="color: #FFABAB;">"BF"</span>))
-  ixl_df <span style="color: #C04040;">&lt;-</span> inner_join(tdf,feature_df) <span style="color: #C04040;">%&gt;%</span> rename(Gene=gene)
-  tp_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,Gene,BF,pLI) <span style="color: #C04040;">%&gt;%</span> fgem::FGEM_df(verbose=<span style="color: #99D6FF;">TRUE</span>)
-<span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">}</span>
+
+ixl_df <span style="color: #C04040;">&lt;-</span> inner_join(check_BF,feature_df,by=c(<span style="color: #FFABAB;">"Gene"</span>=<span style="color: #FFABAB;">"gene"</span>))
+otp_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,Gene,BF=old_BF,pLI) <span style="color: #C04040;">%&gt;%</span> fgem::FGEM_df(verbose=<span style="color: #99D6FF;">FALSE</span>)
+ntp_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,Gene,BF,pLI) <span style="color: #C04040;">%&gt;%</span> fgem::FGEM_df(verbose=<span style="color: #99D6FF;">FALSE</span>)
+notp_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,-BF) <span style="color: #C04040;">%&gt;%</span>
+  rename(BF=old_BF) <span style="color: #C04040;">%&gt;%</span>
+  fgem::FGEM_df(verbose=<span style="color: #99D6FF;">TRUE</span>)
+
+nnotp_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,-BF,-pLI,
+                   -<span style="color: #EDEDE1; background-color: #272C2E;">`Gene expression regulation`</span>,
+                   -<span style="color: #EDEDE1; background-color: #272C2E;">`Neuronal communication`</span>) <span style="color: #C04040;">%&gt;%</span>
+  rename(BF=old_BF) <span style="color: #C04040;">%&gt;%</span>
+  fgem::FGEM_df(verbose=<span style="color: #99D6FF;">TRUE</span>)
+
+nnntp_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,-old_BF,-pLI,
+                   -<span style="color: #EDEDE1; background-color: #272C2E;">`Gene expression regulation`</span>,
+                   -<span style="color: #EDEDE1; background-color: #272C2E;">`Neuronal communication`</span>) <span style="color: #C04040;">%&gt;%</span>
+  fgem::FGEM_df(verbose=<span style="color: #99D6FF;">TRUE</span>)
 
 
+ntp_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,Gene,BF,pLI) <span style="color: #C04040;">%&gt;%</span> fgem::FGEM_df(verbose = <span style="color: #99D6FF;">TRUE</span>, use_squarem = <span style="color: #99D6FF;">FALSE</span>)
+
+feat_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,Gene,BF,pLI)
 <span style="color: #C8FF03;">for</span>(
 
 
@@ -406,7 +424,7 @@ cn <span style="color: #C04040;">&lt;-</span> colnames(ibf_df)[-1][1]
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Nicholas Knoblauch</p>
-<p class="date">Created: 2020-04-30 Thu 09:41</p>
+<p class="date">Created: 2020-04-30 Thu 13:05</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

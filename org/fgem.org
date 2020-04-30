@@ -55,7 +55,8 @@ From cite:satterstrom
 
 
   library(dplyr)
-    library(readxl)
+  library(readxl)
+  library(tidyr)
     #Retrieve data for https://doi.org/10.1016/j.cell.2019.12.036
     input_xl_df <- readxl::read_excel("~/Dropbox/Repos/dissertation/data/1-s2.0-S0092867419313984-mmc2.xlsx",sheet = 2)
     xl_df <- input_xl_df%>% 
@@ -93,14 +94,31 @@ From cite:satterstrom
   ibf_df <- select(xl_df,gene,contains("BF"))
 
   colnames(ibf_df)[-1]
-  cn <- colnames(ibf_df)[-1][1]
+  cn <- colnames(ibf_df)[-1][2]
   #for(cn in colnames(ibf_df)[-1]){
-    tdf <- ibf_df[,c("gene",cn)] %>% magrittr::set_colnames(c("gene","BF"))
-    ixl_df <- inner_join(tdf,feature_df) %>% rename(Gene=gene)
-    tp_df <- select(ixl_df,Gene,BF,pLI) %>% fgem::FGEM_df(verbose=TRUE)
-  #}
+
+  ixl_df <- inner_join(check_BF,feature_df,by=c("Gene"="gene"))
+  otp_df <- select(ixl_df,Gene,BF=old_BF,pLI) %>% fgem::FGEM_df(verbose=FALSE)
+  ntp_df <- select(ixl_df,Gene,BF,pLI) %>% fgem::FGEM_df(verbose=FALSE)
+  notp_df <- select(ixl_df,-BF) %>%
+    rename(BF=old_BF) %>%
+    fgem::FGEM_df(verbose=TRUE)
+
+  nnotp_df <- select(ixl_df,-BF,-pLI,
+                     -`Gene expression regulation`,
+                     -`Neuronal communication`) %>%
+    rename(BF=old_BF) %>%
+    fgem::FGEM_df(verbose=TRUE)
+
+  nnntp_df <- select(ixl_df,-old_BF,-pLI,
+                     -`Gene expression regulation`,
+                     -`Neuronal communication`) %>%
+    fgem::FGEM_df(verbose=TRUE)
 
 
+  ntp_df <- select(ixl_df,Gene,BF,pLI) %>% fgem::FGEM_df(verbose = TRUE, use_squarem = FALSE)
+
+  feat_df <- select(ixl_df,Gene,BF,pLI)
   for(
 
 

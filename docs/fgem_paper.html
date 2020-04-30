@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2020-04-30 Thu 09:41 -->
+<!-- 2020-04-30 Thu 13:05 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Functional Enrichment by Expectation Maximization</title>
@@ -257,7 +257,13 @@ for the JavaScript code in this tag.
 <div id="text-table-of-contents">
 <ul>
 <li><a href="#org31e11cb">Overview</a></li>
+<li><a href="#org7dc987a">Method</a>
+<ul>
 <li><a href="#org07da710">Model</a></li>
+<li><a href="#orgcb1189c">Algorithm</a></li>
+<li><a href="#orgac60054">Data</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -319,12 +325,16 @@ If we start with some reasonable guess for \(Z\) (like having \(P(Z_i=1)\) be so
 </div>
 
 
-<div id="outline-container-org07da710" class="outline-2">
-<h2 id="org07da710">Model</h2>
-<div class="outline-text-2" id="text-org07da710">
+<div id="outline-container-org7dc987a" class="outline-2">
+<h2 id="org7dc987a">Method</h2>
+<div class="outline-text-2" id="text-org7dc987a">
+</div>
+<div id="outline-container-org07da710" class="outline-3">
+<h3 id="org07da710">Model</h3>
+<div class="outline-text-3" id="text-org07da710">
 <p>
 Suppose we have gathered genetic data for a set of individuals to identify which genes are causally related to a disease or trait of interest.  For each gene \(g \in \{1 \dots G\}\), let the indicator variable \(Z_g=1\) indicate that
-gene \(g\) is causaully related to our trait of interest.  We can summarise the evidence for and against our hypothesis that \(Z_g=1\) using a bayes factor:
+gene \(g\) is causaully related to our trait or disease of interest.  We can summarise the evidence for and against our hypothesis that \(Z_g=1\) using a bayes factor:
 </p>
 
 <p>
@@ -332,18 +342,21 @@ gene \(g\) is causaully related to our trait of interest.  We can summarise the 
 </p>
 
 <p>
-where \(x_g\) is the aforementioned genetic data for gene \(g\).
+where \(x_g\) is the subset of the aforementioned genetic data corresponding to the $g$th gene.
 </p>
 
 <p>
-Suppose we know a set of \(F\) functional annotations or properties for each of our \(G\) genes, such that \(A_{f,g}\) with  is the value of annotation \(f\) for gene \(g\). Let us define the vector \(\boldsymbol{\beta}\) and the function 
-\(pi(\boldsymbol{\beta},\textbf{A})\) such that satisfies the following conditional probability that \(Z_g=1\)
+Suppose further that we know a set of \(F\) functional annotations or properties for each of our \(G\) genes.  Let \(\textbf{A}\) denote the \(F\) by \(G\) matrix of annotations such that \(A_{f,g}\) is the value of annotation \(f\) for gene \(g\).
+We define the vector \(\boldsymbol{\beta}\) and the function \(\pi(\boldsymbol{\beta},\textbf{A_{.,g}})\) such that:
 </p>
 
 <p>
-\[P(Z_g=1|\textbf{A}_{.,g},\boldsymbol{\beta}) = \frac{1}{1+e^{-(\beta_{0}+\sum_{f=1}^F{A_{f,g}\beta_f})}} = \pi(\boldsymbol{\beta},\textbf{A}_{.,g})\]
+\[P\pi(\boldsymbol{\beta},\textbf{A}_{.,g}) =  \frac{1}{1+e^{-(\beta_{0}+\sum_{f=1}^F{A_{f,g}\beta_f})}} =  (Z_g=1|\textbf{A}_{.,g},\boldsymbol{\beta})\]
 </p>
 
+<p>
+We can compute the likelihood of a particular value of \(\boldsymbol{\beta}\) as:
+</p>
 
 <p>
 \[ P(\textbf{x}|\boldsymbol{\beta},\textbf{A})=\prod_{g=1}^{G}P(x_g|\boldsymbol{\beta})=\prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{A}_{.,g}) P(x_g|Z_g=1)+(1-\pi(\boldsymbol{\beta},\textbf{A}_{.,g}))P(x_g|Z_g=0)]\]
@@ -360,14 +373,34 @@ By factorizing out the term \(\prod_{g=1}^{G} P(x_g|Z_g=0)\) which does not depe
 
 
 <p>
+Given a particular value of \(\boldsymbol{\beta}\), we arrive at a new posterior:
+</p>
+
+<p>
+\[P(Z_g=1 | x_g,\boldsymbol{\beta},A_{.,g}) = \frac{\pi(\boldsymbol{\beta},\textbf{A}_{.,g}) B_g}{\pi(\boldsymbol{\beta} , \textbf{A}_{.,g}) B_g + 1-\pi(\boldsymbol{\beta},\textbf{A}_{.,g})}} \]
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcb1189c" class="outline-3">
+<h3 id="orgcb1189c">Algorithm</h3>
+<div class="outline-text-3" id="text-orgcb1189c">
+<p>
 Our goal is both to estimate \(\boldsymbol{\beta}\) as well as \(P(Z_g=1|\textbf{A}_{.,g},\boldsymbol{\beta},x_g)\) for each gene.  
 </p>
+</div>
+</div>
+
+
+
+<div id="outline-container-orgac60054" class="outline-3">
+<h3 id="orgac60054">Data</h3>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Nicholas Knoblauch</p>
-<p class="date">Created: 2020-04-30 Thu 09:41</p>
+<p class="date">Created: 2020-04-30 Thu 13:05</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
