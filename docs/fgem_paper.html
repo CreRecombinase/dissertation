@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2020-04-30 Thu 15:21 -->
+<!-- 2020-05-12 Tue 19:03 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Functional Enrichment by Expectation Maximization</title>
@@ -261,6 +261,8 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#org07da710">Model</a></li>
 <li><a href="#orgcb1189c">Algorithm</a></li>
+<li><a href="#orgfc91d5e">Jaccard index for binary feature overlap</a></li>
+<li><a href="#org5f3d9f3">Validation against <code>COSMIC</code></a></li>
 <li><a href="#orgac60054">Data</a></li>
 <li><a href="#org3d7e31d">Software</a></li>
 </ul>
@@ -337,7 +339,7 @@ Given a particular value of \(\boldsymbol{\beta}\), we arrive at a new posterior
 <h3 id="orgcb1189c">Algorithm</h3>
 <div class="outline-text-3" id="text-orgcb1189c">
 <p>
-Our goal is both to estimate \(\boldsymbol{\beta}\) as well as \(P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)\) for each gene.  We use the EM algorithm <a class='org-ref-reference' href="#EM_algo">EM_algo</a> to
+Our goal is both to estimate \(\boldsymbol{\beta}\) as well as \(P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)\) for each gene.  We use the EM algorithm cite:EM<sub>algo</sub> to
 obtain a maximum likelihood estimate for \(\boldsymbol{\beta}\).  If \(\textbf{z}\) is our latent variable then our complete data likelihood is:
 </p>
 
@@ -354,14 +356,112 @@ From which we form the \(Q\) function
 <p>
 \[ Q(\boldsymbol{\beta}|\boldsymbol{\beta}_n) = \sum_{g=1}^G \left[P(z_g=1|x_g,\boldsymbol{\beta}_n,\textbf{a}_g) \log\left(P(x_g,z_g=1|\boldsymbol{\beta})\right) +
 P(z_g=0|x_g,\boldsymbol{\beta}_n,\textbf{a}_g) \log\left(P(x_g,z_g=0|\boldsymbol{\beta})\right) \right] = 
-\sum_{g=1}^G \left [u_i(\log(\pi(\boldsymbol{\beta_n},\textbf{a}_g))+B_g)+(1-u_i)\log(1-\pi(\boldsymbol{\beta_n},\textbf{a}_g)) \right]\]
+\sum_{g=1}^G \left [u_g(\log(\pi(\boldsymbol{\beta_n},\textbf{a}_g))+B_g)+(1-u_g)\log(1-\pi(\boldsymbol{\beta_n},\textbf{a}_g)) \right]\]
+</p>
+
+<p>
+Where \(u_g=P(z_g=1|x_g,\boldsymbol{\beta_n},\textbf{a}_g) = \frac{\pi(\boldsymbol{\beta_n},\textbf{a}_g)B_g}{\pi(\boldsymbol{\beta_n},\textbf{a}_g)B_g+1-\pi(\boldsymbol{\beta_n},\textbf{a}_g)}\)
+</p>
+
+<p>
+The model fitting procedure proceeds as follows 
+</p>
+
+<ul class="org-ul">
+<li>Start with an initial guess of $\textbf{\beta}</li>
+<li>Repeat until \(Q(\boldsymbol{\beta}|\boldsymbol{\beta}_{n-1})-Q(\boldsymbol{\beta}|\boldsymbol{\beta}_n)< \text{tol}\):
+<ul class="org-ul">
+<li>Compute \(P(z_g=1|x_g,\boldsymbol{\beta_n},\textbf{a}_g)\)</li>
+<li>Maximize the likelihood for \(\boldsymbol{\beta}\) using proportional logistic regression</li>
+</ul></li>
+</ul>
+</div>
+
+
+
+
+<div id="outline-container-orgc892bac" class="outline-4">
+<h4 id="orgc892bac">Feature selection</h4>
+<div class="outline-text-4" id="text-orgc892bac">
+<p>
+The number of gene-level features one might include in such a model is very large.  It is impossible, from both a computability 
+and interpretability standpoint, to include all conceivable features in the model. A related but distinct issue is that of collinearity.
+As the number of features in the model increases, there is a higher probability that some subset of features will be collinear with one-another,
+which can complicate model-fitting.  To avoid this issue, we employ a multi-stage model fitting procedure. In the first step, all single-feature-plus-intercept
+models are fit, and their $p$-value 
+</p>
+
+<p>
+We employed a forward selection procedure to construct a multivariate model.  We begin the procedure by 
+fitting all features in single-feature models.  We test the significance of each model against an intercept-only model using the likelihood ratio test.
+From this set of univariate models multivariate models all of the nonsignificant (false discovery rate of 0.05) univariate features for each cancer type
+ were removed from the analysis.  In the case of KICH, no features were significant after multiple testing correction (minimum \(q\) value: 0.104 correspodning to GO:0071456, "cellular response to hypoxia"), and in the case of CHOL,
+only one feature was significant after multiple testing correction (GO:0008285 " negative regulation of cell population proliferation", \(q\) value: 0.00909). Significant features were then 
+further pruned using a jaccard index similarity cutoff.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgfc91d5e" class="outline-3">
+<h3 id="orgfc91d5e">Jaccard index for binary feature overlap</h3>
+<div class="outline-text-3" id="text-orgfc91d5e">
+<p>
+The Jaccard index that measures the similarity of two sets.  GO terms are binary features (gene is either a member of a GO term or it is not), and can be 
+models as a set, where the genes in the GO terms are the elements of the set. The definition of the Jaccard Index is:
+</p>
+
+<p>
+\[ J(A,B) = \frac{|A \cap B |}{A \cup B} = \frac{| A \cap B|}{|A|+|B|-|A \cap B|} \]
+</p>
+
+<p>
+The strategy for feature selection works as follows: first take the most significant single-feature model,
+and then remove the most similar features to the selected feature (i.e the features with a jaccard similarity above 0.1).
+Then fit all 2 term models that include the most significant feature, select the feature with the highest significance when tested against the single 
+feature model, and remove all features similar to the features in the selected model. This process of testing all available \(n\) feature models, against the
+(greedily) best $n-1$-feature model, and removing from the candidate pool features similar to the chosen $n$th feature, is repeated until the most significant model in the \(n\) term vs
+\(n-1\) comparison is not significant at \(p<0.05\) by the likelihood ratio test.
 </p>
 </div>
 </div>
 
 
+<div id="outline-container-org5f3d9f3" class="outline-3">
+<h3 id="org5f3d9f3">Validation against <code>COSMIC</code></h3>
+</div>
+
+
+
 <div id="outline-container-orgac60054" class="outline-3">
 <h3 id="orgac60054">Data</h3>
+<div class="outline-text-3" id="text-orgac60054">
+</div>
+<div id="outline-container-org535aaa0" class="outline-4">
+<h4 id="org535aaa0">Gene-Level Summary Statistics</h4>
+<div class="outline-text-4" id="text-org535aaa0">
+<p>
+A set of Bayes factors from a study of cancer driver genes cite:zhao19<sub>detail</sub><sub>model</sub><sub>posit</sub><sub>selec</sub><sub>improv</sub>.  For each of 20 TCGA tumor types, roughly 20,000 genes were analyzed and the 
+posterior probability that each gene (in each cancer type) was a causal gene was assessed and summarized via Bayes Factor.  
+</p>
+</div>
+</div>
+
+<div id="outline-container-org353cc6e" class="outline-4">
+<h4 id="org353cc6e">Gene-Level Annotations</h4>
+<div class="outline-text-4" id="text-org353cc6e">
+</div>
+<ul class="org-ul">
+<li><a id="orgf07b23c"></a>Gene Ontology<br>
+<div class="outline-text-5" id="text-orgf07b23c">
+<p>
+The "Biological Process" Gene Ontology cite:GO  was downloaded from the Bioconductor package <code>GO.db</code> cite:godb. Of the 10,930 possible biological process gene ontology terms, the 2,198 terms that 
+include 10 or more genes were analyzed, so as to reduce the multiple testing burden.  
+</p>
+</div>
+</li>
+</ul>
+</div>
 </div>
 
 
@@ -369,8 +469,8 @@ P(z_g=0|x_g,\boldsymbol{\beta}_n,\textbf{a}_g) \log\left(P(x_g,z_g=0|\boldsymbol
 <h3 id="org3d7e31d">Software</h3>
 <div class="outline-text-3" id="text-org3d7e31d">
 <p>
-Our method is distributed as a freely available R package <a href="https://github.com/CreRecombinase/FGEM">FGEM</a>.  FGEM relies on the <code>SQUAREM</code> package to accelerate EM convergence  <a class='org-ref-reference' href="#squarem">squarem</a>   
-and the hot-path functions are implemented as C++ functions using the <code>RcppArmadillo</code> <a class='org-ref-reference' href="#RcppArmadillo">RcppArmadillo</a> package.
+Our method is distributed as a freely available R package <a href="https://github.com/CreRecombinase/FGEM">FGEM</a> cite:R .FGEM relies on the <code>SQUAREM</code> package to accelerate EM convergence  cite:squarem   
+and the hot-path functions are implemented as C++ functions using the <code>RcppArmadillo</code> cite:RcppArmadillo package.  
 </p>
 </div>
 </div>
@@ -385,19 +485,15 @@ and the hot-path functions are implemented as C++ functions using the <code>Rcpp
 <h2 id="org5c9eeca">Discussion</h2>
 <div class="outline-text-2" id="text-org5c9eeca">
 <p>
-
-<h1 class='org-ref-bib-h1'>Bibliography</h1>
-<ul class='org-ref-bib'><li><a id="EM_algo">[EM_algo]</a> <a name="EM_algo"></a>Dempster, Laird & Rubin, Maximum Likelihood from Incomplete Data via the EM Algorithm, <i>Journal of the Royal Statistical Society. Series B (Methodological)</i>, <b>39(1)</b>, 1-38 (1977). <a href="http://www.jstor.org/stable/2984875">link</a>.</li>
-<li><a id="squarem">[squarem]</a> <a name="squarem"></a>Yu Du & Ravi Varadhan, SQUAREM: An R Package for Off-the-Shelf Acceleration  of EM, MM and Other EM-Like Monotone Algorithms, <i>Journal of Statistical Software</i>, <b>92(7)</b>, 1-41 (2020). <a href="http://dx.doi.org/10.18637/jss.v092.i07">doi</a>.</li>
-<li><a id="RcppArmadillo">[RcppArmadillo]</a> <a name="RcppArmadillo"></a>Dirk Eddelbuettel & Conrad Sanderson, RcppArmadillo: Accelerating R with high-performance C++ linear algebra, <i>Computational	Statistics and Data Analysis</i>, <b>71</b>, 1054-1063 (2014). <a href="http://dx.doi.org/10.1016/j.csda.2013.02.005">link</a>.</li>
-</ul>
+bibliographystyle:unsrt
+bibliography:references.bib
 </p>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Nicholas Knoblauch</p>
-<p class="date">Created: 2020-04-30 Thu 15:21</p>
+<p class="date">Created: 2020-05-12 Tue 19:03</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

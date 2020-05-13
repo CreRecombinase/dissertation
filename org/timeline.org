@@ -23,6 +23,14 @@ detect and merge or remove highly correlated features from the analysis
 #   + Add a check for collinear features 
 #   + Fit model via stochastic minibatch gradient descent (would need to come up with a new name because it would no longer be "Functional Genetics by Expectation Maximization")
 #   + Prior on $\beta$
+**** TODO fisher's exact test
+***** 1 at a time followed by joint analysis
+**** TODO posterior for genes with and without prior
+**** TODO Yuwen's annotation data 
+**** TODO CancerMAPS Bayes Factors from driverMAPS
+***** Get list of genes from siming 
+***** What gene sets to use for Siming:
++ screen single feature models and use significant ones in a joint model
 *** TODO Finish first draft
     DEADLINE: <2020-05-08 Fri>
 I believe I can have a first draft finished by this date.  Obviously work on the draft will happen concurrently with analysis work.
