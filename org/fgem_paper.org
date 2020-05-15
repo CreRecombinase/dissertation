@@ -96,7 +96,7 @@ $n-1$ comparison is not significant at $p<0.05$ by the likelihood ratio test.
 ** Validation against COSMIC Cancer Gene Census
 
 The Catalogue of Somatic Mutations in Cancer (COSMIC) Cancer Gene Census (CGC) cite:COSMIC is an effort to catalogue genes which contain mutations
-causally implicated in cancer. To date, the CGC has identified  To validate  
+causally implicated in cancer. To date, the CGC has identified  To validate the FGEM models, CGC genes were used as a gold standard.    
 
 
 

@@ -8,191 +8,63 @@
 + Target submission to Bioinformatics
 *** TODO Introduction 
 *** TODO Statistical Method 
-***  Application to Cancer
+*** Application to Cancer
 *** TODO Software
 *** TODO Results 
 *** TODO Discussion
 ** TODO Analyses [100%]
    DEADLINE: <2020-05-04 Mon>
-*** DONE Run FGEM on new set of genes
-From cite:satterstrom
-
-#+BEGIN_SRC R :tangle /home/nwknoblauch/Dropbox/Repos/FGEM/data-raw/TADA_BF.R :session tada :dir /home/nwknoblauch/Dropbox/Repos/FGEM/
-
-  ## code to prepare `TADA_BF` dataset goes here
-
-  library(dplyr)
-  library(readxl)
-  #Retrieve data for https://doi.org/10.1016/j.cell.2019.12.036
-  input_xl_df <- readxl::read_excel("~/Dropbox/Repos/dissertation/data/1-s2.0-S0092867419313984-mmc2.xlsx",sheet = 2)
-  xl_df <- input_xl_df%>% 
-    select(gene,
-           hugoGene,
-           entrez_id,
-           ensembl_gene_id,
-           chr,
-           start_hg38,
-           stop_hg38,
-           strand,
-           contains("BF"),
-           contains("pval"),
-           contains("qval"))
-
-  new_TADA_BF <- transmute(xl_df,gene=gene,BF=BF_dn.ptv*BF_dn.misa*BF_dn.misb*BF_cc.ptv)
-
-
-  ## head(feature_df)
-
-
-
- # usethis::use_data(new_TADA_BF, overwrite = TRUE)
-#+END_SRC
-
-#+RESULTS:
-
-#+BEGIN_SRC R  :session tada :dir /home/nwknoblauch/Dropbox/Repos/FGEM/
-
-
-
-  library(dplyr)
-  library(readxl)
-  library(tidyr)
-    #Retrieve data for https://doi.org/10.1016/j.cell.2019.12.036
-    input_xl_df <- readxl::read_excel("~/Dropbox/Repos/dissertation/data/1-s2.0-S0092867419313984-mmc2.xlsx",sheet = 2)
-    xl_df <- input_xl_df%>% 
-      select(gene,
-             hugoGene,
-             entrez_id,
-             ensembl_gene_id,
-             chr,
-             start_hg38,
-             stop_hg38,
-             strand,
-             contains("BF"),
-             contains("pval"),
-             contains("qval"))
-
-  new_TADA_BF <- transmute(xl_df,gene=gene,BF=BF_dn.ptv*BF_dn.misa*BF_dn.misb*BF_cc.ptv)
-
-  TADA_BF_dn <- transmute(xl_df,gene=gene,BF=BF_dn.ptv*BF_dn.misa*BF_dn.misb*BF_cc.ptv)
-
-
-
-
-   feature_df <- select(input_xl_df,
-                         gene,
-                         pLI,
-  #                       ASC33_2014,
-   #                      SSC27_2014,
-    #                     ASC65_2015,
-     #                    ASC102_2018,
-                        Function) %>%
-     mutate(has_function=1L) %>%
-     tidyr::spread(key=Function,value=has_function,fill=0L) %>%
-     select(-.,-Other)
-
-  ibf_df <- select(xl_df,gene,contains("BF"))
-
-  colnames(ibf_df)[-1]
-  cn <- colnames(ibf_df)[-1][2]
-  #for(cn in colnames(ibf_df)[-1]){
-
-  ixl_df <- inner_join(check_BF,feature_df,by=c("Gene"="gene"))
-  otp_df <- select(ixl_df,Gene,BF=old_BF,pLI) %>% fgem::FGEM_df(verbose=FALSE)
-  ntp_df <- select(ixl_df,Gene,BF,pLI) %>% fgem::FGEM_df(verbose=FALSE)
-  notp_df <- select(ixl_df,-BF) %>%
-    rename(BF=old_BF) %>%
-    fgem::FGEM_df(verbose=TRUE)
-
-  nnotp_df <- select(ixl_df,-BF,-pLI,
-                     -`Gene expression regulation`,
-                     -`Neuronal communication`) %>%
-    rename(BF=old_BF) %>%
-    fgem::FGEM_df(verbose=TRUE)
-
-  nnntp_df <- select(ixl_df,-old_BF,-pLI,
-                     -`Gene expression regulation`,
-                     -`Neuronal communication`) %>%
-    fgem::FGEM_df(verbose=TRUE)
-
-
-  ntp_df <- select(ixl_df,Gene,BF,pLI) %>% fgem::FGEM_df(verbose = TRUE, use_squarem = FALSE)
-
-  feat_df <- select(ixl_df,Gene,BF,pLI)
-  for(
-
-
-#+END_SRC
-
-#+RESULTS:
 *** DONE Run FGEM on driverMAPS TCGA
+*** TODO use multiple testing correction in forward selection
+*** TODO make plots 
+**** 
+**** Multivariate enrichment
 
-#+BEGIN_SRC R  :colnames yes :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-
-
-
+* Analysis
+#+BEGIN_SRC R  :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
+library(tidyverse)
+library(fgem)
+library(qs)
 #+END_SRC
-
-#+RESULTS:
-| x         |
-|-----------|
-| forcats   |
-| stringr   |
-| dplyr     |
-| purrr     |
-| readr     |
-| tidyr     |
-| tibble    |
-| ggplot2   |
-| tidyverse |
-| stats     |
-| graphics  |
-| grDevices |
-| utils     |
-| datasets  |
-| methods   |
-| base      |
-
-#+BEGIN_SRC R :colnames yes :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-
-  data_f <- fs::dir_ls("data/driverMAPS_results_20TumorTypes")
-
-  cancer_t <- str_replace(data_f, ".+/([A-Z]+)_BayesFactorFDR.txt", "\\1")
-  vc <- readr::cols(
-  Gene = col_character(),
-  No_nonsyn = col_skip(),
-  functypecode8 = col_skip(),
-  mycons = col_skip(),
-  sift = col_skip(),
-  phylop100 = col_skip(),
-  MA = col_skip(),
-  No_unique_mutation = col_skip(),
-  TSG_BF = col_double(),
-  OG_BF = col_double(),
-  Expected_syn = col_skip(),
-  No_syn = col_skip(),
-  BF = col_double(),
-  predtag = col_skip(),
-  Posterior = col_skip(),
-  FDR = col_skip()
-  )
-
-  cancer_df <- map2_df(data_f,
-                       cancer_t,
-                       ~vroom::vroom(.x,
-                                     col_names = names(vc$cols),
-                                     col_types = vc,
-                                     skip = 1L) %>% mutate(cancer = .y))
-saveRDS(cancer_df,"data/driverMAPS_results_20TumorTypes.RDS")
-#+END_SRC
-
-#+BEGIN_SRC R :colnames yes :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-cancer_df <- readRDS("data/driverMAPS_results_20TumorTypes.RDS")
-#+END_SRC
-
-#+RESULTS:
 
 **** Looking at the data
+We'll start by reading the data, pulling out the info we'll use, and saving it back in a nicer format
+#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/  :results none
+data_f <- fs::dir_ls("data/driverMAPS_results_20TumorTypes",glob="*txt")
+cancer_t <- str_replace(data_f, ".+/([A-Z]+)_BayesFactorFDR.txt", "\\1")
+
+vc <- readr::cols(
+  Gene = col_character(),
+                 No_nonsyn = col_skip(),
+                 functypecode8 = col_skip(),
+                 mycons = col_skip(),
+                 sift = col_skip(),
+                 phylop100 = col_skip(),
+                 MA = col_skip(),
+                 No_unique_mutation = col_skip(),
+                 TSG_BF = col_double(),
+                 OG_BF = col_double(),
+                 Expected_syn = col_skip(),
+                 No_syn = col_skip(),
+                 BF = col_double(),
+                 predtag = col_skip(),
+                 Posterior = col_skip(),
+                 FDR = col_skip()
+  )
+
+    cancer_df <- map2_df(data_f,
+                         cancer_t,
+                         ~vroom::vroom(.x,
+                                       col_names = names(vc$cols),
+                                       col_types = vc,
+                                       skip = 1L) %>% mutate(cancer = .y))
+
+  saveRDS(cancer_df,"data/driverMAPS_results_20TumorTypes.RDS")
+  qs::qsave(cancer_df,"data/driverMAPS_results_20TumorTypes.qs")
+#+END_SRC
+
+
+
 #+BEGIN_SRC R :colnames yes :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
 head(cancer_df)
 #+END_SRC
@@ -208,162 +80,123 @@ head(cancer_df)
 | ARID1A |  71.9813145469098 | -11.8163792581274 | 71.2881673663499 | BLCA   |
 
 
-driverMAPS reports the $\text{BF}$'s as $log(\text{BF})$.  I haven't figured out a way to work with these values without exponentiating them
-and some of them are really big(small).  I'm going to have to "clamp" them between the minimum and maximum representable values
+driverMAPS reports the $\text{BF}$'s as $log(\text{BF})$.  I haven't figured out a way to work with these values without 
+exponentiating them and some of them are really big(small).  I'm going to have to "clamp" them between the minimum and maximum representable values
 (using double precision floating point).  
 
-#+BEGIN_SRC R  :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :results graphics :file BF_x.png
-  min_x <- -log(.Machine$double.xmax)
-  max_x   <-  log(.Machine$double.xmax)
-  ggplot(cancer_df, aes(x=cancer,y=BF)) + geom_boxplot() +
-    geom_hline(yintercept=min_x) +
-    geom_hline(yintercept=max_x)+ggtitle("Bayes Factor")
+**** GO terms
+
+I'm going to pull the GO annotations from the ~GO.db~ package.
+
+#+BEGIN_SRC R :session bioc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :results none
+library(tidyverse)
+library(fgem)
+library(GO.db)
+library(qs)
 #+END_SRC
 
 #+RESULTS:
-[[file:/home/nwknoblauch/Dropbox/Repos/dissertation/BF_x.png]]
+| GO.db         |
+| fgem          |
+| forcats       |
+| stringr       |
+| dplyr         |
+| purrr         |
+| readr         |
+| tidyr         |
+| tibble        |
+| ggplot2       |
+| tidyverse     |
+| org.Hs.eg.db  |
+| AnnotationDbi |
+| IRanges       |
+| S4Vectors     |
+| Biobase       |
+| BiocGenerics  |
+| parallel      |
+| stats4        |
+| stats         |
+| graphics      |
+| grDevices     |
+| utils         |
+| datasets      |
+| methods       |
+| base          |
 
-#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :results graphics :file OG_BF_x.png
-  ggplot(cancer_df, aes(x=cancer,y=OG_BF)) + geom_boxplot() +
-    geom_hline(yintercept=min_x) +
-    geom_hline(yintercept=max_x)+ggtitle("Oncogene Bayes Factor")
-#+END_SRC
-
-#+RESULTS:
-[[file:/home/nwknoblauch/Dropbox/Repos/dissertation/OG_BF_x.png]]
-
-
-#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :results graphics :file TSG_BF_x.png
-  ggplot(cancer_df, aes(x=cancer,y=TSG_BF)) + geom_boxplot() +
-    geom_hline(yintercept=min_x) +
-    geom_hline(yintercept=max_x)+ggtitle("Tumor Suppressor Bayes Factor")
-#+END_SRC
-
-#+RESULTS:
-[[file:/home/nwknoblauch/Dropbox/Repos/dissertation/TSG_BF_x.png]]
-
-
-
-#+BEGIN_SRC R :session bioc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-  library(tidyverse)
-  library(fgem)
-#+END_SRC
-
-#+RESULTS:
-| fgem      |
-| forcats   |
-| stringr   |
-| dplyr     |
-| purrr     |
-| readr     |
-| tidyr     |
-| tibble    |
-| ggplot2   |
-| tidyverse |
-| stats     |
-| graphics  |
-| grDevices |
-| utils     |
-| datasets  |
-| methods   |
-| base      |
-
-#+BEGIN_SRC R :session bioc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-  library(GO.db)
-
-  cancer_df <- readRDS("data/driverMAPS_results_20TumorTypes.RDS")
+#+BEGIN_SRC R :session bioc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :results none
+  cancer_df <- qread("data/driverMAPS_results_20TumorTypes.qs")
   tbp <- topGO::annFUN.org("BP",feasibleGenes=unique(cancer_df$Gene),mapping="org.Hs.eg.db",ID="symbol")
   tbp_df <- imap_dfr(tbp,function(Genes,GO)tibble(Gene=Genes,feature_name=GO))
-  saveRDS(tbp_df,"data/GO_df.RDS")
+  qs::qsave(tbp_df,"data/GO_df.qs")
 #+END_SRC
 
 #+RESULTS:
 
-#+BEGIN_SRC R :session bioc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
+#+BEGIN_SRC R :session bioc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :results none
   term_list <- as.list(GOTERM)    
-  fn_df <- distinct(tbp_df,feature_name) %>% pull(feature_name) %>% map_dfr(function(x){
-    tx <- term_list[[x]]
-    tibble(feature_name=x,
-           Term=Term(tx),
-           Definition=Definition(tx),
-           Synonyms=list(Synonym(tx)))
+  fn_df <- distinct(tbp_df,feature_name) %>% 
+    pull(feature_name) %>% map_dfr(function(x){
+      tx <- term_list[[x]]
+      tibble(feature_name=x,
+             Term=Term(tx),
+             Definition=Definition(tx),
+             Synonyms=list(Synonym(tx)))
     })
-  saveRDS(fn_df,"data/GO_Definitions.RDS")
+  qs::qsave(fn_df,"data/GO_Definitions.qs")
+#+END_SRC
 
+#+RESULTS:
 
+#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :results none
+  
 #+END_SRC
 
 #+RESULTS:
 
 #+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-  library(dplyr)
-  library(purrr)
-
+  library(tidyverse)
   library(fgem)
-  library(multidplyr)
-
-  data("BPGOdf")
-  data("exacdf")
-
-  cancer_df <- readRDS("data/driverMAPS_results_20TumorTypes.RDS")
-  min_cancer_df <- cancer_df %>%
-    select(Gene, BF, cancer) %>%
-    mutate(BF = exp(BF))
-#+END_SRC
-
-#+RESULTS:
-
-#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
   library(progressr)
-  library(furrr)
+  library(future.apply)
+  library(qs)
+  library(profvis)
 
-cancer_df <- readRDS("/scratch/midway2/nwknoblauch/driverMAPS_results_20TumorTypes.RDS")
+  cancer_df <- qs::qread("data/driverMAPS_results_20TumorTypes.qs")
+  BPGOdf <- qs::qread("data/GO_df.qs")
   min_cancer_df <- cancer_df %>%
     select(Gene, BF, cancer) %>%
     mutate(BF = exp(BF))
-    plan(batchtools_slurm, template = "/home/nwknoblauch/slurm_tempn.tmpl",
-       resources=list(
-         ncpus=1L,
-         walltime=7200,
-         memory=9000))
+
+  go_df <- mutate(BPGOdf,Gene=as.character(Gene)) %>%
+    semi_join(distinct(cancer_df,Gene)) %>%
+    select(-class)
+
+  go_df <- group_by(go_df,feature) %>%
+    summarise(n_gt=n()) %>%
+    filter(n_gt>=10) %>%
+    select(feature) %>%
+    inner_join(go_df)
+
+  cancers <- distinct(cancer_df,cancer)
+  tc  <- cancers$cancer[1]
+  tcp <- fs::path("data/driverMAPS_results_20TumorTypes",tc,ext="qs")
+  cdf <- qread(tcp)
+  null_mod <- fgem:::fgem_null(cdf$BF)
+
+  all_mods <- group_by(go_df,feature) %>%
+    do(
+      fgem(
+        x = as.matrix(fgem::trip2sparseMatrix(as.character(.$Gene),
+                                            .$feature,
+                                            .$value,
+                                            cdf$Gene,
+                                            unique(.$feature),
+                                            add_intercept = TRUE)),
+        BF = cdf$BF,
+        null_beta = null_mod))
 
 
 #+END_SRC
-
-
-
-**** Features: GO BP and ExAC
-
-To start out with we'll use the exac allele z scores and the Biological Process GO terms.  To reduce multiple testing burden, 
-I'll limit the GO terms to terms with 10 or more genes with that term
-
-#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-
-
-z_df <- filter(exacdf,
-                 stringr::str_detect(feature, "z$")) %>%
-      spread(feature, value) %>%
-      select(-class) %>%
-      inner_join(min_cancer_df)
-  tres_z <- group_by(z_df, cancer) %>%
-    do(FGEM_marginal(select(., -cancer),
-                     verbose = FALSE)) %>%
-    ungroup()
-#+END_SRC
-
-#+RESULTS:
-
-** Jaccard index for binary feature overlap
-
-The Jaccard index that measures the similarity of two sets.  We can think of each ofour GO 
-terms as sets, where the genes in the GO terms are the elements of the set. The definition of the Jaccard Index is:
-
-$$ J(A,B) = \frac{|A \cap B |}{A \cup B} = \frac{| A \cap B|}{|A|+|B|-|A \cap B|} $$
-
-The strategy for feature selection works as follows, first take the most significant marginal association,
-and then remove the most similar features to the selected feature (i.e the features with the
-highest jaccard similarity)  
-
 
 #+BEGIN_SRC R :session jacc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :colnames yes
 
@@ -391,6 +224,7 @@ highest jaccard similarity)
 | base      |
 
 #+BEGIN_SRC R :session jacc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :colnames yes
+
   bp_name <- readRDS("data/GO_Definitions.RDS") 
 
   results_df <- readRDS("data/fgem_data.RDS")  %>%
@@ -407,7 +241,7 @@ highest jaccard similarity)
   cancer_results <- group_by(results_df,feature_name,Term) %>%
     summarise(min_p=min(pval),
               min_q=min(qval),
-              num_sig=sum(qval<0.05),
+              num_sig=sum(qval<0.1),
               max_p=max(pval),
               max_q=max(qval),
               log_sum_p=sum(log(pval)),
@@ -418,158 +252,298 @@ highest jaccard similarity)
 #+END_SRC
 
 #+RESULTS:
-| feature_name | Term                                                                                                         |                min_p |                min_q | num_sig |              max_p |             max_q |         log_sum_p | best_c |
-|--------------+--------------------------------------------------------------------------------------------------------------+----------------------+----------------------+---------+--------------------+-------------------+-------------------+--------|
-| GO:0008543   | fibroblast growth factor receptor signaling pathway                                                          | 5.01302411325903e-11 | 2.20372540018867e-08 |      14 |  0.574945626851908 | 0.988225864567215 | -190.419291400315 | GBM    |
-| GO:0038095   | Fc-epsilon receptor signaling pathway                                                                        | 7.85295660223611e-12 | 5.43897524497241e-09 |      13 |  0.499300922950714 | 0.988225864567215 | -208.739839400886 | GBM    |
-| GO:0007265   | Ras protein signal transduction                                                                              | 2.63286163288958e-09 | 5.78702986909129e-06 |      13 | 0.0514174948614654 | 0.938794258448066 | -200.056381208138 | LUAD   |
-| GO:0007173   | epidermal growth factor receptor signaling pathway                                                           | 9.89804412187881e-12 | 5.43897524497241e-09 |      12 |  0.765849935332815 | 0.988225864567215 | -173.090138887986 | GBM    |
-| GO:0048011   | neurotrophin TRK receptor signaling pathway                                                                  | 1.52414539677003e-09 | 4.78581654585789e-07 |      12 |  0.646955173987514 | 0.988225864567215 | -163.111984400276 | GBM    |
-| GO:0045087   | innate immune response                                                                                       |  5.8102000918589e-09 | 1.59635247523823e-06 |      11 |  0.414321005872059 | 0.988225864567215 | -183.869131160871 | GBM    |
-| GO:0008285   | negative regulation of cell population proliferation                                                         | 5.41509459159636e-07 | 0.000166947282375396 |      11 |   0.68247049558922 |  0.99627042657984 | -168.957962132331 | BLCA   |
-| GO:0048010   | vascular endothelial growth factor receptor signaling pathway                                                | 3.61762322927197e-08 | 7.22866896176344e-06 |      11 |  0.773801431925303 | 0.988225864567215 | -161.139371223286 | GBM    |
-| GO:0045893   | positive regulation of transcription, DNA-templated                                                          | 2.70419901173753e-08 | 7.25955909701243e-06 |       9 |  0.228688865099875 |  0.99627042657984 | -154.237106672014 | BLCA   |
-| GO:0048015   | phosphatidylinositol-mediated signaling                                                                      | 3.51735280373928e-10 | 1.28852357710316e-07 |       9 |  0.913565998246888 | 0.988225864567215 | -142.478400742642 | GBM    |
-| GO:0008286   | insulin receptor signaling pathway                                                                           | 1.59663696312682e-07 | 2.69954464996365e-05 |       8 |  0.438783825166641 | 0.988225864567215 | -139.566743893005 | GBM    |
-| GO:0032228   | regulation of synaptic transmission, GABAergic                                                               |  1.1517366264868e-05 |  0.00158219819063624 |       8 |  0.360641108662231 | 0.988225864567215 | -121.730243058497 | GBM    |
-| GO:0050911   | detection of chemical stimulus involved in sensory perception of smell                                       | 1.45276376704889e-35 | 3.19317475997346e-32 |       7 |  0.912066034626498 |  0.99627042657984 | -263.532597953033 | GBM    |
-| GO:0045944   | positive regulation of transcription by RNA polymerase II                                                    | 1.96558991996152e-14 | 4.32036664407542e-11 |       7 |  0.966701551846833 |  0.99627042657984 | -166.795953207516 | BLCA   |
-| GO:0007050   | cell cycle arrest                                                                                            | 1.28683704593578e-06 | 0.000165280204016407 |       7 |  0.821454451037646 |  0.99627042657984 |  -136.18859720116 | HNSC   |
-| GO:0090399   | replicative senescence                                                                                       |  5.2572540315745e-06 | 0.000577772218070037 |       7 |  0.972172130278902 |  0.99627042657984 | -134.115968006652 | BLCA   |
-| GO:0097193   | intrinsic apoptotic signaling pathway                                                                        | 7.11450520480226e-06 | 0.000521256081338512 |       7 |  0.907684938787919 |  0.99627042657984 | -109.869970992605 | HNSC   |
-| GO:0045892   | negative regulation of transcription, DNA-templated                                                          | 1.95773642451803e-05 |  0.00286814841813145 |       7 |  0.733668589879786 |  0.99627042657984 | -106.794416692828 | BLCA   |
-| GO:0006915   | apoptotic process                                                                                            |   2.823790355918e-06 |  0.00117883390061916 |       7 |  0.935325007937401 |  0.99627042657984 | -103.226225516805 | CESC   |
-| GO:0000122   | negative regulation of transcription by RNA polymerase II                                                    | 2.23836773348405e-11 | 2.45996613909897e-08 |       6 |  0.562893076017209 |  0.99627042657984 | -143.668384930333 | BLCA   |
-| GO:0007596   | blood coagulation                                                                                            | 1.13851123000521e-05 |  0.00158219819063624 |       6 | 0.0749965030865044 | 0.988225864567215 | -129.052506451949 | GBM    |
-| GO:0051402   | neuron apoptotic process                                                                                     | 4.00950301177833e-06 | 0.000629491972849197 |       6 |  0.676648153566652 |  0.99627042657984 | -120.633322701971 | UCEC   |
-| GO:0071456   | cellular response to hypoxia                                                                                 | 9.88455471606747e-09 | 2.17262512659163e-05 |       6 |  0.813764946775849 |  0.99627042657984 | -117.941336149727 | KIRC   |
-| GO:0043542   | endothelial cell migration                                                                                   | 0.000130025674636964 |  0.00831629111522921 |       6 |  0.969989929290994 |  0.99627042657984 | -117.047436387486 | HNSC   |
-| GO:2000379   | positive regulation of reactive oxygen species metabolic process                                             |  1.0598193558594e-05 | 0.000751446111025468 |       6 |  0.987176157180576 | 0.996698756767527 | -112.453493169846 | HNSC   |
-| GO:0034644   | cellular response to UV                                                                                      | 1.87340152272572e-07 | 3.16748965150086e-05 |       6 |  0.283743706587265 |  0.99627042657984 | -111.485592791653 | HNSC   |
-| GO:0000186   | activation of MAPKK activity                                                                                 | 2.36751619984909e-07 | 0.000130095015181707 |       6 |  0.894046023136186 | 0.988225864567215 | -110.027000983411 | TGCT   |
-| GO:0000165   | MAPK cascade                                                                                                 | 1.19322142584404e-07 | 8.74233564668398e-05 |       6 |  0.829281664607655 | 0.988225864567215 | -105.373578116456 | TGCT   |
-| GO:0007219   | Notch signaling pathway                                                                                      | 2.46519722199928e-08 | 9.90638237966515e-06 |       6 |  0.621219036266338 |  0.99627042657984 | -104.516062246321 | HNSC   |
-| GO:0007507   | heart development                                                                                            | 3.21792693526612e-06 |  0.00117883390061916 |       6 |  0.900469340042079 |  0.99627042657984 | -91.2704350846082 | CESC   |
-| GO:0007186   | G protein-coupled receptor signaling pathway                                                                 | 1.60894515420268e-18 | 1.76823072446875e-15 |       5 |  0.732851439247741 |  0.99627042657984 | -131.482110054561 | GBM    |
-| GO:1900740   | positive regulation of protein insertion into mitochondrial membrane involved in apoptotic signaling pathway | 7.01807331042377e-08 | 3.85643128407786e-05 |       5 |  0.920314805181341 |  0.99627042657984 | -112.690911515412 | UCEC   |
-| GO:0030308   | negative regulation of cell growth                                                                           | 6.08323775105391e-06 |  0.00121554150698332 |       5 |  0.861520139719266 |  0.99627042657984 | -111.110142469438 | LUAD   |
-| GO:2000134   | negative regulation of G1/S transition of mitotic cell cycle                                                 |  5.9098550234435e-07 |  0.00129898613415288 |       5 |  0.893393617510897 |  0.99627042657984 | -110.308332486973 | LIHC   |
-| GO:0043491   | protein kinase B signaling                                                                                   | 1.41595686606517e-05 |  0.00324872993820623 |       5 |  0.150579904837517 |  0.99627042657984 | -108.760624710598 | GBM    |
-| GO:0032200   | telomere organization                                                                                        | 1.03946223569924e-10 | 4.56947598813384e-08 |       5 |  0.973510130892528 |  0.99627042657984 | -95.3401647824035 | BLCA   |
-| GO:0006337   | nucleosome disassembly                                                                                       | 1.40712368211281e-05 |  0.00220918418091711 |       5 |  0.973910674782404 |  0.99627042657984 | -77.4284838038877 | LUAD   |
-| GO:0045651   | positive regulation of macrophage differentiation                                                            | 0.000562635128099226 |   0.0242484708149431 |       5 |  0.942022166612719 |  0.99627042657984 | -66.2051611400263 | UCEC   |
-| GO:0050900   | leukocyte migration                                                                                          | 7.40701533958839e-08 | 1.35671830970127e-05 |       4 |  0.894559409165187 | 0.988225864567215 | -104.868641474909 | GBM    |
-| GO:0001944   | vasculature development                                                                                      | 1.38287526558613e-06 |  0.00117883390061916 |       4 |  0.958306499681197 |  0.99627042657984 | -104.865839492519 | CESC   |
-| GO:0071158   | positive regulation of cell cycle arrest                                                                     | 7.98278142175138e-06 |  0.00292435892750159 |       4 |  0.302077091711482 |  0.99627042657984 | -99.6107981113347 | LUSC   |
-| GO:0008283   | cell population proliferation                                                                                | 1.69160905084886e-06 | 0.000206564260764766 |       4 |  0.629861872894961 |  0.99627042657984 | -96.9778194046284 | BLCA   |
-| GO:0033077   | T cell differentiation in thymus                                                                             | 1.82956161890641e-05 |  0.00251336027397268 |       4 |  0.933012019300112 |  0.99627042657984 | -95.8745621447365 | LUAD   |
-| GO:0007411   | axon guidance                                                                                                | 2.01820165025027e-06 | 0.000192869879445656 |       4 |  0.825778740147466 | 0.988225864567215 | -92.0422023114333 | HNSC   |
-| GO:0051091   | positive regulation of DNA-binding transcription factor activity                                             | 1.13032288532045e-05 |  0.00138658980098661 |       4 |  0.600803261922558 | 0.988225864567215 | -91.3748974028401 | UCEC   |
-| GO:0016032   | viral process                                                                                                | 1.27961207015387e-08 | 7.03146832549553e-06 |       4 |   0.98736915809747 |  0.99627042657984 | -91.0457457278935 | HNSC   |
-| GO:0006325   | chromatin organization                                                                                       | 1.03225840825588e-10 | 4.56947598813384e-08 |       4 |   0.89449294038709 |  0.99627042657984 | -87.0450383178608 | BLCA   |
-| GO:0014065   | phosphatidylinositol 3-kinase signaling                                                                      | 2.15686339120455e-05 |  0.00249515038624611 |       4 |  0.799665695222743 |  0.99627042657984 | -86.5134418111873 | GBM    |
-| GO:0007179   | transforming growth factor beta receptor signaling pathway                                                   | 2.92915001486204e-06 | 0.000379774593671036 |       4 |  0.741315658534616 |  0.99627042657984 | -83.2686186226162 | HNSC   |
-| GO:0006974   | cellular response to DNA damage stimulus                                                                     | 2.20493904223951e-06 |  0.00117883390061916 |       4 |  0.884595099523981 |  0.99627042657984 | -82.1582092576404 | CESC   |
-| GO:0001701   | in utero embryonic development                                                                               | 1.06120234851832e-05 |  0.00333217537434754 |       4 |  0.996727010008083 | 0.997788888033935 | -79.5254495288684 | BRCA   |
-| GO:0007264   | small GTPase mediated signal transduction                                                                    | 1.12746707961032e-05 | 0.000821474678496047 |       4 |   0.98979437935404 | 0.996145687438488 | -78.8546477092893 | HNSC   |
-| GO:0006338   | chromatin remodeling                                                                                         | 0.000160204546699999 |   0.0121602737922432 |       4 |   0.76526282192506 |  0.99627042657984 | -76.6912323112833 | HNSC   |
-| GO:0045815   | positive regulation of gene expression, epigenetic                                                           | 3.26351618888898e-09 | 1.02474408331114e-06 |       4 |  0.857874133030133 |  0.99627042657984 | -75.9335853464538 | BLCA   |
-| GO:0001953   | negative regulation of cell-matrix adhesion                                                                  | 9.22636947157956e-05 |  0.00448773335333188 |       4 |  0.883014029085412 |  0.99627042657984 | -73.1921435627084 | HNSC   |
-| GO:0050907   | detection of chemical stimulus involved in sensory perception                                                | 1.91809725159651e-08 | 4.21597775900913e-06 |       4 |  0.855854205503489 |  0.99627042657984 | -68.2817994106848 | GBM    |
-| GO:0000183   | chromatin silencing at rDNA                                                                                  | 6.69249626020477e-08 | 1.65309793658263e-05 |       4 |  0.906905277113504 |  0.99627042657984 |  -67.675573019085 | HNSC   |
-| GO:0006335   | DNA replication-dependent nucleosome assembly                                                                | 4.13399702947392e-07 |  5.6790784192398e-05 |       4 |  0.926667957780252 |  0.99627042657984 |  -67.604484699203 | BLCA   |
-| GO:0010718   | positive regulation of epithelial to mesenchymal transition                                                  | 1.77930469769616e-05 |   0.0011580427819661 |       4 |  0.903156483057541 |  0.99627042657984 | -62.2520089096249 | HNSC   |
-| GO:0042771   | intrinsic apoptotic signaling pathway in response to DNA damage by p53 class mediator                        | 1.22583052809018e-05 |  0.00103629826951624 |       3 |  0.140355041077896 | 0.945422067734197 |  -100.84056451833 | BLCA   |
-| GO:0010628   | positive regulation of gene expression                                                                       | 5.99360321964361e-06 | 0.000823371242298541 |       3 |  0.204128717070126 | 0.968453520363939 |   -100.1706758839 | UCEC   |
-| GO:0043525   | positive regulation of neuron apoptotic process                                                              | 1.69378642816511e-06 | 0.000620490428184486 |       3 |  0.844716154443724 |  0.99627042657984 | -94.4943716632797 | LUAD   |
-| GO:0032461   | positive regulation of protein oligomerization                                                               | 9.06666207615925e-05 |     0.01811683931218 |       3 |  0.520678379035703 |  0.99627042657984 | -93.8302126290576 | ESCA   |
-| GO:0070374   | positive regulation of ERK1 and ERK2 cascade                                                                 | 1.16337960684945e-08 | 2.84123152872788e-06 |       3 |  0.780320753096553 |  0.99627042657984 | -93.2190221259843 | GBM    |
-| GO:0007369   | gastrulation                                                                                                 | 2.54036551907039e-05 |  0.00143172395151711 |       3 |  0.558234590471741 |  0.99627042657984 | -92.4279602912807 | HNSC   |
-| GO:0032776   | DNA methylation on cytosine                                                                                  | 1.31217913929633e-10 | 2.88416974817333e-07 |       3 |  0.914554115305688 |  0.99627042657984 | -86.6210735319729 | HNSC   |
-| GO:0031571   | mitotic G1 DNA damage checkpoint                                                                             | 0.000104492351560046 |  0.00462134799417571 |       3 |  0.104413782922392 | 0.938794258448066 | -85.6158426033818 | HNSC   |
-| GO:0048147   | negative regulation of fibroblast proliferation                                                              |  0.00041420798067585 |   0.0195788048261312 |       3 |  0.909245774153689 |  0.99627042657984 |  -84.481062280435 | LUAD   |
-| GO:0043065   | positive regulation of apoptotic process                                                                     | 4.21298246554683e-05 |  0.00298714047073288 |       3 |  0.365613771460141 |  0.99627042657984 | -84.0359431861102 | BLCA   |
-| GO:0001756   | somitogenesis                                                                                                | 0.000153969629388898 |   0.0165402039463942 |       3 |  0.862964338409537 |  0.99627042657984 | -82.1047018209928 | UCEC   |
-| GO:0050852   | T cell receptor signaling pathway                                                                            |  0.00012609644233226 |  0.00989857072308241 |       3 |  0.863875265677499 |  0.99627042657984 | -81.4636181340875 | GBM    |
-| GO:0008284   | positive regulation of cell population proliferation                                                         | 5.57890094490417e-07 |  7.4486991154371e-05 |       3 |   0.80721878026707 | 0.988225864567215 | -80.9855759461647 | HNSC   |
-| GO:0006351   | transcription, DNA-templated                                                                                 | 1.83108235805653e-10 | 6.70786503834707e-08 |       3 |  0.771997691897312 |  0.99627042657984 | -78.2587978203866 | BLCA   |
-| GO:0006367   | transcription initiation from RNA polymerase II promoter                                                     | 1.88197511775649e-05 |  0.00124977662134238 |       3 |  0.589308478710188 |  0.99627042657984 | -76.8063534946695 | HNSC   |
-| GO:0050821   | protein stabilization                                                                                        | 4.11423248045137e-05 |   0.0050239349955734 |       3 |  0.997306554508401 | 0.997760494678865 | -76.4488465541923 | CESC   |
-| GO:2000060   | positive regulation of ubiquitin-dependent protein catabolic process                                         | 0.000551459027964309 |   0.0318077962311719 |       3 |  0.900218808604602 |  0.99627042657984 | -75.2575516418447 | HNSC   |
-| GO:0012501   | programmed cell death                                                                                        | 2.89037242383497e-05 |  0.00264709941149552 |       3 |  0.814867166237111 |  0.99627042657984 | -74.8011380312791 | UCEC   |
-| GO:0001525   | angiogenesis                                                                                                 | 0.000321921158824681 |   0.0164554117929453 |       3 |  0.982891480026866 |  0.99627042657984 | -74.2280315419033 | LUAD   |
-| GO:0002223   | stimulatory C-type lectin receptor signaling pathway                                                         | 9.29617790766672e-06 | 0.000851374960043811 |       3 |  0.800618843388927 | 0.988225864567215 | -72.7852654272196 | BLCA   |
-| GO:0006334   | nucleosome assembly                                                                                          | 8.66025035978736e-11 | 4.56947598813384e-08 |       3 |  0.965386073562497 |  0.99627042657984 | -72.4029345997751 | BLCA   |
-| GO:0010467   | gene expression                                                                                              |  1.1366578120762e-07 | 1.92182605457192e-05 |       3 |  0.843699372740783 |  0.99627042657984 | -72.3605703823305 | BLCA   |
-| GO:0097284   | hepatocyte apoptotic process                                                                                 | 0.000189404216955737 |  0.00730369243629316 |       3 |  0.932426352632471 |  0.99627042657984 | -67.7352702325515 | HNSC   |
-| GO:0040029   | regulation of gene expression, epigenetic                                                                    | 8.66732457967972e-08 | 1.73188903873964e-05 |       3 |  0.964641387314497 |  0.99627042657984 | -64.5502066214069 | BLCA   |
-| GO:0060968   | regulation of gene silencing                                                                                 | 5.76105027126618e-07 |  7.4486991154371e-05 |       3 |  0.921492169908164 |  0.99627042657984 | -60.1461028099777 | HNSC   |
-| GO:0007608   | sensory perception of smell                                                                                  | 1.86417667956844e-06 |  0.00102436508542286 |       3 |  0.998349177231505 |  0.99850989508643 | -59.8089685327049 | LUSC   |
-| GO:0051290   | protein heterotetramerization                                                                                | 3.68641889637894e-07 |  5.6790784192398e-05 |       3 |  0.898983916396502 |  0.99627042657984 | -58.0376302449522 | BLCA   |
-| GO:0030216   | keratinocyte differentiation                                                                                 | 9.82289644939703e-05 |  0.00708509015753738 |       3 |  0.866501525989315 |  0.99627042657984 | -52.9581475920227 | LUAD   |
-| GO:0019731   | antibacterial humoral response                                                                               | 1.18427568680125e-06 | 0.000137001997873113 |       3 |  0.875636097497661 |  0.99627042657984 | -48.8493345601349 | HNSC   |
-| GO:0035690   | cellular response to drug                                                                                    | 6.10501933349164e-05 |  0.00583427499783244 |       2 |  0.836164339151178 |  0.99627042657984 |  -95.027690234374 | LUAD   |
-| GO:0042149   | cellular response to glucose starvation                                                                      |  0.00108418507353759 |   0.0341725051616918 |       2 |  0.953192482672585 |  0.99627042657984 | -88.1250407584098 | LUAD   |
-| GO:0070266   | necroptotic process                                                                                          |  7.4994175370503e-05 |  0.00824185987321828 |       2 |  0.512972021562398 |  0.99627042657984 | -87.7504132925372 | CESC   |
-| GO:0071850   | mitotic cell cycle arrest                                                                                    | 9.79467985193765e-05 |   0.0208383927072693 |       2 |  0.287936461190347 |  0.99627042657984 | -87.7355024736154 | LUAD   |
-| GO:0060441   | epithelial tube branching involved in lung morphogenesis                                                     | 0.000234813750870028 |   0.0139492060651979 |       2 |  0.859129149981843 | 0.988225864567215 | -77.2022045058228 | UCEC   |
-| GO:0072332   | intrinsic apoptotic signaling pathway by p53 class mediator                                                  | 0.000410850672079996 |   0.0341725051616918 |       2 |  0.942906192501683 |  0.99627042657984 | -76.7423710278614 | LUAD   |
-| GO:0043524   | negative regulation of neuron apoptotic process                                                              | 0.000471088317541854 |   0.0195788048261312 |       2 |  0.743888768255682 | 0.988225864567215 | -76.0446554500001 | LUAD   |
-| GO:0001889   | liver development                                                                                            | 3.83096585767964e-05 |  0.00419445786058495 |       2 |  0.741778305271337 |  0.99627042657984 | -74.2584463256361 | LUAD   |
-| GO:0032355   | response to estradiol                                                                                        | 2.15985717758846e-05 |  0.00226065051254259 |       2 |  0.936892558439498 |  0.99627042657984 | -71.2682165209554 | UCEC   |
-| GO:0014067   | negative regulation of phosphatidylinositol 3-kinase signaling                                               | 1.90311942410013e-05 |  0.00430310466109064 |       2 |  0.914326469178089 |  0.99627042657984 | -68.2645445533104 | BRCA   |
-| GO:0030521   | androgen receptor signaling pathway                                                                          | 0.000127438211396784 |  0.00814014969210411 |       2 |  0.920839603859495 |  0.99627042657984 | -66.9734376087894 | LUAD   |
-| GO:0006661   | phosphatidylinositol biosynthetic process                                                                    | 1.86120666491073e-05 |  0.00227274013859655 |       2 |  0.918321941026752 |  0.99627042657984 | -66.3518458218369 | GBM    |
-| GO:0006366   | transcription by RNA polymerase II                                                                           | 5.56941774055954e-08 | 1.22415801937499e-05 |       2 |  0.992805839278593 | 0.996734779165037 | -65.5242053960636 | BLCA   |
-| GO:0060326   | cell chemotaxis                                                                                              | 0.000352296225722674 |   0.0327820713184368 |       2 |  0.860672635447168 | 0.988225864567215 | -64.9253579371776 | GBM    |
-| GO:0036092   | phosphatidylinositol-3-phosphate biosynthetic process                                                        | 2.74250615723998e-05 |  0.00262088197113629 |       2 |  0.768783467738984 |  0.99627042657984 | -63.2865948083811 | UCEC   |
-| GO:0051291   | protein heterooligomerization                                                                                | 5.23370151154917e-05 |   0.0114250852901218 |       2 |  0.962478708096179 |  0.99627042657984 | -62.4909148317952 | PRAD   |
-| GO:0008542   | visual learning                                                                                              |  8.0573224014487e-05 |  0.00671905032558965 |       2 |  0.848449918822285 | 0.988225864567215 | -61.8059876956184 | LUAD   |
-| GO:0048701   | embryonic cranial skeleton morphogenesis                                                                     | 3.54580859467058e-05 |   0.0111338389872656 |       2 |  0.955902145252641 |  0.99627042657984 | -60.5925195449669 | PAAD   |
-| GO:0045736   | negative regulation of cyclin-dependent protein serine/threonine kinase activity                             | 0.000152408895988452 |   0.0108233016287531 |       2 |  0.946547106136302 |  0.99627042657984 | -60.0094624437507 | BLCA   |
-| GO:0060070   | canonical Wnt signaling pathway                                                                              | 8.22115121950032e-05 |  0.00671905032558965 |       2 |  0.971936578779714 |  0.99627042657984 | -59.7294702402071 | LUAD   |
-| GO:0048538   | thymus development                                                                                           | 0.000184770678618278 |   0.0101531487900744 |       2 |  0.940665719177487 |  0.99627042657984 | -59.0443585763795 | LUAD   |
-| GO:0031069   | hair follicle morphogenesis                                                                                  |  0.00036505973697236 |   0.0174225077210767 |       2 |  0.918227074782566 |  0.99627042657984 | -58.1451811852646 | UCEC   |
-| GO:0042060   | wound healing                                                                                                | 4.60353584072381e-05 |  0.00459935080814133 |       2 |  0.798354918563521 |  0.99627042657984 | -55.7753638280745 | GBM    |
-| GO:0043923   | positive regulation by host of viral transcription                                                           |  1.4986350277462e-05 |  0.00121999992258746 |       2 |  0.948795541003099 |  0.99627042657984 | -54.7588294915741 | BLCA   |
-| GO:0045879   | negative regulation of smoothened signaling pathway                                                          | 4.58654370173472e-05 |   0.0252030576410323 |       2 |  0.868609545594359 |  0.99627042657984 | -53.8633105214547 | KIRC   |
-| GO:0006355   | regulation of transcription, DNA-templated                                                                   | 4.91335741199803e-06 | 0.000568397873240615 |       2 |  0.994505405302255 |  0.99784897284822 | -51.5885277028991 | BLCA   |
-| GO:0051571   | positive regulation of histone H3-K4 methylation                                                             | 0.000269351373671267 |   0.0328907955183025 |       2 |  0.884839116041086 |  0.99627042657984 | -51.2189256274171 | ESCA   |
-| GO:0043161   | proteasome-mediated ubiquitin-dependent protein catabolic process                                            | 0.000304408824650719 |   0.0174465793704286 |       2 |  0.873918536755553 |  0.99627042657984 | -50.5655819421389 | HNSC   |
-| GO:0019221   | cytokine-mediated signaling pathway                                                                          | 9.08365871312566e-05 |    0.011092156584139 |       2 |  0.906534527655658 | 0.988225864567215 | -49.5073582633673 | TGCT   |
-| GO:0034605   | cellular response to heat                                                                                    | 8.03523298575027e-06 |  0.00080279282284905 |       2 |   0.94253014651961 |  0.99627042657984 | -48.4385224270966 | BLCA   |
-| GO:1900034   | regulation of cellular response to heat                                                                      | 0.000110047133376077 |    0.007210044009368 |       2 |  0.845207120258501 |  0.99627042657984 | -48.3104929464304 | BLCA   |
-| GO:0060324   | face development                                                                                             | 9.99262033137665e-05 |  0.00708509015753738 |       2 |  0.882522487405419 |  0.99627042657984 | -46.5781557802879 | LUAD   |
-| GO:0050772   | positive regulation of axonogenesis                                                                          |  0.00013388197215597 |   0.0231281743638472 |       2 |  0.900501505917345 |  0.99627042657984 | -43.8717618448053 | LUAD   |
-| GO:0046854   | phosphatidylinositol phosphorylation                                                                         | 0.000184141334536565 |   0.0134914217770456 |       2 |  0.844031342257798 |  0.99627042657984 | -43.5336612320758 | GBM    |
-| GO:0000278   | mitotic cell cycle                                                                                           | 0.000323574960771803 |   0.0165402039463942 |       2 |  0.949246719994252 |  0.99627042657984 | -42.6001533301468 | UCEC   |
-| GO:0051726   | regulation of cell cycle                                                                                     |  0.00055248621846534 |   0.0242484708149431 |       2 |  0.763959276234818 |  0.99627042657984 | -42.5642914024682 | UCEC   |
-| GO:0001916   | positive regulation of T cell mediated cytotoxicity                                                          | 1.08030380415153e-05 |  0.00296813470190632 |       2 |  0.989822429506704 |  0.99627042657984 | -42.5399492994937 | CESC   |
-| GO:0048599   | oocyte development                                                                                           | 0.000640368085723624 |   0.0231281743638472 |       2 |  0.924366826310053 |  0.99627042657984 | -42.1141530642498 | LUAD   |
-| GO:0048146   | positive regulation of fibroblast proliferation                                                              | 0.000200786344900042 |   0.0142363995512997 |       2 |  0.900180987936809 | 0.988225864567215 |  -41.983923406657 | GBM    |
-| GO:0071285   | cellular response to lithium ion                                                                             |  1.1193337791437e-05 |  0.00388854583835406 |       2 |  0.872417344551368 |  0.99627042657984 | -41.8839490447459 | LIHC   |
-| GO:0045814   | negative regulation of gene expression, epigenetic                                                           | 5.27837698013947e-05 |  0.00324786207417051 |       2 |  0.946746439706315 |  0.99627042657984 | -36.2133368834903 | BLCA   |
-| GO:0031047   | gene silencing by RNA                                                                                        | 0.000377905225390182 |   0.0120381983392409 |       2 |  0.841949973551355 |  0.99627042657984 | -35.6412003122745 | HNSC   |
-| GO:0030878   | thyroid gland development                                                                                    | 0.000297788669491703 |   0.0251414838227344 |       2 |  0.981250308309772 |  0.99627042657984 | -35.4830333536925 | LUAD   |
-| GO:0060333   | interferon-gamma-mediated signaling pathway                                                                  |  0.00063030062673169 |   0.0307866839456945 |       2 |  0.991661822393639 |  0.99627042657984 | -33.7450041279432 | CESC   |
-| GO:0016045   | detection of bacterium                                                                                       | 0.000415243382770959 |   0.0125028076072681 |       2 |  0.975708247062194 |  0.99627042657984 | -33.2809930851274 | HNSC   |
-| GO:0045747   | positive regulation of Notch signaling pathway                                                               | 4.50811905516981e-05 |  0.00750559176128357 |       2 |  0.841778416197661 | 0.988225864567215 | -32.0263494771663 | TGCT   |
-| GO:0002227   | innate immune response in mucosa                                                                             | 5.24498968724333e-05 |  0.00324786207417051 |       2 |  0.983524569236279 | 0.996698756767527 |  -26.086316322698 | BLCA   |
-| GO:0021762   | substantia nigra development                                                                                 | 0.000990766958867135 |   0.0320250849351465 |       2 |  0.980457952087659 |  0.99627042657984 | -23.6904809527761 | BLCA   |
-
+| feature_name | Term                                                                                                            |                min_p |                min_q | num_sig |              max_p |             max_q |         log_sum_p | best_c |
+|--------------+-----------------------------------------------------------------------------------------------------------------+----------------------+----------------------+---------+--------------------+-------------------+-------------------+--------|
+| GO:0038095   | Fc-epsilon receptor signaling pathway                                                                           | 7.85295660223611e-12 | 5.43897524497241e-09 |      14 |  0.499300922950714 | 0.988225864567215 | -208.739839400886 | GBM    |
+| GO:0008543   | fibroblast growth factor receptor signaling pathway                                                             | 5.01302411325903e-11 | 2.20372540018867e-08 |      14 |  0.574945626851908 | 0.988225864567215 | -190.419291400315 | GBM    |
+| GO:0007173   | epidermal growth factor receptor signaling pathway                                                              | 9.89804412187881e-12 | 5.43897524497241e-09 |      14 |  0.765849935332815 | 0.988225864567215 | -173.090138887986 | GBM    |
+| GO:0007265   | Ras protein signal transduction                                                                                 | 2.63286163288958e-09 | 5.78702986909129e-06 |      13 | 0.0514174948614654 | 0.938794258448066 | -200.056381208138 | LUAD   |
+| GO:0045087   | innate immune response                                                                                          |  5.8102000918589e-09 | 1.59635247523823e-06 |      13 |  0.414321005872059 | 0.988225864567215 | -183.869131160871 | GBM    |
+| GO:0008285   | negative regulation of cell population proliferation                                                            | 5.41509459159636e-07 | 0.000166947282375396 |      13 |   0.68247049558922 |  0.99627042657984 | -168.957962132331 | BLCA   |
+| GO:0048011   | neurotrophin TRK receptor signaling pathway                                                                     | 1.52414539677003e-09 | 4.78581654585789e-07 |      13 |  0.646955173987514 | 0.988225864567215 | -163.111984400276 | GBM    |
+| GO:0048010   | vascular endothelial growth factor receptor signaling pathway                                                   | 3.61762322927197e-08 | 7.22866896176344e-06 |      13 |  0.773801431925303 | 0.988225864567215 | -161.139371223286 | GBM    |
+| GO:0045944   | positive regulation of transcription by RNA polymerase II                                                       | 1.96558991996152e-14 | 4.32036664407542e-11 |      11 |  0.966701551846833 |  0.99627042657984 | -166.795953207516 | BLCA   |
+| GO:0007596   | blood coagulation                                                                                               | 1.13851123000521e-05 |  0.00158219819063624 |      11 | 0.0749965030865044 | 0.988225864567215 | -129.052506451949 | GBM    |
+| GO:0051402   | neuron apoptotic process                                                                                        | 4.00950301177833e-06 | 0.000629491972849197 |      11 |  0.676648153566652 |  0.99627042657984 | -120.633322701971 | UCEC   |
+| GO:0048015   | phosphatidylinositol-mediated signaling                                                                         | 3.51735280373928e-10 | 1.28852357710316e-07 |      10 |  0.913565998246888 | 0.988225864567215 | -142.478400742642 | GBM    |
+| GO:0008286   | insulin receptor signaling pathway                                                                              | 1.59663696312682e-07 | 2.69954464996365e-05 |      10 |  0.438783825166641 | 0.988225864567215 | -139.566743893005 | GBM    |
+| GO:0090399   | replicative senescence                                                                                          |  5.2572540315745e-06 | 0.000577772218070037 |      10 |  0.972172130278902 |  0.99627042657984 | -134.115968006652 | BLCA   |
+| GO:0032228   | regulation of synaptic transmission, GABAergic                                                                  |  1.1517366264868e-05 |  0.00158219819063624 |      10 |  0.360641108662231 | 0.988225864567215 | -121.730243058497 | GBM    |
+| GO:0045893   | positive regulation of transcription, DNA-templated                                                             | 2.70419901173753e-08 | 7.25955909701243e-06 |       9 |  0.228688865099875 |  0.99627042657984 | -154.237106672014 | BLCA   |
+| GO:0000122   | negative regulation of transcription by RNA polymerase II                                                       | 2.23836773348405e-11 | 2.45996613909897e-08 |       9 |  0.562893076017209 |  0.99627042657984 | -143.668384930333 | BLCA   |
+| GO:0007050   | cell cycle arrest                                                                                               | 1.28683704593578e-06 | 0.000165280204016407 |       9 |  0.821454451037646 |  0.99627042657984 |  -136.18859720116 | HNSC   |
+| GO:0043542   | endothelial cell migration                                                                                      | 0.000130025674636964 |  0.00831629111522921 |       9 |  0.969989929290994 |  0.99627042657984 | -117.047436387486 | HNSC   |
+| GO:0000165   | MAPK cascade                                                                                                    | 1.19322142584404e-07 | 8.74233564668398e-05 |       9 |  0.829281664607655 | 0.988225864567215 | -105.373578116456 | TGCT   |
+| GO:0001944   | vasculature development                                                                                         | 1.38287526558613e-06 |  0.00117883390061916 |       9 |  0.958306499681197 |  0.99627042657984 | -104.865839492519 | CESC   |
+| GO:0050911   | detection of chemical stimulus involved in sensory perception of smell                                          | 1.45276376704889e-35 | 3.19317475997346e-32 |       8 |  0.912066034626498 |  0.99627042657984 | -263.532597953033 | GBM    |
+| GO:0071456   | cellular response to hypoxia                                                                                    | 9.88455471606747e-09 | 2.17262512659163e-05 |       8 |  0.813764946775849 |  0.99627042657984 | -117.941336149727 | KIRC   |
+| GO:2000379   | positive regulation of reactive oxygen species metabolic process                                                |  1.0598193558594e-05 | 0.000751446111025468 |       8 |  0.987176157180576 | 0.996698756767527 | -112.453493169846 | HNSC   |
+| GO:0000186   | activation of MAPKK activity                                                                                    | 2.36751619984909e-07 | 0.000130095015181707 |       8 |  0.894046023136186 | 0.988225864567215 | -110.027000983411 | TGCT   |
+| GO:0097193   | intrinsic apoptotic signaling pathway                                                                           | 7.11450520480226e-06 | 0.000521256081338512 |       8 |  0.907684938787919 |  0.99627042657984 | -109.869970992605 | HNSC   |
+| GO:0045892   | negative regulation of transcription, DNA-templated                                                             | 1.95773642451803e-05 |  0.00286814841813145 |       8 |  0.733668589879786 |  0.99627042657984 | -106.794416692828 | BLCA   |
+| GO:0006915   | apoptotic process                                                                                               |   2.823790355918e-06 |  0.00117883390061916 |       8 |  0.935325007937401 |  0.99627042657984 | -103.226225516805 | CESC   |
+| GO:1900740   | positive regulation of protein insertion into mitochondrial membrane involved in apoptotic signaling pathway    | 7.01807331042377e-08 | 3.85643128407786e-05 |       7 |  0.920314805181341 |  0.99627042657984 | -112.690911515412 | UCEC   |
+| GO:0034644   | cellular response to UV                                                                                         | 1.87340152272572e-07 | 3.16748965150086e-05 |       7 |  0.283743706587265 |  0.99627042657984 | -111.485592791653 | HNSC   |
+| GO:0030308   | negative regulation of cell growth                                                                              | 6.08323775105391e-06 |  0.00121554150698332 |       7 |  0.861520139719266 |  0.99627042657984 | -111.110142469438 | LUAD   |
+| GO:2000134   | negative regulation of G1/S transition of mitotic cell cycle                                                    |  5.9098550234435e-07 |  0.00129898613415288 |       7 |  0.893393617510897 |  0.99627042657984 | -110.308332486973 | LIHC   |
+| GO:0043491   | protein kinase B signaling                                                                                      | 1.41595686606517e-05 |  0.00324872993820623 |       7 |  0.150579904837517 |  0.99627042657984 | -108.760624710598 | GBM    |
+| GO:0007186   | G protein-coupled receptor signaling pathway                                                                    | 1.60894515420268e-18 | 1.76823072446875e-15 |       6 |  0.732851439247741 |  0.99627042657984 | -131.482110054561 | GBM    |
+| GO:0007219   | Notch signaling pathway                                                                                         | 2.46519722199928e-08 | 9.90638237966515e-06 |       6 |  0.621219036266338 |  0.99627042657984 | -104.516062246321 | HNSC   |
+| GO:0071158   | positive regulation of cell cycle arrest                                                                        | 7.98278142175138e-06 |  0.00292435892750159 |       6 |  0.302077091711482 |  0.99627042657984 | -99.6107981113347 | LUSC   |
+| GO:0007369   | gastrulation                                                                                                    | 2.54036551907039e-05 |  0.00143172395151711 |       6 |  0.558234590471741 |  0.99627042657984 | -92.4279602912807 | HNSC   |
+| GO:0007507   | heart development                                                                                               | 3.21792693526612e-06 |  0.00117883390061916 |       6 |  0.900469340042079 |  0.99627042657984 | -91.2704350846082 | CESC   |
+| GO:0006325   | chromatin organization                                                                                          | 1.03225840825588e-10 | 4.56947598813384e-08 |       6 |   0.89449294038709 |  0.99627042657984 | -87.0450383178608 | BLCA   |
+| GO:0007179   | transforming growth factor beta receptor signaling pathway                                                      | 2.92915001486204e-06 | 0.000379774593671036 |       6 |  0.741315658534616 |  0.99627042657984 | -83.2686186226162 | HNSC   |
+| GO:0001701   | in utero embryonic development                                                                                  | 1.06120234851832e-05 |  0.00333217537434754 |       6 |  0.996727010008083 | 0.997788888033935 | -79.5254495288684 | BRCA   |
+| GO:0060441   | epithelial tube branching involved in lung morphogenesis                                                        | 0.000234813750870028 |   0.0139492060651979 |       6 |  0.859129149981843 | 0.988225864567215 | -77.2022045058228 | UCEC   |
+| GO:0006367   | transcription initiation from RNA polymerase II promoter                                                        | 1.88197511775649e-05 |  0.00124977662134238 |       6 |  0.589308478710188 |  0.99627042657984 | -76.8063534946695 | HNSC   |
+| GO:0006338   | chromatin remodeling                                                                                            | 0.000160204546699999 |   0.0121602737922432 |       6 |   0.76526282192506 |  0.99627042657984 | -76.6912323112833 | HNSC   |
+| GO:0002223   | stimulatory C-type lectin receptor signaling pathway                                                            | 9.29617790766672e-06 | 0.000851374960043811 |       6 |  0.800618843388927 | 0.988225864567215 | -72.7852654272196 | BLCA   |
+| GO:0042771   | intrinsic apoptotic signaling pathway in response to DNA damage by p53 class mediator                           | 1.22583052809018e-05 |  0.00103629826951624 |       5 |  0.140355041077896 | 0.945422067734197 |  -100.84056451833 | BLCA   |
+| GO:0008283   | cell population proliferation                                                                                   | 1.69160905084886e-06 | 0.000206564260764766 |       5 |  0.629861872894961 |  0.99627042657984 | -96.9778194046284 | BLCA   |
+| GO:0033077   | T cell differentiation in thymus                                                                                | 1.82956161890641e-05 |  0.00251336027397268 |       5 |  0.933012019300112 |  0.99627042657984 | -95.8745621447365 | LUAD   |
+| GO:0032200   | telomere organization                                                                                           | 1.03946223569924e-10 | 4.56947598813384e-08 |       5 |  0.973510130892528 |  0.99627042657984 | -95.3401647824035 | BLCA   |
+| GO:0007411   | axon guidance                                                                                                   | 2.01820165025027e-06 | 0.000192869879445656 |       5 |  0.825778740147466 | 0.988225864567215 | -92.0422023114333 | HNSC   |
+| GO:0042149   | cellular response to glucose starvation                                                                         |  0.00108418507353759 |   0.0341725051616918 |       5 |  0.953192482672585 |  0.99627042657984 | -88.1250407584098 | LUAD   |
+| GO:0070266   | necroptotic process                                                                                             |  7.4994175370503e-05 |  0.00824185987321828 |       5 |  0.512972021562398 |  0.99627042657984 | -87.7504132925372 | CESC   |
+| GO:0032776   | DNA methylation on cytosine                                                                                     | 1.31217913929633e-10 | 2.88416974817333e-07 |       5 |  0.914554115305688 |  0.99627042657984 | -86.6210735319729 | HNSC   |
+| GO:0006974   | cellular response to DNA damage stimulus                                                                        | 2.20493904223951e-06 |  0.00117883390061916 |       5 |  0.884595099523981 |  0.99627042657984 | -82.1582092576404 | CESC   |
+| GO:0007264   | small GTPase mediated signal transduction                                                                       | 1.12746707961032e-05 | 0.000821474678496047 |       5 |   0.98979437935404 | 0.996145687438488 | -78.8546477092893 | HNSC   |
+| GO:0006351   | transcription, DNA-templated                                                                                    | 1.83108235805653e-10 | 6.70786503834707e-08 |       5 |  0.771997691897312 |  0.99627042657984 | -78.2587978203866 | BLCA   |
+| GO:0006337   | nucleosome disassembly                                                                                          | 1.40712368211281e-05 |  0.00220918418091711 |       5 |  0.973910674782404 |  0.99627042657984 | -77.4284838038877 | LUAD   |
+| GO:0050821   | protein stabilization                                                                                           | 4.11423248045137e-05 |   0.0050239349955734 |       5 |  0.997306554508401 | 0.997760494678865 | -76.4488465541923 | CESC   |
+| GO:0045815   | positive regulation of gene expression, epigenetic                                                              | 3.26351618888898e-09 | 1.02474408331114e-06 |       5 |  0.857874133030133 |  0.99627042657984 | -75.9335853464538 | BLCA   |
+| GO:0012501   | programmed cell death                                                                                           | 2.89037242383497e-05 |  0.00264709941149552 |       5 |  0.814867166237111 |  0.99627042657984 | -74.8011380312791 | UCEC   |
+| GO:0001525   | angiogenesis                                                                                                    | 0.000321921158824681 |   0.0164554117929453 |       5 |  0.982891480026866 |  0.99627042657984 | -74.2280315419033 | LUAD   |
+| GO:0001953   | negative regulation of cell-matrix adhesion                                                                     | 9.22636947157956e-05 |  0.00448773335333188 |       5 |  0.883014029085412 |  0.99627042657984 | -73.1921435627084 | HNSC   |
+| GO:0010467   | gene expression                                                                                                 |  1.1366578120762e-07 | 1.92182605457192e-05 |       5 |  0.843699372740783 |  0.99627042657984 | -72.3605703823305 | BLCA   |
+| GO:0006335   | DNA replication-dependent nucleosome assembly                                                                   | 4.13399702947392e-07 |  5.6790784192398e-05 |       5 |  0.926667957780252 |  0.99627042657984 |  -67.604484699203 | BLCA   |
+| GO:0045651   | positive regulation of macrophage differentiation                                                               | 0.000562635128099226 |   0.0242484708149431 |       5 |  0.942022166612719 |  0.99627042657984 | -66.2051611400263 | UCEC   |
+| GO:0000082   | G1/S transition of mitotic cell cycle                                                                           |  0.00037254679840337 |   0.0174225077210767 |       5 |  0.816158910201843 |  0.99627042657984 | -63.3538064679299 | UCEC   |
+| GO:0010718   | positive regulation of epithelial to mesenchymal transition                                                     | 1.77930469769616e-05 |   0.0011580427819661 |       5 |  0.903156483057541 |  0.99627042657984 | -62.2520089096249 | HNSC   |
+| GO:0031069   | hair follicle morphogenesis                                                                                     |  0.00036505973697236 |   0.0174225077210767 |       5 |  0.918227074782566 |  0.99627042657984 | -58.1451811852646 | UCEC   |
+| GO:0050900   | leukocyte migration                                                                                             | 7.40701533958839e-08 | 1.35671830970127e-05 |       4 |  0.894559409165187 | 0.988225864567215 | -104.868641474909 | GBM    |
+| GO:0010628   | positive regulation of gene expression                                                                          | 5.99360321964361e-06 | 0.000823371242298541 |       4 |  0.204128717070126 | 0.968453520363939 |   -100.1706758839 | UCEC   |
+| GO:0035690   | cellular response to drug                                                                                       | 6.10501933349164e-05 |  0.00583427499783244 |       4 |  0.836164339151178 |  0.99627042657984 |  -95.027690234374 | LUAD   |
+| GO:0043525   | positive regulation of neuron apoptotic process                                                                 | 1.69378642816511e-06 | 0.000620490428184486 |       4 |  0.844716154443724 |  0.99627042657984 | -94.4943716632797 | LUAD   |
+| GO:0032461   | positive regulation of protein oligomerization                                                                  | 9.06666207615925e-05 |     0.01811683931218 |       4 |  0.520678379035703 |  0.99627042657984 | -93.8302126290576 | ESCA   |
+| GO:0070374   | positive regulation of ERK1 and ERK2 cascade                                                                    | 1.16337960684945e-08 | 2.84123152872788e-06 |       4 |  0.780320753096553 |  0.99627042657984 | -93.2190221259843 | GBM    |
+| GO:0051091   | positive regulation of DNA-binding transcription factor activity                                                | 1.13032288532045e-05 |  0.00138658980098661 |       4 |  0.600803261922558 | 0.988225864567215 | -91.3748974028401 | UCEC   |
+| GO:0016032   | viral process                                                                                                   | 1.27961207015387e-08 | 7.03146832549553e-06 |       4 |   0.98736915809747 |  0.99627042657984 | -91.0457457278935 | HNSC   |
+| GO:0071850   | mitotic cell cycle arrest                                                                                       | 9.79467985193765e-05 |   0.0208383927072693 |       4 |  0.287936461190347 |  0.99627042657984 | -87.7355024736154 | LUAD   |
+| GO:0014065   | phosphatidylinositol 3-kinase signaling                                                                         | 2.15686339120455e-05 |  0.00249515038624611 |       4 |  0.799665695222743 |  0.99627042657984 | -86.5134418111873 | GBM    |
+| GO:0048147   | negative regulation of fibroblast proliferation                                                                 |  0.00041420798067585 |   0.0195788048261312 |       4 |  0.909245774153689 |  0.99627042657984 |  -84.481062280435 | LUAD   |
+| GO:0043065   | positive regulation of apoptotic process                                                                        | 4.21298246554683e-05 |  0.00298714047073288 |       4 |  0.365613771460141 |  0.99627042657984 | -84.0359431861102 | BLCA   |
+| GO:0008284   | positive regulation of cell population proliferation                                                            | 5.57890094490417e-07 |  7.4486991154371e-05 |       4 |   0.80721878026707 | 0.988225864567215 | -80.9855759461647 | HNSC   |
+| GO:0010332   | response to gamma radiation                                                                                     | 0.000126802868712754 |  0.00525873029114404 |       4 |  0.184114481735598 | 0.945422067734197 | -80.4550276079204 | HNSC   |
+| GO:2000060   | positive regulation of ubiquitin-dependent protein catabolic process                                            | 0.000551459027964309 |   0.0318077962311719 |       4 |  0.900218808604602 |  0.99627042657984 | -75.2575516418447 | HNSC   |
+| GO:0006334   | nucleosome assembly                                                                                             | 8.66025035978736e-11 | 4.56947598813384e-08 |       4 |  0.965386073562497 |  0.99627042657984 | -72.4029345997751 | BLCA   |
+| GO:0050907   | detection of chemical stimulus involved in sensory perception                                                   | 1.91809725159651e-08 | 4.21597775900913e-06 |       4 |  0.855854205503489 |  0.99627042657984 | -68.2817994106848 | GBM    |
+| GO:0000183   | chromatin silencing at rDNA                                                                                     | 6.69249626020477e-08 | 1.65309793658263e-05 |       4 |  0.906905277113504 |  0.99627042657984 |  -67.675573019085 | HNSC   |
+| GO:0006366   | transcription by RNA polymerase II                                                                              | 5.56941774055954e-08 | 1.22415801937499e-05 |       4 |  0.992805839278593 | 0.996734779165037 | -65.5242053960636 | BLCA   |
+| GO:0040029   | regulation of gene expression, epigenetic                                                                       | 8.66732457967972e-08 | 1.73188903873964e-05 |       4 |  0.964641387314497 |  0.99627042657984 | -64.5502066214069 | BLCA   |
+| GO:0051291   | protein heterooligomerization                                                                                   | 5.23370151154917e-05 |   0.0114250852901218 |       4 |  0.962478708096179 |  0.99627042657984 | -62.4909148317952 | PRAD   |
+| GO:0060968   | regulation of gene silencing                                                                                    | 5.76105027126618e-07 |  7.4486991154371e-05 |       4 |  0.921492169908164 |  0.99627042657984 | -60.1461028099777 | HNSC   |
+| GO:0007608   | sensory perception of smell                                                                                     | 1.86417667956844e-06 |  0.00102436508542286 |       4 |  0.998349177231505 |  0.99850989508643 | -59.8089685327049 | LUSC   |
+| GO:0060070   | canonical Wnt signaling pathway                                                                                 | 8.22115121950032e-05 |  0.00671905032558965 |       4 |  0.971936578779714 |  0.99627042657984 | -59.7294702402071 | LUAD   |
+| GO:0048538   | thymus development                                                                                              | 0.000184770678618278 |   0.0101531487900744 |       4 |  0.940665719177487 |  0.99627042657984 | -59.0443585763795 | LUAD   |
+| GO:0090398   | cellular senescence                                                                                             | 0.000854977283408279 |   0.0543535224838484 |       4 |  0.978429585897829 |  0.99627042657984 | -57.3986218620928 | BLCA   |
+| GO:0035116   | embryonic hindlimb morphogenesis                                                                                |  0.00122414762543394 |   0.0682807270895746 |       4 |  0.937194501226901 | 0.988225864567215 | -53.5550224630375 | LIHC   |
+| GO:0019731   | antibacterial humoral response                                                                                  | 1.18427568680125e-06 | 0.000137001997873113 |       4 |  0.875636097497661 |  0.99627042657984 | -48.8493345601349 | HNSC   |
+| GO:0060324   | face development                                                                                                | 9.99262033137665e-05 |  0.00708509015753738 |       4 |  0.882522487405419 |  0.99627042657984 | -46.5781557802879 | LUAD   |
+| GO:0031424   | keratinization                                                                                                  | 1.14570305157094e-05 |  0.00209854608946078 |       4 |  0.871204717731808 |  0.99627042657984 |  -41.747491888128 | LUAD   |
+| GO:0031571   | mitotic G1 DNA damage checkpoint                                                                                | 0.000104492351560046 |  0.00462134799417571 |       3 |  0.104413782922392 | 0.938794258448066 | -85.6158426033818 | HNSC   |
+| GO:0001756   | somitogenesis                                                                                                   | 0.000153969629388898 |   0.0165402039463942 |       3 |  0.862964338409537 |  0.99627042657984 | -82.1047018209928 | UCEC   |
+| GO:0050852   | T cell receptor signaling pathway                                                                               |  0.00012609644233226 |  0.00989857072308241 |       3 |  0.863875265677499 |  0.99627042657984 | -81.4636181340875 | GBM    |
+| GO:0006978   | DNA damage response, signal transduction by p53 class mediator resulting in transcription of p21 class mediator | 0.000611185901511829 |   0.0174465793704286 |       3 |  0.149679826846643 | 0.938794258448066 |  -81.160532770908 | HNSC   |
+| GO:0046677   | response to antibiotic                                                                                          | 0.000840295103433365 |    0.029694157077118 |       3 |  0.303296256425344 |  0.99627042657984 | -79.2779017657163 | BLCA   |
+| GO:0010165   | response to X-ray                                                                                               | 0.000773181074060939 |   0.0433927718633221 |       3 |  0.241908544960462 | 0.945422067734197 | -77.3199327882723 | HNSC   |
+| GO:0072332   | intrinsic apoptotic signaling pathway by p53 class mediator                                                     | 0.000410850672079996 |   0.0341725051616918 |       3 |  0.942906192501683 |  0.99627042657984 | -76.7423710278614 | LUAD   |
+| GO:0050680   | negative regulation of epithelial cell proliferation                                                            |  0.00177470993135921 |   0.0540586596281609 |       3 |  0.799337820174777 |  0.99627042657984 | -72.7082635033915 | UCEC   |
+| GO:0032355   | response to estradiol                                                                                           | 2.15985717758846e-05 |  0.00226065051254259 |       3 |  0.936892558439498 |  0.99627042657984 | -71.2682165209554 | UCEC   |
+| GO:0014067   | negative regulation of phosphatidylinositol 3-kinase signaling                                                  | 1.90311942410013e-05 |  0.00430310466109064 |       3 |  0.914326469178089 |  0.99627042657984 | -68.2645445533104 | BRCA   |
+| GO:0097284   | hepatocyte apoptotic process                                                                                    | 0.000189404216955737 |  0.00730369243629316 |       3 |  0.932426352632471 |  0.99627042657984 | -67.7352702325515 | HNSC   |
+| GO:0030521   | androgen receptor signaling pathway                                                                             | 0.000127438211396784 |  0.00814014969210411 |       3 |  0.920839603859495 |  0.99627042657984 | -66.9734376087894 | LUAD   |
+| GO:0060326   | cell chemotaxis                                                                                                 | 0.000352296225722674 |   0.0327820713184368 |       3 |  0.860672635447168 | 0.988225864567215 | -64.9253579371776 | GBM    |
+| GO:0006954   | inflammatory response                                                                                           | 0.000687688197115876 |   0.0559829132318776 |       3 |  0.698429535942866 | 0.988225864567215 | -63.4778569209756 | TGCT   |
+| GO:0008542   | visual learning                                                                                                 |  8.0573224014487e-05 |  0.00671905032558965 |       3 |  0.848449918822285 | 0.988225864567215 | -61.8059876956184 | LUAD   |
+| GO:0045736   | negative regulation of cyclin-dependent protein serine/threonine kinase activity                                | 0.000152408895988452 |   0.0108233016287531 |       3 |  0.946547106136302 |  0.99627042657984 | -60.0094624437507 | BLCA   |
+| GO:0048565   | digestive tract development                                                                                     | 5.12519297562008e-06 |  0.00563258708020647 |       3 |  0.818304825981497 | 0.988225864567215 |  -59.599674453614 | SARC   |
+| GO:0051290   | protein heterotetramerization                                                                                   | 3.68641889637894e-07 |  5.6790784192398e-05 |       3 |  0.898983916396502 |  0.99627042657984 | -58.0376302449522 | BLCA   |
+| GO:0006469   | negative regulation of protein kinase activity                                                                  |  0.00035271042036659 |   0.0171174638565745 |       3 |  0.904623784654729 |  0.99627042657984 | -57.5349083650248 | LUAD   |
+| GO:0042060   | wound healing                                                                                                   | 4.60353584072381e-05 |  0.00459935080814133 |       3 |  0.798354918563521 |  0.99627042657984 | -55.7753638280745 | GBM    |
+| GO:0043923   | positive regulation by host of viral transcription                                                              |  1.4986350277462e-05 |  0.00121999992258746 |       3 |  0.948795541003099 |  0.99627042657984 | -54.7588294915741 | BLCA   |
+| GO:0030216   | keratinocyte differentiation                                                                                    | 9.82289644939703e-05 |  0.00708509015753738 |       3 |  0.866501525989315 |  0.99627042657984 | -52.9581475920227 | LUAD   |
+| GO:0019221   | cytokine-mediated signaling pathway                                                                             | 9.08365871312566e-05 |    0.011092156584139 |       3 |  0.906534527655658 | 0.988225864567215 | -49.5073582633673 | TGCT   |
+| GO:1900034   | regulation of cellular response to heat                                                                         | 0.000110047133376077 |    0.007210044009368 |       3 |  0.845207120258501 |  0.99627042657984 | -48.3104929464304 | BLCA   |
+| GO:0043627   | response to estrogen                                                                                            | 0.000630474340828118 |   0.0177664436043616 |       3 |  0.871436648911119 |  0.99627042657984 | -44.2073760763225 | HNSC   |
+| GO:0050772   | positive regulation of axonogenesis                                                                             |  0.00013388197215597 |   0.0231281743638472 |       3 |  0.900501505917345 |  0.99627042657984 | -43.8717618448053 | LUAD   |
+| GO:0048599   | oocyte development                                                                                              | 0.000640368085723624 |   0.0231281743638472 |       3 |  0.924366826310053 |  0.99627042657984 | -42.1141530642498 | LUAD   |
+| GO:0050910   | detection of mechanical stimulus involved in sensory perception of sound                                        | 0.000132558775749838 |   0.0194242792732096 |       3 |  0.943863406980258 | 0.988225864567215 | -35.5351058080337 | PRAD   |
+| GO:0002756   | MyD88-independent toll-like receptor signaling pathway                                                          |  0.00119508134344537 |   0.0359834081218209 |       3 |   0.98558917049817 |  0.99627042657984 | -33.8797174288988 | BLCA   |
+| GO:2001244   | positive regulation of intrinsic apoptotic signaling pathway                                                    | 0.000369492225841621 |   0.0497390255714885 |       2 |  0.421556280849992 |  0.99627042657984 | -78.8869446473075 | SKCM   |
+| GO:0043524   | negative regulation of neuron apoptotic process                                                                 | 0.000471088317541854 |   0.0195788048261312 |       2 |  0.743888768255682 | 0.988225864567215 | -76.0446554500001 | LUAD   |
+| GO:0035176   | social behavior                                                                                                 |   0.0011051594642347 |   0.0655334335576584 |       2 |  0.962973800598252 | 0.988225864567215 | -75.9836960398667 | HNSC   |
+| GO:0001889   | liver development                                                                                               | 3.83096585767964e-05 |  0.00419445786058495 |       2 |  0.741778305271337 |  0.99627042657984 | -74.2584463256361 | LUAD   |
+| GO:0043066   | negative regulation of apoptotic process                                                                        |  0.00100610951609245 |   0.0458984074500177 |       2 |  0.685651144961871 |  0.99627042657984 | -72.5498404707009 | CESC   |
+| GO:0048169   | regulation of long-term neuronal synaptic plasticity                                                            |  0.00035935648496462 |   0.0171174638565745 |       2 |  0.884451833187442 | 0.988225864567215 | -71.1538640278709 | LUAD   |
+| GO:0006661   | phosphatidylinositol biosynthetic process                                                                       | 1.86120666491073e-05 |  0.00227274013859655 |       2 |  0.918321941026752 |  0.99627042657984 | -66.3518458218369 | GBM    |
+| GO:0048853   | forebrain morphogenesis                                                                                         | 0.000461749477091655 |   0.0341725051616918 |       2 |  0.911720177974295 |  0.99627042657984 | -63.7418555468322 | LUAD   |
+| GO:0036092   | phosphatidylinositol-3-phosphate biosynthetic process                                                           | 2.74250615723998e-05 |  0.00262088197113629 |       2 |  0.768783467738984 |  0.99627042657984 | -63.2865948083811 | UCEC   |
+| GO:0031647   | regulation of protein stability                                                                                 |  0.00030013132570014 |   0.0103076352170142 |       2 |  0.916151600608318 |  0.99627042657984 | -61.3146896622293 | HNSC   |
+| GO:0048701   | embryonic cranial skeleton morphogenesis                                                                        | 3.54580859467058e-05 |   0.0111338389872656 |       2 |  0.955902145252641 |  0.99627042657984 | -60.5925195449669 | PAAD   |
+| GO:0038096   | Fc-gamma receptor signaling pathway involved in phagocytosis                                                    | 0.000221475254858612 |  0.00825089169795305 |       2 |   0.95350337162896 |  0.99627042657984 | -60.2007748410964 | HNSC   |
+| GO:0031295   | T cell costimulation                                                                                            | 8.62389692125569e-05 |  0.00729050978189231 |       2 |  0.858286257152533 |  0.99627042657984 | -60.1989445549697 | GBM    |
+| GO:2001235   | positive regulation of apoptotic signaling pathway                                                              |  0.00124259739926432 |   0.0682807270895746 |       2 |  0.953730943640008 |  0.99627042657984 |  -59.074937678649 | LIHC   |
+| GO:0050771   | negative regulation of axonogenesis                                                                             |   0.0011391524347531 |   0.0281332252987339 |       2 |  0.986448157325604 |  0.99627042657984 | -58.0347189281684 | HNSC   |
+| GO:0010975   | regulation of neuron projection development                                                                     |  0.00109313488562472 |   0.0567506109400451 |       2 |  0.972260491015752 |  0.99627042657984 | -56.6553228742663 | PRAD   |
+| GO:0033138   | positive regulation of peptidyl-serine phosphorylation                                                          | 0.000420278730686441 |   0.0190954278467179 |       2 |  0.871787096689803 |  0.99627042657984 | -56.5695879912035 | LUAD   |
+| GO:0045445   | myoblast differentiation                                                                                        | 0.000123076289757093 |  0.00814014969210411 |       2 |  0.887010793437722 |  0.99627042657984 | -56.5460647852753 | LUAD   |
+| GO:0002250   | adaptive immune response                                                                                        | 3.69610939590657e-05 |   0.0114250852901218 |       2 |  0.893206248609649 |  0.99627042657984 |  -56.338908350814 | PRAD   |
+| GO:0045879   | negative regulation of smoothened signaling pathway                                                             | 4.58654370173472e-05 |   0.0252030576410323 |       2 |  0.868609545594359 |  0.99627042657984 | -53.8633105214547 | KIRC   |
+| GO:0006355   | regulation of transcription, DNA-templated                                                                      | 4.91335741199803e-06 | 0.000568397873240615 |       2 |  0.994505405302255 |  0.99784897284822 | -51.5885277028991 | BLCA   |
+| GO:0043044   | ATP-dependent chromatin remodeling                                                                              |  0.00172517596571852 |    0.046243131373772 |       2 |   0.88993279726082 |  0.99627042657984 | -51.5347617646626 | BLCA   |
+| GO:0051571   | positive regulation of histone H3-K4 methylation                                                                | 0.000269351373671267 |   0.0328907955183025 |       2 |  0.884839116041086 |  0.99627042657984 | -51.2189256274171 | ESCA   |
+| GO:0001570   | vasculogenesis                                                                                                  | 9.59615412222922e-05 |  0.00448773335333188 |       2 |  0.865493580834791 |  0.99627042657984 |  -51.183781431069 | HNSC   |
+| GO:0043161   | proteasome-mediated ubiquitin-dependent protein catabolic process                                               | 0.000304408824650719 |   0.0174465793704286 |       2 |  0.873918536755553 |  0.99627042657984 | -50.5655819421389 | HNSC   |
+| GO:0060048   | cardiac muscle contraction                                                                                      | 0.000269940149307686 |   0.0231281743638472 |       2 |   0.89472569015583 |  0.99627042657984 | -50.5041454586285 | LUAD   |
+| GO:0002053   | positive regulation of mesenchymal cell proliferation                                                           | 0.000317752307998263 |   0.0104918863078102 |       2 |  0.921733305833716 |  0.99627042657984 | -48.8826632786138 | HNSC   |
+| GO:0034605   | cellular response to heat                                                                                       | 8.03523298575027e-06 |  0.00080279282284905 |       2 |   0.94253014651961 |  0.99627042657984 | -48.4385224270966 | BLCA   |
+| GO:0045671   | negative regulation of osteoclast differentiation                                                               | 0.000816973363199054 |   0.0268016037658436 |       2 |  0.904185518990635 |  0.99627042657984 | -47.9850678241873 | LUAD   |
+| GO:0045765   | regulation of angiogenesis                                                                                      | 0.000293740686790947 |   0.0153724292753929 |       2 |  0.952371045874102 |  0.99627042657984 | -47.6095245914921 | LUAD   |
+| GO:0006302   | double-strand break repair                                                                                      |  0.00133668892117104 |   0.0386584506412362 |       2 |  0.981875266383874 | 0.996381272166092 | -46.5631319635054 | BLCA   |
+| GO:0030324   | lung development                                                                                                |  0.00200361329408416 |   0.0545815115064562 |       2 |  0.764244851822449 |  0.99627042657984 | -46.4782373197253 | HNSC   |
+| GO:0006919   | activation of cysteine-type endopeptidase activity involved in apoptotic process                                | 0.000166628262966745 |   0.0334371342865603 |       2 |  0.973591313407456 |  0.99627042657984 | -46.2796522706905 | SKCM   |
+| GO:0042326   | negative regulation of phosphorylation                                                                          |  0.00148230807364641 |   0.0617608855986917 |       2 |  0.971404194230036 |  0.99627042657984 | -46.1472265411437 | BLCA   |
+| GO:0007166   | cell surface receptor signaling pathway                                                                         | 1.39750724246302e-05 |  0.00180689465819631 |       2 |   0.91600415388814 |  0.99627042657984 | -45.3737913728474 | GBM    |
+| GO:0042493   | response to drug                                                                                                | 0.000316837420797419 |    0.053569896224056 |       2 |  0.993007741373489 |  0.99627042657984 | -45.0225642124413 | PAAD   |
+| GO:0030336   | negative regulation of cell migration                                                                           | 0.000526838825183934 |    0.088399046897045 |       2 |  0.884000897183327 |  0.99627042657984 | -44.0804882174447 | SARC   |
+| GO:0050679   | positive regulation of epithelial cell proliferation                                                            | 0.000648282141997829 |   0.0180370145330535 |       2 |  0.976342360425577 |  0.99627042657984 |  -43.563983790813 | HNSC   |
+| GO:0046854   | phosphatidylinositol phosphorylation                                                                            | 0.000184141334536565 |   0.0134914217770456 |       2 |  0.844031342257798 |  0.99627042657984 | -43.5336612320758 | GBM    |
+| GO:0061418   | regulation of transcription from RNA polymerase II promoter in response to hypoxia                              | 0.000724884186164374 |   0.0599446274618289 |       2 |  0.976220668339856 |  0.99627042657984 | -43.2241291182662 | CESC   |
+| GO:0000278   | mitotic cell cycle                                                                                              | 0.000323574960771803 |   0.0165402039463942 |       2 |  0.949246719994252 |  0.99627042657984 | -42.6001533301468 | UCEC   |
+| GO:0051726   | regulation of cell cycle                                                                                        |  0.00055248621846534 |   0.0242484708149431 |       2 |  0.763959276234818 |  0.99627042657984 | -42.5642914024682 | UCEC   |
+| GO:0001916   | positive regulation of T cell mediated cytotoxicity                                                             | 1.08030380415153e-05 |  0.00296813470190632 |       2 |  0.989822429506704 |  0.99627042657984 | -42.5399492994937 | CESC   |
+| GO:0055007   | cardiac muscle cell differentiation                                                                             | 0.000488881830220555 |   0.0415046521902487 |       2 |  0.824274452908708 |  0.99627042657984 | -42.4078838817569 | ESCA   |
+| GO:0048146   | positive regulation of fibroblast proliferation                                                                 | 0.000200786344900042 |   0.0142363995512997 |       2 |  0.900180987936809 | 0.988225864567215 |  -41.983923406657 | GBM    |
+| GO:0071285   | cellular response to lithium ion                                                                                |  1.1193337791437e-05 |  0.00388854583835406 |       2 |  0.872417344551368 |  0.99627042657984 | -41.8839490447459 | LIHC   |
+| GO:0031641   | regulation of myelination                                                                                       |  0.00304559007457691 |   0.0763235037638845 |       2 |  0.972470897402031 |  0.99627042657984 | -40.3234145692251 | BLCA   |
+| GO:0016477   | cell migration                                                                                                  | 0.000783548419996773 |   0.0437695301766934 |       2 |  0.973222077518464 |  0.99627042657984 |  -40.251874588058 | HNSC   |
+| GO:0060021   | roof of mouth development                                                                                       | 5.04121361290126e-05 |   0.0138507344014462 |       2 |  0.902232883605171 |  0.99627042657984 | -38.2652230085694 | PAAD   |
+| GO:0006644   | phospholipid metabolic process                                                                                  |  0.00145787166771948 |   0.0540586596281609 |       2 |  0.994186497092102 | 0.996907810496551 |  -38.074295043027 | UCEC   |
+| GO:0001702   | gastrulation with mouth forming second                                                                          |   0.0022375672736318 |   0.0843897017826545 |       2 |  0.937663344436161 |  0.99627042657984 | -37.7534304211436 | PRAD   |
+| GO:0045814   | negative regulation of gene expression, epigenetic                                                              | 5.27837698013947e-05 |  0.00324786207417051 |       2 |  0.946746439706315 |  0.99627042657984 | -36.2133368834903 | BLCA   |
+| GO:0031047   | gene silencing by RNA                                                                                           | 0.000377905225390182 |   0.0120381983392409 |       2 |  0.841949973551355 |  0.99627042657984 | -35.6412003122745 | HNSC   |
+| GO:0030878   | thyroid gland development                                                                                       | 0.000297788669491703 |   0.0251414838227344 |       2 |  0.981250308309772 |  0.99627042657984 | -35.4830333536925 | LUAD   |
+| GO:0035574   | histone H4-K20 demethylation                                                                                    | 0.000816860018706776 |   0.0294337429691392 |       2 |  0.914815529926056 |  0.99627042657984 | -35.3402084262866 | BLCA   |
+| GO:0045740   | positive regulation of DNA replication                                                                          |  0.00189921919617984 |   0.0784843584319761 |       2 |   0.97306874206559 |  0.99627042657984 | -35.0536280324277 | HNSC   |
+| GO:0045653   | negative regulation of megakaryocyte differentiation                                                            |  0.00106385305264754 |   0.0334049858531328 |       2 |  0.907283527932468 |  0.99627042657984 | -34.8282449551561 | BLCA   |
+| GO:0034138   | toll-like receptor 3 signaling pathway                                                                          | 0.000185210406819206 |  0.00904649942641367 |       2 |  0.896105069071421 |  0.99627042657984 | -34.4723891959638 | BLCA   |
+| GO:0060333   | interferon-gamma-mediated signaling pathway                                                                     |  0.00063030062673169 |   0.0307866839456945 |       2 |  0.991661822393639 |  0.99627042657984 | -33.7450041279432 | CESC   |
+| GO:0018149   | peptide cross-linking                                                                                           | 6.37909198370955e-05 |  0.00584218507508066 |       2 |  0.977423778982374 |  0.99627042657984 | -33.5301530580212 | LUAD   |
+| GO:0016045   | detection of bacterium                                                                                          | 0.000415243382770959 |   0.0125028076072681 |       2 |  0.975708247062194 |  0.99627042657984 | -33.2809930851274 | HNSC   |
+| GO:0060337   | type I interferon signaling pathway                                                                             | 0.000225199921950961 |    0.014558512601418 |       2 |  0.985057643397827 |  0.99627042657984 | -33.2366086315476 | GBM    |
+| GO:0045669   | positive regulation of osteoblast differentiation                                                               |  0.00110572105162142 |   0.0675104130962187 |       2 |  0.991496415392496 |  0.99784897284822 | -32.9637858608888 | LIHC   |
+| GO:0035666   | TRIF-dependent toll-like receptor signaling pathway                                                             | 0.000912779809782413 |    0.030398333665178 |       2 |  0.934815689945605 |  0.99627042657984 | -32.9364064964599 | BLCA   |
+| GO:0045747   | positive regulation of Notch signaling pathway                                                                  | 4.50811905516981e-05 |  0.00750559176128357 |       2 |  0.841778416197661 | 0.988225864567215 | -32.0263494771663 | TGCT   |
+| GO:0048589   | developmental growth                                                                                            | 0.000175127142240081 |   0.0349935871494271 |       2 |  0.844187025276577 |  0.99627042657984 | -31.7228464725323 | PAAD   |
+| GO:0030513   | positive regulation of BMP signaling pathway                                                                    |  0.00141372788429496 |   0.0334126224696808 |       2 |  0.968474797874561 |  0.99627042657984 | -31.5920962902763 | HNSC   |
+| GO:0090307   | mitotic spindle assembly                                                                                        |  0.00108988145434739 |   0.0557106845733853 |       2 |  0.926038262701898 |  0.99627042657984 | -30.3403945914293 | BRCA   |
+| GO:0046686   | response to cadmium ion                                                                                         | 0.000753475526955694 |   0.0487099767131946 |       2 |  0.989103431585798 |  0.99627042657984 | -29.7316994798276 | PRAD   |
+| GO:0019882   | antigen processing and presentation                                                                             | 7.88048581778429e-05 |  0.00393666086988406 |       2 |   0.93289159152826 |  0.99627042657984 |  -29.093527367323 | HNSC   |
+| GO:0060397   | growth hormone receptor signaling pathway via JAK-STAT                                                          |  0.00113106444575334 |   0.0443942794958185 |       2 |  0.949282738002678 |  0.99627042657984 | -26.9190469276921 | CESC   |
+| GO:0002227   | innate immune response in mucosa                                                                                | 5.24498968724333e-05 |  0.00324786207417051 |       2 |  0.983524569236279 | 0.996698756767527 |  -26.086316322698 | BLCA   |
+| GO:0021762   | substantia nigra development                                                                                    | 0.000990766958867135 |   0.0320250849351465 |       2 |  0.980457952087659 |  0.99627042657984 | -23.6904809527761 | BLCA   |
 
 
 #+BEGIN_SRC R :session jacc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
 
-
-  sig_features <- group_by(results_df,cancer) %>% filter(qval<0.05)  %>% ungroup() %>% select(cancer,feature=feature_name,qval,data)
+  library(progressr)
+  library(future.apply)
+  plan(multisession)
+  sig_features <- group_by(results_df,cancer) %>%
+    filter(qval<0.2)  %>%
+    ungroup() %>%
+    select(cancer,feature=feature_name,qval,data)
 
   data("BPGOdf")
-  go_df <- select(BPGOdf,Gene,feature)
+  go_df <- select(BPGOdf,Gene,feature) %>% mutate(Gene=as.character(Gene))
+  genelist_go <- nest(go_df,gene_l=Gene) %>% mutate(gene_l=map(gene_l,"Gene"))  %>% inner_join(select(sig_features,feature,cancer))
+  cancer_df <- qs::qread("data/driverMAPS_results_20TumorTypes.qs") %>%
+    mutate(BF=exp(BF)) %>% select(Gene,BF,cancer)
 
-  go_list_dfl <- nest(go_df,gene_data=Gene) %>%
-    inner_join(sig_features)  %>%
-    split(.$cancer)
+  cancer_genes <- cancer_df %>% select(Gene,cancer) %>%
+    nest(cancer_genes=Gene) %>% mutate(cancer_genes=map(cancer_genes,"Gene"))
+
+  go_list_dfl <- genelist_go %>% 
+    inner_join(cancer_genes,by="cancer") %>%
+    mutate(gene_l = map2(gene_l, cancer_genes, ~factor(.x[.x %in% .y], levels = .y)),
+                         n_genes = lengths(gene_l)) %>%
+    select(-cancer_genes)
+
+  x_mats <- split(go_list_dfl,go_list_dfl$cancer) %>% map(function(x){
+    tdf <- unnest(x,gene_l)
+    as.matrix(trip2sparseMatrix(as.character(tdf$gene_l),tdf$feature,total_rownames=levels(tdf$gene_l)))
+  })
+
+
+
+  x_mats <- x_mats[order(map_int(x_mats,NCOL))]
+  yl <- split(cancer_df$BF,cancer_df$cancer)
+  yl <- yl[names(x_mats)]
+
+
+
+  ody <- fs::path("/tmp/y")
+  fs::dir_create(ody)
+  odx <- fs::path_temp("/tmp/x")
+  fs::dir_create(odx)
+  iwalk(x_mats,function(x,y){
+    qs::qsave(x,fs::path(odx,y,ext="qs"))
+  })
+
+  iwalk(yl,function(x,y){
+    qs::qsave(x,fs::path(ody,y,ext="qs"))
+  })
+  out_d <- fs::path("/home/nwknoblauch/Dropbox/Repos/dissertation/data/fdr_models/")
+  fs::dir_create(out_d)
+  cancer_i <- seq_along(names(x_mats))
+  with_progress({
+      p <- progressor(along=cancer_i)
+    all_results <- future_lapply(cancer_i,function(a,best_models,odx,ody,out_d){
+      p(sprintf("i=%g",a))
+      cancer_t <- best_models[a]
+      op <- fs::path(out_d,cancer_t,ext="qs")
+      if(fs::file_exists(op)){
+        return(qs::qread(op))
+      }
+      x <- qs::qread(fs::path(odx,cancer_t,ext="qs"))
+      y <- qs::qread(fs::path(ody,cancer_t,ext="qs"))
+      fun_result <- dplyr::mutate(fgem::forward_select_fgem_lik(x,y),cancer=cancer_t)
+      qs::qsave(fun_result,op)
+      return(fun_result)
+    }
+   ,best_models=names(x_mats),
+    odx=odx,ody=ody,out_d=out_d,
+    future.packages=c("dplyr","purrr","qs","fgem"))
+  })
+#+END_SRC
+
+#+BEGIN_SRC R :session jacc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
+  out_d <- fs::path("/home/nwknoblauch/Dropbox/Repos/dissertation/data/fdr_models/")
+  all_results_df <- map_df(fs::dir_ls(out_d),qs::qread)
+
+
+#+END_SRC
+
+#+RESULTS:
+
+#+BEGIN_SRC R :session jacc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
+
+
+  all_results_df <-rename(results_df, feature = feature_name) %>%
+    unnest(data) %>%
+    inner_join(go_list_dfl)
 
 
   jaccard_index <- function(x,y){
@@ -580,26 +554,20 @@ highest jaccard similarity)
     return(all( x %in% y) || all(y %in% x))
   }
 
-  beta_l2_norm <- function(x,y){
-    return(sum((x$Beta-y$Beta)^2))
-  }
 
+  tdf <- all_results_df %>%
+    filter(feature_name != "Intercept", qval < 0.15)  %>%
+    select(cancer, feature, gene_l)
 
   tdf <- tdf %>% mutate(fact_f=as.integer(factor(feature)))
   diff_df <- inner_join(tdf,tdf, by = "cancer") %>%
     select(-fact_f.x,-fact_f.y) %>% 
     mutate(
-      more_sig.x = qval.x < qval.y,
-      more_sig.y = qval.y < qval.x,
-      jacc_index = map2_dbl(gene_data.x, gene_data.y, ~ jaccard_index(.x$Gene, .y$Gene)),
-      parent_child = map2_lgl(gene_data.x, gene_data.y, ~ parent_child(.x$Gene, .y$Gene)),
-      beta_diff = map2_dbl(data.x, data.y, ~beta_l2_norm(.x, .y)),
+      jacc_index = map2_dbl(gene_l.x, gene_l.y, ~ jaccard_index(.x, .y)),
       index = 1:n()
     ) %>%
-    select(-contains("data"))
+    select(-contains("gene_l"))
 
-    ndiff_df <-  diff_df %>% 
-    pivot_longer(feature.x:more_sig.y,names_to=c(".value","set"),names_pattern="(.+).(x|y)")
 
   dist_mat_l <- split(diff_df,diff_df$cancer) %>%
     map(~as.matrix(trip2sparseMatrix(.x$feature.x,.x$feature.y,.x$jacc_index,add_intercept=FALSE)))
@@ -622,9 +590,9 @@ highest jaccard similarity)
       feat_dist <- dist_mat[feature_list,,drop=FALSE]
       correlated_features <- unique(c(correlated_features,
                                       colnames(dist_mat)[which(feat_dist>filter_dist,arr.ind=TRUE)[,"col"]]))
-    
+
     }
-  
+
     return(feature_list)
   }
 
@@ -643,8 +611,6 @@ highest jaccard similarity)
   afeat <- colnames(bpdf)[-1]
   bbpdf <- left_join(min_cancer_df,bpdf)
   ag <- distinct(min_cancer_df,Gene)
-
-
 
   bpdf <- left_join(ag,bpdf) 
 
@@ -704,7 +670,7 @@ highest jaccard similarity)
 
 
   with_progress({
-    p <- progressor(along=cancer_i)
+
     all_results <- future_lapply(cancer_i,function(a,best_models){
       p(sprintf("i=%g",a))
       cancer_t <- names(best_models)[a]
@@ -734,7 +700,6 @@ highest jaccard similarity)
 #+END_SRC
 
 #+RESULTS:
-
 
 ** Prognostic signatures
 
@@ -2031,12 +1996,73 @@ head data/driverMAPS_results_20TumorTypes/BLCA_BayesFactorFDR.txt
 
 
 
-
-
-
 * Extras
 
+** FGEM analyses
+
+*** Run FGEM on new set of genes (ASD)
+From cite:satterstrom
+The Bayes Factors reported in this paper are not suitable for my method.
+#+RESULTS:
+
+** Cancer and ExAC 
+
+To start out with we'll use the exac allele z scores and the Biological Process GO terms.  To reduce multiple testing burden, 
+I'll limit the GO terms to terms with 10 or more genes with that term
+
+#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
+
+z_df <- filter(exacdf,
+                 stringr::str_detect(feature, "z$")) %>%
+      spread(feature, value) %>%
+      select(-class) %>%
+      inner_join(min_cancer_df)
+  tres_z <- group_by(z_df, cancer) %>%
+    do(FGEM_marginal(select(., -cancer),
+                     verbose = FALSE)) %>%
+    ungroup()
+#+END_SRC
+
+#+RESULTS:
+
+
+
 ** Trying Stan
+
+
+#+BEGIN_SRC stan :file simple_logistic_model.stan
+
+data {
+  int<lower=0> N;
+  vector[N] x;
+  vector[G] B;  // Bayes Factors
+  real<lower=0,upper=1> y[N];
+}
+parameters {
+  real alpha;
+  real beta;
+}
+
+
+model {
+  y ~ bernoulli_logit(alpha + beta * x);
+}
+
+
+#+END_SRC
+
+#+RESULTS:
+[[file:simple_logistic_model.stan]]
+
+#+begin_src R :session jacc :result silent
+  test_feature <- filter(all_results_df,feature==feature[1],cancer==cancer[1])
+  cancer_df <- qs::qread("data/driverMAPS_results_20TumorTypes/GBM.qs")
+  N <- nrow(cancer_df)
+  x <- as.numeric(cancer_df$Gene %in% test_feature$gene_l[[1]])
+  y <- cancer_df$BF
+  library(rstan)
+  fit <- stan(file="org/simple_logistic_model.stan", data=list(N=N, x=x,y=y), chains=1)
+#+end_src
 
 
 # #+BEGIN_SRC stan
@@ -2070,3 +2096,479 @@ model {
 }
 
 # #+END_SRC
+
+** Optimizing FGEM
+
+#+BEGIN_SRC c++
+  #include <iostream>
+  #include <algorithm>
+  #include <cmath>
+  #include <math.h>
+  #include <vector>
+  #include <numeric>
+
+  using namespace std;
+
+  //Global Control Variable
+  struct SquaremControl{
+      int K=1;
+      int method=3;//1,2,3 indicates the types of step length to be used in squarem1,squarem2, 4,5 for "rre" and "mpe" in cyclem1 and cyclem2,  standing for reduced-rank ("rre") or minimal-polynomial ("mpe") extrapolation.
+      // K=1 must go with method=1,2 or 3
+      // K>1 must go with method=4 or 5
+      double mstep=4;
+      int maxiter=1500;
+      bool square=true;
+      bool trace=true;//currently set to be true for debugging purpose
+      double stepmin0=1;
+      double stepmax0=1;
+      double kr=1;
+      double objfninc=1;//0 to enforce monotonicity, Inf for non-monotonic scheme, 1 for monotonicity far from solution and allows for non-monotonicity closer to solution
+      double tol=1e-7;
+  } SquaremDefault;
+
+  //Output Struct
+  struct SquaremOutput{
+      std::vector<double> par;
+      double valueobjfn;
+      int iter=0;
+      int pfevals=0;
+      int objfevals=0;
+      bool convergence=false;
+  } sqobj,sqobjnull;
+
+  vector<double> fixptfn(std::vector<double> par);
+  double objfn(std::vector<double> par);
+  SquaremOutput squarem1(std::vector<double> par);
+
+  //Wrapper function
+  SquaremOutput cxxSQUAREM(std::vector<double> par)
+  {
+      if(SquaremDefault.K == 1){
+          sqobj=squarem1(par);
+      }
+      else{
+          sqobj=sqobjnull;
+      }
+      return sqobj;
+  }
+
+  //actual acceleration function
+  SquaremOutput squarem1(std::vector<double> par){
+      //std::vector<double> p,p1,p2;//R data types
+      double loldcpp,lnewcpp;
+      std::vector<double> pcpp,p1cpp,p2cpp,pnew;
+      std::vector<double> q1,q2,sr2,sq2,sv2,srv;
+      double sr2_scalar,sq2_scalar,sv2_scalar,srv_scalar,alpha,stepmin,stepmax;
+      int iter,feval,leval;
+      bool conv,extrap;
+      stepmin=SquaremDefault.stepmin0;
+      stepmax=SquaremDefault.stepmax0;
+      if(SquaremDefault.trace){std::cout<<"Squarem-1"<<std::endl;}
+    
+      iter=1;pcpp=par;pnew=par;
+      try{loldcpp=objfn(pcpp);leval=1;}
+      catch(...){
+          std::cout<<"Error in fixptfn function evaluation";
+          return sqobjnull;
+      }
+      lnewcpp=loldcpp;
+      if(SquaremDefault.trace){std::cout<<"Objective fn: "<<loldcpp<<std::endl;}
+      feval=0;conv=true;
+    
+      const long int parvectorlength=pcpp.size();
+    
+      while(feval<SquaremDefault.maxiter){
+          //Step 1
+          extrap = true;
+          try{p1cpp=fixptfn(pcpp);feval++;}
+          catch(...){
+              std::cout<<"Error in fixptfn function evaluation";
+              return sqobjnull;
+          }
+        
+          sr2_scalar=0;
+          for (int i=0;i<parvectorlength;i++){sr2_scalar+=pow(p1cpp[i]-pcpp[i],2);}
+          if(sqrt(sr2_scalar)<SquaremDefault.tol){break;}
+        
+          //Step 2
+          try{p2cpp=fixptfn(p1cpp);feval++;}
+          catch(...){
+              std::cout<<"Error in fixptfn function evaluation";
+              return sqobjnull;
+          }
+          sq2_scalar=0;
+          for (int i=0;i<parvectorlength;i++){sq2_scalar+=pow(p2cpp[i]-p1cpp[i],2);}
+          //sq2_scalar=sqrt(sq2_scalar);
+          if (sqrt(sq2_scalar)<SquaremDefault.tol){break;}
+          sv2_scalar=0;
+          for (int i=0;i<parvectorlength;i++){sv2_scalar+=pow(p2cpp[i]-2*p1cpp[i]+pcpp[i],2);}
+          srv_scalar=0;
+          for (int i=0;i<parvectorlength;i++){srv_scalar+=(p2cpp[i]-2*p1cpp[i]+pcpp[i])*(p1cpp[i]-pcpp[i]);}
+          //std::cout<<"sr2,sv2,srv="<<sr2_scalar<<","<<sv2_scalar<<","<<srv_scalar<<std::endl;//debugging
+        
+          //Step 3 Proposing new value
+          switch (SquaremDefault.method){
+              case 1: alpha= -srv_scalar/sv2_scalar;
+              case 2: alpha= -sr2_scalar/srv_scalar;
+              case 3: alpha= sqrt(sr2_scalar/sv2_scalar);
+          }
+        
+          alpha=std::max(stepmin,std::min(stepmax,alpha));
+          //std::cout<<"alpha="<<alpha<<std::endl;//debugging
+          for (int i=0;i<parvectorlength;i++){pnew[i]=pcpp[i]+2.0*alpha*(p1cpp[i]-pcpp[i])+pow(alpha,2)*(p2cpp[i]-2*p1cpp[i]+pcpp[i]);}
+          //pnew = pcpp + 2.0*alpha*q1 + alpha*alpha*(q2-q1);
+        
+          //Step 4 stabilization
+          if(std::abs(alpha-1)>0.01){
+              try{pnew=fixptfn(pnew);feval++;}
+              catch(...){
+                  pnew=p2cpp;
+                  try{lnewcpp=objfn(pnew);leval++;}
+                  catch(...){
+                      lnewcpp=loldcpp;
+                  }
+                  if(alpha==stepmax){
+                      stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
+                  }
+                  alpha=1;
+                  extrap=false;
+                  if(alpha==stepmax){stepmax=SquaremDefault.mstep*stepmax;}
+                  if(stepmin<0 && alpha==stepmin){stepmin=SquaremDefault.mstep*stepmin;}
+                  pcpp=pnew;
+                  if(!std::isnan(lnewcpp)){loldcpp=lnewcpp;}
+                  if(SquaremDefault.trace){std::cout<<"Objective fn: "<<lnewcpp<<"  Extrapolation: "<<extrap<<"  Steplength: "<<alpha<<std::endl;}
+                  iter++;
+                  continue;//next round in while loop
+              }
+            
+              if (isfinite(SquaremDefault.objfninc)){
+                  try{lnewcpp=objfn(pnew);leval++;}
+                  catch(...){
+                      pnew=p2cpp;
+                      try{lnewcpp=objfn(pnew);leval++;}
+                      catch(...){
+                          std::cout<<"Error in objfn function evaluation";
+                          return sqobjnull;
+                      }
+                      if(alpha==stepmax){
+                          stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
+                      }
+                      alpha=1;
+                      extrap=false;
+                  }
+              }else{lnewcpp=loldcpp;}
+              if (lnewcpp>loldcpp+SquaremDefault.objfninc) {
+                  pnew=p2cpp;
+                  try{lnewcpp=objfn(pnew);leval++;}
+                  catch(...){
+                      std::cout<<"Error in objfn function evaluation";
+                      return sqobjnull;
+                  }
+                  if(alpha==stepmax){
+                      stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
+                  }
+                  alpha=1;
+                  extrap=false;
+              }
+          }else{//same as above, when stablization is not performed.
+              if (isfinite(SquaremDefault.objfninc)){
+                  try{lnewcpp=objfn(pnew);leval++;}
+                  catch(...){
+                      pnew=p2cpp;
+                      try{lnewcpp=objfn(pnew);leval++;}
+                      catch(...){
+                          std::cout<<"Error in objfn function evaluation";
+                          return sqobjnull;
+                      }
+                      if(alpha==stepmax){
+                          stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
+                      }
+                      alpha=1;
+                      extrap=false;
+                  }
+              }else{lnewcpp=loldcpp;}
+              if (lnewcpp>loldcpp+SquaremDefault.objfninc) {
+                  pnew=p2cpp;
+                  try{lnewcpp=objfn(pnew);leval++;}
+                  catch(...){
+                      std::cout<<"Error in objfn function evaluation";
+                      return sqobjnull;
+                  }
+                  if(alpha==stepmax){
+                      stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
+                  }
+                  alpha=1;
+                  extrap=false;
+              }
+          }
+          if(alpha==stepmax){stepmax=SquaremDefault.mstep*stepmax;}
+          if(stepmin<0 && alpha==stepmin){stepmin=SquaremDefault.mstep*stepmin;}
+        
+          pcpp=pnew;
+          if(!std::isnan(lnewcpp)){loldcpp=lnewcpp;}
+          if(SquaremDefault.trace){std::cout<<"Objective fn: "<<lnewcpp<<"  Extrapolation: "<<extrap<<"  Steplength: "<<alpha<<std::endl;}
+          iter++;
+          //std::cout<<"leval="<<leval<<std::endl;//debugging
+      }
+    
+      if (feval >= SquaremDefault.maxiter){conv=false;}
+      if (!isfinite(SquaremDefault.objfninc)){loldcpp=objfn(pcpp);leval++;}
+    
+      //assigning values
+      sqobj.par=pcpp;
+      sqobj.valueobjfn=loldcpp;
+      sqobj.iter=iter;
+      sqobj.pfevals=feval;
+      sqobj.objfevals=leval;
+      sqobj.convergence=conv;
+      return(sqobj);
+  }
+
+
+  SquaremOutput squarem2(std::vector<double> par){
+      double res,parnorm,kres;
+      std::vector<double> pcpp,p1cpp,p2cpp,pnew,ptmp;
+      std::vector<double> q1,q2,sr2,sq2,sv2,srv;
+      double sr2_scalar,sq2_scalar,sv2_scalar,srv_scalar,alpha,stepmin,stepmax;
+      int iter,feval;
+      bool conv,extrap;
+      stepmin=SquaremDefault.stepmin0;
+      stepmax=SquaremDefault.stepmax0;
+      if(SquaremDefault.trace){std::cout<<"Squarem-1"<<std::endl;}
+    
+      iter=1;pcpp=par;pnew=par;
+      feval=0;conv=true;
+    
+      const long int parvectorlength=pcpp.size();
+    
+      while(feval<SquaremDefault.maxiter){
+          //Step 1
+          extrap = true;
+          try{p1cpp=fixptfn(pcpp);feval++;}
+          catch(...){
+              std::cout<<"Error in fixptfn function evaluation";
+              return sqobjnull;
+          }
+        
+          sr2_scalar=0;
+          for (int i=0;i<parvectorlength;i++){sr2_scalar+=pow(p1cpp[i]-pcpp[i],2);}
+          if(sqrt(sr2_scalar)<SquaremDefault.tol){break;}
+        
+          //Step 2
+          try{p2cpp=fixptfn(p1cpp);feval++;}
+          catch(...){
+              std::cout<<"Error in fixptfn function evaluation";
+              return sqobjnull;
+          }
+          sq2_scalar=0;
+          for (int i=0;i<parvectorlength;i++){sq2_scalar+=pow(p2cpp[i]-p1cpp[i],2);}
+          sq2_scalar=sqrt(sq2_scalar);
+          if (sq2_scalar<SquaremDefault.tol){break;}
+          res=sq2_scalar;
+        
+          sv2_scalar=0;
+          for (int i=0;i<parvectorlength;i++){sv2_scalar+=pow(p2cpp[i]-2*p1cpp[i]+pcpp[i],2);}
+          srv_scalar=0;
+          for (int i=0;i<parvectorlength;i++){srv_scalar+=(p2cpp[i]-2*p1cpp[i]+pcpp[i])*(p1cpp[i]-pcpp[i]);}
+          //std::cout<<"sr2,sv2,srv="<<sr2_scalar<<","<<sv2_scalar<<","<<srv_scalar<<std::endl;//debugging
+        
+          //Step 3 Proposing new value
+          switch (SquaremDefault.method){
+              case 1: alpha= -srv_scalar/sv2_scalar;
+              case 2: alpha= -sr2_scalar/srv_scalar;
+              case 3: alpha= sqrt(sr2_scalar/sv2_scalar);
+          }
+        
+          alpha=std::max(stepmin,std::min(stepmax,alpha));
+          //std::cout<<"alpha="<<alpha<<std::endl;//debugging
+          for (int i=0;i<parvectorlength;i++){pnew[i]=pcpp[i]+2.0*alpha*(p1cpp[i]-pcpp[i])+pow(alpha,2)*(p2cpp[i]-2*p1cpp[i]+pcpp[i]);}
+          //pnew = pcpp + 2.0*alpha*q1 + alpha*alpha*(q2-q1);
+        
+          //Step 4 stabilization
+          if(std::abs(alpha-1)>0.01){
+              try{ptmp=fixptfn(pnew);feval++;}
+              catch(...){
+                  pnew=p2cpp;
+                  if(alpha==stepmax){
+                      stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
+                  }
+                  alpha=1;
+                  extrap=false;
+                  if(alpha==stepmax){stepmax=SquaremDefault.mstep*stepmax;}
+                  if(stepmin<0 && alpha==stepmin){stepmin=SquaremDefault.mstep*stepmin;}
+                  pcpp=pnew;
+                  if(SquaremDefault.trace){std::cout<<"Residual: "<<res<<"  Extrapolation: "<<extrap<<"  Steplength: "<<alpha<<std::endl;}
+                  iter++;
+                  continue;//next round in while loop
+              }
+              res=0;
+              for (int i=0;i<parvectorlength;i++){res+=pow(ptmp[i]-pnew[i],2);}
+              res=sqrt(res);
+              parnorm=0;
+              for (int i=0;i<parvectorlength;i++){parnorm+=pow(p2cpp[i],2);}
+              parnorm=sqrt(parnorm/parvectorlength);
+              kres=SquaremDefault.kr*(1+parnorm)+sq2_scalar;
+              if(res <= kres){
+                  pnew=ptmp;
+              }else{
+                  pnew=p2cpp;
+                  if(alpha==stepmax){stepmax=SquaremDefault.mstep*stepmax;}
+                  alpha=1;
+                  extrap=false;
+              }
+          }
+        
+          if(alpha==stepmax){stepmax=SquaremDefault.mstep*stepmax;}
+          if(stepmin<0 && alpha==stepmin){stepmin=SquaremDefault.mstep*stepmin;}
+        
+          pcpp=pnew;
+          if(SquaremDefault.trace){std::cout<<"Residual: "<<res<<"  Extrapolation: "<<extrap<<"  Steplength: "<<alpha<<std::endl;}
+          iter++;
+      }
+    
+      if (feval >= SquaremDefault.maxiter){conv=false;}
+    
+      //assigning values
+      sqobj.par=pcpp;
+      sqobj.valueobjfn=NAN;
+      sqobj.iter=iter;
+      sqobj.pfevals=feval;
+      sqobj.objfevals=0;
+      sqobj.convergence=conv;
+      return(sqobj);
+  }
+
+  SquaremOutput fpiter(std::vector<double> par){
+      //std::vector<double> p,p1,p2;//R data types
+      double lnewcpp,res;
+      std::vector<double> pcpp,pnew;
+      int iter;
+      bool conv;
+      if(SquaremDefault.trace){std::cout<<"Standaard Fixed Point Iteration:"<<std::endl;}
+      iter=1;res=NAN;conv=false;
+      pcpp=par;
+      const long int parvectorlength=pcpp.size();
+      while(iter<SquaremDefault.maxiter*4){
+          pnew=fixptfn(pcpp);
+          res=0;
+          for (int i=0;i<parvectorlength;i++){res+=pow(pnew[i]-pcpp[i],2);}
+          res=sqrt(res);
+          if(res<SquaremDefault.tol){conv=true;break;}
+          if(SquaremDefault.trace){
+              if(fmod(iter,100)==0){
+                  std::cout<<"Iter: "<<iter<<"Residual: "<<res<<std::endl;
+              }
+          }
+          pcpp=pnew;
+          iter++;
+      }
+    
+      lnewcpp=objfn(pcpp);
+      //assigning values
+      sqobj.par=pcpp;
+      sqobj.valueobjfn=lnewcpp;
+      sqobj.iter=iter;
+      sqobj.pfevals=iter;
+      sqobj.objfevals=1;
+      sqobj.convergence=conv;
+      return(sqobj);
+  }
+
+
+  //main() used for demostration
+
+  std::vector<int> Other_input1 {162,267,271,185,111,61,27,8,3,1};
+
+  int main(){
+      std::cout<<"Hi, this is a demostration using Poisson mixture!"<<std::endl;
+      std::vector<double> par_initial {0.5,3,1};//some random starting point,
+      SquaremOutput SQ_result;
+    
+      std::cout<<"\n\n\nDemo1: using squarem1 and the objective function"<<endl;
+      SQ_result=squarem1(par_initial);
+      cout<<"Initial input vector:"<<endl;
+      for(int i=0;i<par_initial.size();i++) cout<<par_initial[i]<<" ";
+      cout<<"\nOutput vector by SQUAREM:"<<endl;
+      for(int i=0;i<par_initial.size();i++) cout<<SQ_result.par[i]<<" ";
+      cout<<"\nNumber of evaluations on fixed point function:"<<endl;
+      cout<<SQ_result.pfevals<<endl;
+      cout<<"Number of evaluations on objective function:"<<endl;
+      cout<<SQ_result.objfevals<<endl;
+    
+      std::cout<<"\n\n\nDemo2: using squarem2 without objective function"<<endl;
+      SQ_result=squarem2(par_initial);
+      cout<<"Initial input vector:"<<endl;
+      for(int i=0;i<par_initial.size();i++) cout<<par_initial[i]<<" ";
+      cout<<"\nOutput vector by SQUAREM:"<<endl;
+      for(int i=0;i<par_initial.size();i++) cout<<SQ_result.par[i]<<" ";
+      cout<<"\nNumber of evaluations on fixed point function:"<<endl;
+      cout<<SQ_result.pfevals<<endl;
+      cout<<"Number of evaluations on objective function:"<<endl;
+      cout<<SQ_result.objfevals<<endl;
+    
+      std::cout<<"\n\n\nDemo3: using simple fixed point iteration"<<endl;
+      SQ_result=fpiter(par_initial);
+      cout<<"Initial input vector:"<<endl;
+      for(int i=0;i<par_initial.size();i++) cout<<par_initial[i]<<" ";
+      cout<<"\nOutput vector by SQUAREM:"<<endl;
+      for(int i=0;i<par_initial.size();i++) cout<<SQ_result.par[i]<<" ";
+      cout<<"\nNumber of evaluations on fixed point function:"<<endl;
+      cout<<SQ_result.pfevals<<endl;
+      cout<<"Number of evaluations on objective function:"<<endl;
+      cout<<SQ_result.objfevals<<endl;
+    
+      return 0;
+  }
+
+
+  //Fixed point function and objective function that take only the vector for EM acceleration as input, while others are defined as global variables(const within the scope of cxxSQUAREM)
+
+  vector<double> fixptfn(std::vector<double> par){
+      std::vector<double> parnew=par;
+    
+      std::vector<double> zi(Other_input1.size());
+      for (int i=0;i<Other_input1.size();i++){
+          zi[i]=par[0]*exp(-par[1])*pow(par[1],i)/(par[0]*exp(-par[1])*pow(par[1],i)+(1-par[0])*exp(-par[2])*pow(par[2],i));
+      }
+    
+    
+      double temp1,temp2;
+      //parnew[0]=1;
+      temp1=0,temp2=0;
+      for (int i=0;i<Other_input1.size();i++){
+          temp1+=Other_input1[i]*zi[i];
+          temp2+=Other_input1[i];
+      }
+      parnew[0]=temp1/temp2;
+    
+    
+      temp1=0,temp2=0;
+      for (int i=0;i<Other_input1.size();i++){
+          temp1+=Other_input1[i]*zi[i]*i;
+          temp2+=Other_input1[i]*zi[i];
+      }
+      parnew[1]=temp1/temp2;
+    
+      temp1=0,temp2=0;
+      for (int i=0;i<Other_input1.size();i++){
+          temp1+=Other_input1[i]*(1-zi[i])*i;
+          temp2+=Other_input1[i]*(1-zi[i]);
+      }
+      parnew[2]=temp1/temp2;
+    
+      return parnew;
+  }
+
+
+  double objfn(std::vector<double> par){
+      double objvalue=0;
+      vector<double> loglik(Other_input1.size());
+      for (int i=0;i<Other_input1.size();i++){
+          loglik[i]=Other_input1[i]*log(par[0]*exp(-par[1])*pow(par[1],i)/exp(lgamma(i+1))+
+                                        (1-par[0])*exp(-par[2])*pow(par[2],i)/exp(lgamma(i+1)));
+          objvalue-=loglik[i];
+      }
+      return objvalue;
+  };
+
+#+END_SRC
