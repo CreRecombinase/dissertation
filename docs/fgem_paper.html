@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2020-05-12 Tue 19:03 -->
+<!-- 2020-05-20 Wed 11:48 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Functional Enrichment by Expectation Maximization</title>
@@ -262,12 +262,16 @@ for the JavaScript code in this tag.
 <li><a href="#org07da710">Model</a></li>
 <li><a href="#orgcb1189c">Algorithm</a></li>
 <li><a href="#orgfc91d5e">Jaccard index for binary feature overlap</a></li>
-<li><a href="#org5f3d9f3">Validation against <code>COSMIC</code></a></li>
+<li><a href="#orgbc74c13">Validation against COSMIC Cancer Gene Census</a></li>
 <li><a href="#orgac60054">Data</a></li>
 <li><a href="#org3d7e31d">Software</a></li>
 </ul>
 </li>
-<li><a href="#org37638e0">Results</a></li>
+<li><a href="#org37638e0">Results</a>
+<ul>
+<li><a href="#org865903a">COSMIC validation</a></li>
+</ul>
+</li>
 <li><a href="#org5c9eeca">Discussion</a></li>
 </ul>
 </div>
@@ -335,11 +339,12 @@ Given a particular value of \(\boldsymbol{\beta}\), we arrive at a new posterior
 </div>
 </div>
 
+
 <div id="outline-container-orgcb1189c" class="outline-3">
 <h3 id="orgcb1189c">Algorithm</h3>
 <div class="outline-text-3" id="text-orgcb1189c">
 <p>
-Our goal is both to estimate \(\boldsymbol{\beta}\) as well as \(P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)\) for each gene.  We use the EM algorithm cite:EM<sub>algo</sub> to
+Our goal is both to estimate \(\boldsymbol{\beta}\) as well as \(P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)\) for each gene.  We use the EM algorithm <a class='org-ref-reference' href="#EM_algo">EM_algo</a> to
 obtain a maximum likelihood estimate for \(\boldsymbol{\beta}\).  If \(\textbf{z}\) is our latent variable then our complete data likelihood is:
 </p>
 
@@ -368,7 +373,7 @@ The model fitting procedure proceeds as follows
 </p>
 
 <ul class="org-ul">
-<li>Start with an initial guess of $\textbf{\beta}</li>
+<li>Start with an initial guess of \(\boldsymbol{\beta}\)</li>
 <li>Repeat until \(Q(\boldsymbol{\beta}|\boldsymbol{\beta}_{n-1})-Q(\boldsymbol{\beta}|\boldsymbol{\beta}_n)< \text{tol}\):
 <ul class="org-ul">
 <li>Compute \(P(z_g=1|x_g,\boldsymbol{\beta_n},\textbf{a}_g)\)</li>
@@ -427,8 +432,14 @@ feature model, and remove all features similar to the features in the selected m
 </div>
 
 
-<div id="outline-container-org5f3d9f3" class="outline-3">
-<h3 id="org5f3d9f3">Validation against <code>COSMIC</code></h3>
+<div id="outline-container-orgbc74c13" class="outline-3">
+<h3 id="orgbc74c13">Validation against COSMIC Cancer Gene Census</h3>
+<div class="outline-text-3" id="text-orgbc74c13">
+<p>
+The Catalogue of Somatic Mutations in Cancer (COSMIC) Cancer Gene Census (CGC) <a class='org-ref-reference' href="#COSMIC">COSMIC</a> is an effort to catalogue genes which contain mutations
+causally implicated in cancer. To date, the CGC has identified  To validate the FGEM models, CGC genes were used as a gold standard.    
+</p>
+</div>
 </div>
 
 
@@ -437,11 +448,20 @@ feature model, and remove all features similar to the features in the selected m
 <h3 id="orgac60054">Data</h3>
 <div class="outline-text-3" id="text-orgac60054">
 </div>
+<div id="outline-container-orgec5c161" class="outline-4">
+<h4 id="orgec5c161">Prognostic</h4>
+<div class="outline-text-4" id="text-orgec5c161">
+<p>
+The Human Pathology Atlas is a dataset of 900,000 patient survival profiles across 17 types of cancersurvival data <a class='org-ref-reference' href="#uhlen17_pathol_atlas_human_cancer_trans">uhlen17_pathol_atlas_human_cancer_trans</a>
+</p>
+</div>
+</div>
+
 <div id="outline-container-org535aaa0" class="outline-4">
 <h4 id="org535aaa0">Gene-Level Summary Statistics</h4>
 <div class="outline-text-4" id="text-org535aaa0">
 <p>
-A set of Bayes factors from a study of cancer driver genes cite:zhao19<sub>detail</sub><sub>model</sub><sub>posit</sub><sub>selec</sub><sub>improv</sub>.  For each of 20 TCGA tumor types, roughly 20,000 genes were analyzed and the 
+A set of Bayes factors from a study of cancer driver genes <a class='org-ref-reference' href="#zhao19_detail_model_posit_selec_improv">zhao19_detail_model_posit_selec_improv</a>.  For each of 20 TCGA tumor types, roughly 20,000 genes were analyzed and the 
 posterior probability that each gene (in each cancer type) was a causal gene was assessed and summarized via Bayes Factor.  
 </p>
 </div>
@@ -455,7 +475,7 @@ posterior probability that each gene (in each cancer type) was a causal gene was
 <li><a id="orgf07b23c"></a>Gene Ontology<br>
 <div class="outline-text-5" id="text-orgf07b23c">
 <p>
-The "Biological Process" Gene Ontology cite:GO  was downloaded from the Bioconductor package <code>GO.db</code> cite:godb. Of the 10,930 possible biological process gene ontology terms, the 2,198 terms that 
+The "Biological Process" Gene Ontology <a class='org-ref-reference' href="#GO">GO</a>  was downloaded from the Bioconductor package <code>GO.db</code> <a class='org-ref-reference' href="#godb">godb</a>. Of the 10,930 possible biological process gene ontology terms, the 2,198 terms that 
 include 10 or more genes were analyzed, so as to reduce the multiple testing burden.  
 </p>
 </div>
@@ -469,8 +489,8 @@ include 10 or more genes were analyzed, so as to reduce the multiple testing bur
 <h3 id="org3d7e31d">Software</h3>
 <div class="outline-text-3" id="text-org3d7e31d">
 <p>
-Our method is distributed as a freely available R package <a href="https://github.com/CreRecombinase/FGEM">FGEM</a> cite:R .FGEM relies on the <code>SQUAREM</code> package to accelerate EM convergence  cite:squarem   
-and the hot-path functions are implemented as C++ functions using the <code>RcppArmadillo</code> cite:RcppArmadillo package.  
+Our method is distributed as a freely available R package <a href="https://github.com/CreRecombinase/FGEM">FGEM</a> cite:R .FGEM relies on the <code>SQUAREM</code> package to accelerate EM convergence  <a class='org-ref-reference' href="#squarem">squarem</a>   
+and the hot-path functions are implemented as C++ functions using the <code>RcppArmadillo</code> <a class='org-ref-reference' href="#RcppArmadillo">RcppArmadillo</a> package.  
 </p>
 </div>
 </div>
@@ -479,21 +499,212 @@ and the hot-path functions are implemented as C++ functions using the <code>Rcpp
 
 <div id="outline-container-org37638e0" class="outline-2">
 <h2 id="org37638e0">Results</h2>
+<div class="outline-text-2" id="text-org37638e0">
 </div>
+<div id="outline-container-org865903a" class="outline-3">
+<h3 id="org865903a">COSMIC validation</h3>
+<div class="outline-text-3" id="text-org865903a">
+<p>
+The cross-entropy of the FGEM model for each cancer type was compared to the cross-entropy of the intercept-only
+FGEM model using the COSMIC census genes as ground truth.  For each of the 20 cancer types FGEM had lower cross-entropy 
+(higher likelihood ratio)
+</p>
+
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">cancer</th>
+<th scope="col" class="org-right">cross<sub>entropy</sub><sub>functional</sub></th>
+<th scope="col" class="org-right">cross<sub>entropy</sub><sub>uniform</sub></th>
+<th scope="col" class="org-right">cross<sub>entropy</sub><sub>ratio</sub></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">BLCA</td>
+<td class="org-right">-95662.4678891365</td>
+<td class="org-right">-85246.945544574</td>
+<td class="org-right">-10415.5223445625</td>
+</tr>
+
+<tr>
+<td class="org-left">BRCA</td>
+<td class="org-right">-118449.351908682</td>
+<td class="org-right">-90864.7631741114</td>
+<td class="org-right">-27584.5887345709</td>
+</tr>
+
+<tr>
+<td class="org-left">CESC</td>
+<td class="org-right">-147468.020375775</td>
+<td class="org-right">-79847.4862860612</td>
+<td class="org-right">-67620.5340897143</td>
+</tr>
+
+<tr>
+<td class="org-left">CHOL</td>
+<td class="org-right">-54147.2464991959</td>
+<td class="org-right">-50321.7386081126</td>
+<td class="org-right">-3825.50789108334</td>
+</tr>
+
+<tr>
+<td class="org-left">ESCA</td>
+<td class="org-right">-118908.27548448</td>
+<td class="org-right">-84631.9895615394</td>
+<td class="org-right">-34276.2859229405</td>
+</tr>
+
+<tr>
+<td class="org-left">GBM</td>
+<td class="org-right">-92362.5624198571</td>
+<td class="org-right">-73787.0866635762</td>
+<td class="org-right">-18575.4757562809</td>
+</tr>
+
+<tr>
+<td class="org-left">HNSC</td>
+<td class="org-right">-141820.887516856</td>
+<td class="org-right">-97862.081096597</td>
+<td class="org-right">-43958.806420259</td>
+</tr>
+
+<tr>
+<td class="org-left">KICH</td>
+<td class="org-right">-109133.000058618</td>
+<td class="org-right">-96625.4414397593</td>
+<td class="org-right">-12507.5586188592</td>
+</tr>
+
+<tr>
+<td class="org-left">KIRC</td>
+<td class="org-right">-101543.318511605</td>
+<td class="org-right">-80891.7016637173</td>
+<td class="org-right">-20651.6168478874</td>
+</tr>
+
+<tr>
+<td class="org-left">KIRP</td>
+<td class="org-right">-95512.8357907782</td>
+<td class="org-right">-84980.3471977415</td>
+<td class="org-right">-10532.4885930367</td>
+</tr>
+
+<tr>
+<td class="org-left">LIHC</td>
+<td class="org-right">-110051.739122586</td>
+<td class="org-right">-91896.1246808558</td>
+<td class="org-right">-18155.6144417298</td>
+</tr>
+
+<tr>
+<td class="org-left">LUAD</td>
+<td class="org-right">-177084.209088335</td>
+<td class="org-right">-115584.2079699</td>
+<td class="org-right">-61500.0011184357</td>
+</tr>
+
+<tr>
+<td class="org-left">LUSC</td>
+<td class="org-right">-157500.378816593</td>
+<td class="org-right">-106769.242183055</td>
+<td class="org-right">-50731.1366335384</td>
+</tr>
+
+<tr>
+<td class="org-left">PAAD</td>
+<td class="org-right">-318932.227641074</td>
+<td class="org-right">-66508.8323704442</td>
+<td class="org-right">-252423.39527063</td>
+</tr>
+
+<tr>
+<td class="org-left">PRAD</td>
+<td class="org-right">-891940.514321957</td>
+<td class="org-right">-76779.4406090754</td>
+<td class="org-right">-815161.073712881</td>
+</tr>
+
+<tr>
+<td class="org-left">SARC</td>
+<td class="org-right">-636965.982410518</td>
+<td class="org-right">-81431.9753511472</td>
+<td class="org-right">-555534.007059371</td>
+</tr>
+
+<tr>
+<td class="org-left">SKCM</td>
+<td class="org-right">-133127.342562248</td>
+<td class="org-right">-121032.432355748</td>
+<td class="org-right">-12094.9102065007</td>
+</tr>
+
+<tr>
+<td class="org-left">TGCT</td>
+<td class="org-right">-760084.365698844</td>
+<td class="org-right">-105591.835808511</td>
+<td class="org-right">-654492.529890333</td>
+</tr>
+
+<tr>
+<td class="org-left">UCEC</td>
+<td class="org-right">-111681.722486175</td>
+<td class="org-right">-86440.4633034317</td>
+<td class="org-right">-25241.2591827432</td>
+</tr>
+
+<tr>
+<td class="org-left">UCS</td>
+<td class="org-right">-99619.9782423041</td>
+<td class="org-right">-81147.3017795327</td>
+<td class="org-right">-18472.6764627714</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
 
 <div id="outline-container-org5c9eeca" class="outline-2">
 <h2 id="org5c9eeca">Discussion</h2>
 <div class="outline-text-2" id="text-org5c9eeca">
 <p>
-bibliographystyle:unsrt
-bibliography:references.bib
+
+<h1 class='org-ref-bib-h1'>Bibliography</h1>
+<ul class='org-ref-bib'><li><a id="EM_algo">[EM_algo]</a> <a name="EM_algo"></a>Dempster, Laird & Rubin, Maximum Likelihood from Incomplete Data via the EM Algorithm, <i>Journal of the Royal Statistical Society. Series B (Methodological)</i>, <b>39(1)</b>, 1-38 (1977). <a href="http://www.jstor.org/stable/2984875">link</a>.</li>
+<li><a id="COSMIC">[COSMIC]</a> <a name="COSMIC"></a>Sondka, Bamford, Cole, Charlotte, Ward, Dunham, & Forbes, The COSMIC Cancer Gene Census: describing genetic  dysfunction across all human cancers, <i>Nature Reviews Cancer</i>, <b>18(11)</b>, 696–705 (2018). <a href="http://dx.doi.org/10.1038/s41568-018-0060-1">link</a>. <a href="http://dx.doi.org/10.1038/s41568-018-0060-1">doi</a>.</li>
+<li><a id="uhlen17_pathol_atlas_human_cancer_trans">[uhlen17_pathol_atlas_human_cancer_trans]</a> <a name="uhlen17_pathol_atlas_human_cancer_trans"></a>Mathias Uhlen, Cheng Zhang, Sunjae Lee, , Evelina Sj\"ostedt, Linn Fagerberg, , Gholamreza Bidkhori, Rui Benfeitas, Muhammad, Arif, Zhengtao Liu, Fredrik Edfors, Kemal, Sanli, Kalle von Feilitzen, Per Oksvold, , Emma Lundberg, Sophia Hober, Peter Nilsson, , Johanna Mattsson, Jochen Schwenk, Hans, Brunnstr\"om, Bengt Glimelius, Tobias, Sj\"oblom, Per-Henrik Edqvist, Dijana, Djureinovic, Patrick Micke, Cecilia Lindskog, , Adil Mardinoglu & Fredrik Ponten, A Pathology Atlas of the Human Cancer Transcriptome, <i>Science</i>, <b>357(6352)</b>, eaan2507 (2017). <a href="https://doi.org/10.1126/science.aan2507">link</a>. <a href="http://dx.doi.org/10.1126/science.aan2507">doi</a>.</li>
+<li><a id="zhao19_detail_model_posit_selec_improv">[zhao19_detail_model_posit_selec_improv]</a> <a name="zhao19_detail_model_posit_selec_improv"></a>Siming Zhao, Jun Liu, Pranav Nanga, Yuwen, Liu, Ercument Cicek, Nicholas Knoblauch, , Chuan He, Matthew Stephens & Xin He, Detailed Modeling of Positive Selection Improves  Detection of Cancer Driver Genes, <i>Nature Communications</i>, <b>10(1)</b>, 3399 (2019). <a href="https://doi.org/10.1038/s41467-019-11284-9">link</a>. <a href="http://dx.doi.org/10.1038/s41467-019-11284-9">doi</a>.</li>
+<li><a id="GO">[GO]</a> <a name="GO"></a>The Gene Ontology Consortium, The Gene Ontology Resource: 20 years and still GOing strong, <i>Nucleic Acids Research</i>, <b>47(D1)</b>, D330-D338 (2018). <a href="https://doi.org/10.1093/nar/gky1055">link</a>. <a href="http://dx.doi.org/10.1093/nar/gky1055">doi</a>.</li>
+<li><a id="godb">[godb]</a> <a name="godb"></a>  @Manualgodb,
+    title = GO.db: A set of annotation maps describing the entire Gene Ontology,
+    author = Marc Carlson,
+    year = 2020,
+    note = R package version 3.11.0,
+  </li>
+<li><a id="squarem">[squarem]</a> <a name="squarem"></a>Yu Du & Ravi Varadhan, SQUAREM: An R Package for Off-the-Shelf Acceleration  of EM, MM and Other EM-Like Monotone Algorithms, <i>Journal of Statistical Software</i>, <b>92(7)</b>, 1-41 (2020). <a href="http://dx.doi.org/10.18637/jss.v092.i07">doi</a>.</li>
+<li><a id="RcppArmadillo">[RcppArmadillo]</a> <a name="RcppArmadillo"></a>Dirk Eddelbuettel & Conrad Sanderson, RcppArmadillo: Accelerating R with high-performance C++ linear algebra, <i>Computational	Statistics and Data Analysis</i>, <b>71</b>, 1054-1063 (2014). <a href="http://dx.doi.org/10.1016/j.csda.2013.02.005">link</a>.</li>
+</ul>
 </p>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Nicholas Knoblauch</p>
-<p class="date">Created: 2020-05-12 Tue 19:03</p>
+<p class="date">Created: 2020-05-20 Wed 11:48</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

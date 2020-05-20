@@ -8,41 +8,30 @@
 
 * Functional Genetics by Expectation Maximization Project 
   My plan is for this chapter to consist of a submitted paper (targeting Bioinformatics).
-  DEADLINE: <2020-05-13 Wed>
+  DEADLINE: <2020-05-27 Wed>
 *** TODO Finish analyses
-    DEADLINE: <2020-05-04 Mon>
-**** TODO [#A] Run FGEM on genes from new ASD paper
-     DEADLINE: <2020-05-01 Fri>
-Update results with recent data from:cite:satterstrom
-**** TODO [#B] Make a decision about feature collinearity issue
-     DEADLINE: <2020-04-30 Thu>
+    DEADLINE: <2020-05-22 Fri>
+**** DONE [#A] Run FGEM on putative cancer genes from driverMAPS paper 
+     DEADLINE: <2020-05-07 Thu>
+I ran FGEM on 20 lists of gene-level Bayes Factors obtained from cite:zhao19_detail_model_posit_selec_improv
+**** TODO [#A] Validate FGEM features against COSMIC cancer gene census 
+DEADLINE: <2020-05-21 Thu>
+I will validate the set of gene-level features I identify by estimating enrichment in the COSMIC cancer gene census
+**** DONE [#B] Make a decision about feature collinearity issue
+     DEADLINE: <2020-05-18 Mon>
 If the features from genes are highly correlated, the parameter estimates can be unstable. The current plan is to 
 detect and merge or remove highly correlated features from the analysis
-# + FGEM currently can't handle collinearity in the gene annotations
-# + Possible solutions (from easiest to hardest):
-#   + Add a check for collinear features 
-#   + Fit model via stochastic minibatch gradient descent (would need to come up with a new name because it would no longer be "Functional Genetics by Expectation Maximization")
-#   + Prior on $\beta$
-**** TODO fisher's exact test
-***** 1 at a time followed by joint analysis
-**** TODO posterior for genes with and without prior
-**** TODO Yuwen's annotation data 
-**** TODO CancerMAPS Bayes Factors from driverMAPS
-***** Get list of genes from siming 
-***** What gene sets to use for Siming:
-+ screen single feature models and use significant ones in a joint model
 *** TODO Finish first draft
-    DEADLINE: <2020-05-08 Fri>
+    DEADLINE: <2020-05-18 Mon>
 I believe I can have a first draft finished by this date.  Obviously work on the draft will happen concurrently with analysis work.
-
 * Polygenic RSS
 As it stands there will probably more than one paper's worth of work to be written up for this project
 by the time it is finished. The current plan is for this project is to get one paper out of the project
 and for the rest of the work to go in the dissertation.
 ** Write Paper 
-   DEADLINE: <2020-06-05 Fri>
+   DEADLINE: <2020-06-20 Sat>
 *** TODO Finish analyses
-    DEADLINE: <2020-05-04 Mon>
+    DEADLINE: <2020-06-04 Thu>
 **** DONE [#A] Simulate UK Biobank GWAS with polygenic genetic architecture
 **** TODO [#A] Simulate UK Biobank GWAS with sparse genetic architecture
 **** TODO [#B] Finish UK-biobank/Genbank GWAS real-data analysis
