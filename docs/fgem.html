@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2020-04-30 Thu 13:05 -->
+<!-- 2020-05-20 Wed 11:54 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Functional Enrichment by Expectation Maximization Project</title>
@@ -237,8 +237,7 @@ for the JavaScript code in this tag.
 <li><a href="#org054bbb5"><span class="todo TODO">TODO</span> FGEM Project <code>[0%]</code></a>
 <ul>
 <li><a href="#orga6c2f62"><span class="todo TODO">TODO</span> Write Paper <code>[0%]</code></a></li>
-<li><a href="#orgaaa11c6"><span class="todo TODO">TODO</span> Analyses <code>[0%]</code></a></li>
-<li><a href="#orgcba6c57"><span class="todo TODO">TODO</span> Code <code>[66%]</code></a></li>
+<li><a href="#orgaaa11c6"><span class="todo TODO">TODO</span> Analyses <code>[66%]</code></a></li>
 </ul>
 </li>
 </ul>
@@ -262,8 +261,8 @@ for the JavaScript code in this tag.
 <div id="outline-container-org61e6980" class="outline-4">
 <h4 id="org61e6980"><span class="todo TODO">TODO</span> Statistical Method</h4>
 </div>
-<div id="outline-container-org977e91d" class="outline-4">
-<h4 id="org977e91d"><span class="todo TODO">TODO</span> Application to Autism</h4>
+<div id="outline-container-org4748acf" class="outline-4">
+<h4 id="org4748acf">Application to Cancer</h4>
 </div>
 <div id="outline-container-org85395db" class="outline-4">
 <h4 id="org85395db"><span class="todo TODO">TODO</span> Software</h4>
@@ -276,155 +275,56 @@ for the JavaScript code in this tag.
 </div>
 </div>
 <div id="outline-container-orgaaa11c6" class="outline-3">
-<h3 id="orgaaa11c6"><span class="todo TODO">TODO</span> Analyses <code>[0%]</code></h3>
+<h3 id="orgaaa11c6"><span class="todo TODO">TODO</span> Analyses <code>[66%]</code></h3>
 <div class="outline-text-3" id="text-orgaaa11c6">
 </div>
-<div id="outline-container-orge43cdb2" class="outline-4">
-<h4 id="orge43cdb2"><span class="todo TODO">TODO</span> Run FGEM on new set of genes</h4>
-<div class="outline-text-4" id="text-orge43cdb2">
-<p>
-From <a class='org-ref-reference' href="#satterstrom">satterstrom</a>
-</p>
-
-<div class="org-src-container">
-<pre class="src src-R">
- <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">code to prepare `TADA_BF` dataset goes here</span>
-
- <span style="color: #C04040;">library</span>(dplyr)
- <span style="color: #C04040;">library</span>(readxl)
- <span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">Retrieve data for https://doi.org/10.1016/j.cell.2019.12.036</span>
- input_xl_df <span style="color: #C04040;">&lt;-</span> readxl::read_excel(<span style="color: #FFABAB;">"~/Dropbox/Repos/dissertation/data/1-s2.0-S0092867419313984-mmc2.xlsx"</span>,sheet = 2)
- xl_df <span style="color: #C04040;">&lt;-</span> input_xl_df<span style="color: #C04040;">%&gt;%</span> 
-   select(gene,
-          hugoGene,
-          entrez_id,
-          ensembl_gene_id,
-          chr,
-          start_hg38,
-          stop_hg38,
-          strand,
-          contains(<span style="color: #FFABAB;">"BF"</span>),
-          contains(<span style="color: #FFABAB;">"pval"</span>),
-          contains(<span style="color: #FFABAB;">"qval"</span>))
-
- new_TADA_BF <span style="color: #C04040;">&lt;-</span> transmute(xl_df,gene=gene,BF=BF_dn.ptv*BF_dn.misa*BF_dn.misb*BF_cc.ptv)
-
-
- <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">head(feature_df)</span>
-
-
-
-<span style="color: #5D6A70;"># </span><span style="color: #5D6A70;">usethis::use_data(new_TADA_BF, overwrite = TRUE)</span>
-</pre>
+<div id="outline-container-orgc20e030" class="outline-4">
+<h4 id="orgc20e030"><span class="done DONE">DONE</span> Run FGEM on driverMAPS TCGA</h4>
 </div>
 
-<div class="org-src-container">
-<pre class="src src-R">
-
-
-<span style="color: #C04040;">library</span>(dplyr)
-<span style="color: #C04040;">library</span>(readxl)
-<span style="color: #C04040;">library</span>(tidyr)
-  <span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">Retrieve data for https://doi.org/10.1016/j.cell.2019.12.036</span>
-  input_xl_df <span style="color: #C04040;">&lt;-</span> readxl::read_excel(<span style="color: #FFABAB;">"~/Dropbox/Repos/dissertation/data/1-s2.0-S0092867419313984-mmc2.xlsx"</span>,sheet = 2)
-  xl_df <span style="color: #C04040;">&lt;-</span> input_xl_df<span style="color: #C04040;">%&gt;%</span> 
-    select(gene,
-           hugoGene,
-           entrez_id,
-           ensembl_gene_id,
-           chr,
-           start_hg38,
-           stop_hg38,
-           strand,
-           contains(<span style="color: #FFABAB;">"BF"</span>),
-           contains(<span style="color: #FFABAB;">"pval"</span>),
-           contains(<span style="color: #FFABAB;">"qval"</span>))
-
-new_TADA_BF <span style="color: #C04040;">&lt;-</span> transmute(xl_df,gene=gene,BF=BF_dn.ptv*BF_dn.misa*BF_dn.misb*BF_cc.ptv)
-
-TADA_BF_dn <span style="color: #C04040;">&lt;-</span> transmute(xl_df,gene=gene,BF=BF_dn.ptv*BF_dn.misa*BF_dn.misb*BF_cc.ptv)
-
-
-
-
- feature_df <span style="color: #C04040;">&lt;-</span> select(input_xl_df,
-                       gene,
-                       pLI,
-<span style="color: #5D6A70;">#                       </span><span style="color: #5D6A70;">ASC33_2014,</span>
- <span style="color: #5D6A70;">#                      </span><span style="color: #5D6A70;">SSC27_2014,</span>
-  <span style="color: #5D6A70;">#                     </span><span style="color: #5D6A70;">ASC65_2015,</span>
-   <span style="color: #5D6A70;">#                    </span><span style="color: #5D6A70;">ASC102_2018,</span>
-                      Function) <span style="color: #C04040;">%&gt;%</span>
-   mutate(has_function=1L) <span style="color: #C04040;">%&gt;%</span>
-   tidyr::spread(key=Function,value=has_function,fill=0L) <span style="color: #C04040;">%&gt;%</span>
-   select(-.,-Other)
-
-ibf_df <span style="color: #C04040;">&lt;-</span> select(xl_df,gene,contains(<span style="color: #FFABAB;">"BF"</span>))
-
-colnames(ibf_df)[-1]
-cn <span style="color: #C04040;">&lt;-</span> colnames(ibf_df)[-1][2]
-<span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">for(cn in colnames(ibf_df)[-1]){</span>
-
-ixl_df <span style="color: #C04040;">&lt;-</span> inner_join(check_BF,feature_df,by=c(<span style="color: #FFABAB;">"Gene"</span>=<span style="color: #FFABAB;">"gene"</span>))
-otp_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,Gene,BF=old_BF,pLI) <span style="color: #C04040;">%&gt;%</span> fgem::FGEM_df(verbose=<span style="color: #99D6FF;">FALSE</span>)
-ntp_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,Gene,BF,pLI) <span style="color: #C04040;">%&gt;%</span> fgem::FGEM_df(verbose=<span style="color: #99D6FF;">FALSE</span>)
-notp_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,-BF) <span style="color: #C04040;">%&gt;%</span>
-  rename(BF=old_BF) <span style="color: #C04040;">%&gt;%</span>
-  fgem::FGEM_df(verbose=<span style="color: #99D6FF;">TRUE</span>)
-
-nnotp_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,-BF,-pLI,
-                   -<span style="color: #EDEDE1; background-color: #272C2E;">`Gene expression regulation`</span>,
-                   -<span style="color: #EDEDE1; background-color: #272C2E;">`Neuronal communication`</span>) <span style="color: #C04040;">%&gt;%</span>
-  rename(BF=old_BF) <span style="color: #C04040;">%&gt;%</span>
-  fgem::FGEM_df(verbose=<span style="color: #99D6FF;">TRUE</span>)
-
-nnntp_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,-old_BF,-pLI,
-                   -<span style="color: #EDEDE1; background-color: #272C2E;">`Gene expression regulation`</span>,
-                   -<span style="color: #EDEDE1; background-color: #272C2E;">`Neuronal communication`</span>) <span style="color: #C04040;">%&gt;%</span>
-  fgem::FGEM_df(verbose=<span style="color: #99D6FF;">TRUE</span>)
-
-
-ntp_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,Gene,BF,pLI) <span style="color: #C04040;">%&gt;%</span> fgem::FGEM_df(verbose = <span style="color: #99D6FF;">TRUE</span>, use_squarem = <span style="color: #99D6FF;">FALSE</span>)
-
-feat_df <span style="color: #C04040;">&lt;-</span> select(ixl_df,Gene,BF,pLI)
-<span style="color: #C8FF03;">for</span>(
-
-
-</pre>
+<div id="outline-container-org33a2e1e" class="outline-4">
+<h4 id="org33a2e1e"><span class="done DONE">DONE</span> use multiple testing correction in forward selection</h4>
+<div class="outline-text-4" id="text-org33a2e1e">
 </div>
+<ul class="org-ul">
+<li><a id="orga751345"></a><span class="todo TODO">TODO</span> fisher's exact test<br>
+<ul class="org-ul">
+<li><a id="org26bcc50"></a>1 at a time followed by joint analysis<br></li>
+</ul>
+</li>
+<li><a id="org7b64768"></a><span class="todo TODO">TODO</span> posterior for genes with and without prior<br></li>
+<li><a id="org5d7a284"></a><span class="todo TODO">TODO</span> Yuwen's annotation data<br></li>
+<li><a id="orgb353677"></a><span class="todo TODO">TODO</span> CancerMAPS Bayes Factors from driverMAPS<br>
+<ul class="org-ul">
+<li><a id="org3db21e1"></a>Get list of genes from siming<br></li>
+<li><a id="orgea81057"></a>What gene sets to use for Siming:<br>
+<div class="outline-text-6" id="text-orgea81057">
+<ul class="org-ul">
+<li>screen single feature models and use significant ones in a joint model</li>
+</ul>
 </div>
+</li>
+</ul>
+</li>
+</ul>
 </div>
-
-
-
-
-
-
-<div id="outline-container-org3549c4b" class="outline-4">
-<h4 id="org3549c4b"><span class="todo TODO">TODO</span> Characterize extent of collinearity issue</h4>
+<div id="outline-container-org66be9d4" class="outline-4">
+<h4 id="org66be9d4"><span class="todo TODO">TODO</span> make plots</h4>
+<div class="outline-text-4" id="text-org66be9d4">
 </div>
+<ul class="org-ul">
+<li><a id="org5af62e6"></a>Multivariate enrichment<br>
+<div class="outline-text-5" id="text-org5af62e6">
 </div>
-<div id="outline-container-orgcba6c57" class="outline-3">
-<h3 id="orgcba6c57"><span class="todo TODO">TODO</span> Code <code>[66%]</code></h3>
-<div class="outline-text-3" id="text-orgcba6c57">
-</div>
-<div id="outline-container-org45dceb9" class="outline-4">
-<h4 id="org45dceb9"><span class="done DONE">DONE</span> Write Vignette</h4>
-</div>
-<div id="outline-container-org20f72e5" class="outline-4">
-<h4 id="org20f72e5"><span class="done DONE">DONE</span> Write R package</h4>
-</div>
-<div id="outline-container-org4a9d248" class="outline-4">
-<h4 id="org4a9d248"><span class="todo TODO">TODO</span> Submit to CRAN (or Bioconductor)</h4>
-<div class="outline-text-4" id="text-org4a9d248">
-</div>
+</li>
+</ul>
 </div>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Nicholas Knoblauch</p>
-<p class="date">Created: 2020-04-30 Thu 13:05</p>
+<p class="date">Created: 2020-05-20 Wed 11:54</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
