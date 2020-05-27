@@ -1,0 +1,182 @@
+% Created 2020-05-13 Wed 10:46
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\author{Nicholas Knoblauch}
+\date{\today}
+\title{Functional Enrichment by Expectation Maximization}
+\begin{document}
+
+\maketitle
+\setcounter{tocdepth}{2}
+\tableofcontents
+
+
+\section*{Introduction}
+\label{sec:org37f1ee5}
+
+\section*{Method}
+\label{sec:org9bf8fc0}
+
+\subsection*{Model}
+\label{sec:orgfc60147}
+
+Suppose we have gathered genetic data for a set of individuals to identify which genes are causally related to a disease or trait of interest.  For each gene \(g \in \{1 \dots G\}\), let the indicator variable \(z_g=1\) indicate that
+gene \(g\) is causaully related to our trait or disease of interest.  We can summarise the evidence for and against our hypothesis that \(z_g=1\) using a bayes factor:
+
+$$B_g=\frac{P(x_g|z_g=1)}{P(x_g|z_g=0)}$$
+
+where \(x_g\) is the subset of the aforementioned genetic data corresponding to the \$g\$th gene.
+
+Suppose further that we know a set of \(F\) functional annotations or properties for each of our \(G\) genes.  Let \(\textbf{a}_g\) denote the length \(F\) vector of annotations for gene \(g\), and \(\textbf{A}\) denote the matrix with \(F\) rows and \(G\) 
+columns consisting of \(\textbf{a}_1 ...  \textbf{a}_G\)
+We define the vector \(\boldsymbol{\beta}\) and the function \(\pi(\boldsymbol{\beta},\textbf{a}_g)\) such that:
+
+$$P\pi(\boldsymbol{\beta},\textbf{a}_g) =  \frac{1}{1+e^{-(\beta_{0}+\sum_{f=1}^F{A_{f,g}\beta_f})}} =  (z_g=1|\textbf{a}_g,\boldsymbol{\beta})$$
+
+We can compute the likelihood of a particular value of \(\boldsymbol{\beta}\) as:
+
+$$ P(\textbf{x}|\boldsymbol{\beta},\textbf{A})=\prod_{g=1}^{G}P(x_g|\boldsymbol{\beta})=\prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{a}_g) P(x_g|z_g=1)+(1-\pi(\boldsymbol{\beta},\textbf{a}_g))P(x_g|z_g=0)]$$
+
+By factorizing out the term \(\prod_{g=1}^{G} P(x_g|z_g=0)\) which does not depend on \(\boldsymbol{\beta}\), we can express the likelihood for \(\boldsymbol{\beta}\) in terms of \(\textbf{B}\):
+
+
+$$P(\textbf{x}|\boldsymbol{\beta},\textbf{A}) \propto \prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{a}_g)B_g+(1-\pi(\boldsymbol{\beta},\textbf{a}_g))]$$
+
+
+Given a particular value of \(\boldsymbol{\beta}\), we arrive at a new posterior:
+
+$$P(z_g=1 | x_g, \boldsymbol{\beta},\textbf{a}_g) = \frac{\pi(\boldsymbol{\beta},\textbf{a}_g) B_g}{\pi(\boldsymbol{\beta} , \textbf{a}_g) B_g + 1 - \pi(\boldsymbol{\beta},\textbf{a}_g)}$$
+
+\subsection*{Algorithm}
+\label{sec:orgf2832ea}
+
+Our goal is both to estimate \(\boldsymbol{\beta}\) as well as \(P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)\) for each gene.  We use the EM algorithm \cite{EM_algo} to
+obtain a maximum likelihood estimate for \(\boldsymbol{\beta}\).  If \(\textbf{z}\) is our latent variable then our complete data likelihood is:
+
+$$P(\textbf{x},\textbf{z}|\boldsymbol{\beta},\textbf{A}) = 
+\prod_{g=1}^G \left[P(z_g|\boldsymbol{\beta},\textbf{a}_g) P(x_g|z_g)\right] = 
+\prod_{g=1}^G \left[\pi(\boldsymbol{\beta},\textbf{a}_g)^{z_g} (1-\pi(\boldsymbol{\beta},\textbf{a}_g))^{1-z_g}B_g^{z_g}\right]$$ 
+
+From which we form the \(Q\) function
+
+$$ Q(\boldsymbol{\beta}|\boldsymbol{\beta}_n) = \sum_{g=1}^G \left[P(z_g=1|x_g,\boldsymbol{\beta}_n,\textbf{a}_g) \log\left(P(x_g,z_g=1|\boldsymbol{\beta})\right) +
+P(z_g=0|x_g,\boldsymbol{\beta}_n,\textbf{a}_g) \log\left(P(x_g,z_g=0|\boldsymbol{\beta})\right) \right] = 
+\sum_{g=1}^G \left [u_g(\log(\pi(\boldsymbol{\beta_n},\textbf{a}_g))+B_g)+(1-u_g)\log(1-\pi(\boldsymbol{\beta_n},\textbf{a}_g)) \right]$$
+
+Where \(u_g=P(z_g=1|x_g,\boldsymbol{\beta_n},\textbf{a}_g) = \frac{\pi(\boldsymbol{\beta_n},\textbf{a}_g)B_g}{\pi(\boldsymbol{\beta_n},\textbf{a}_g)B_g+1-\pi(\boldsymbol{\beta_n},\textbf{a}_g)}\)
+
+The model fitting procedure proceeds as follows 
+
+\begin{itemize}
+\item Start with an initial guess of \(\boldsymbol{\beta}\)
+\item Repeat until \(Q(\boldsymbol{\beta}|\boldsymbol{\beta}_{n-1})-Q(\boldsymbol{\beta}|\boldsymbol{\beta}_n)< \text{tol}\):
+\begin{itemize}
+\item Compute \(P(z_g=1|x_g,\boldsymbol{\beta_n},\textbf{a}_g)\)
+\item Maximize the likelihood for \(\boldsymbol{\beta}\) using proportional logistic regression
+\end{itemize}
+\end{itemize}
+
+
+
+
+\subsubsection*{Feature selection}
+\label{sec:orgcc5bab3}
+
+The number of gene-level features one might include in such a model is very large.  It is impossible, from both a computability 
+and interpretability standpoint, to include all conceivable features in the model. A related but distinct issue is that of collinearity.
+As the number of features in the model increases, there is a higher probability that some subset of features will be collinear with one-another,
+which can complicate model-fitting.  To avoid this issue, we employ a multi-stage model fitting procedure. In the first step, all single-feature-plus-intercept
+models are fit, and their \$p\$-value 
+
+We employed a forward selection procedure to construct a multivariate model.  We begin the procedure by 
+fitting all features in single-feature models.  We test the significance of each model against an intercept-only model using the likelihood ratio test.
+From this set of univariate models multivariate models all of the nonsignificant (false discovery rate of 0.05) univariate features for each cancer type
+ were removed from the analysis.  In the case of KICH, no features were significant after multiple testing correction (minimum \(q\) value: 0.104 correspodning to GO:0071456, "cellular response to hypoxia"), and in the case of CHOL,
+only one feature was significant after multiple testing correction (GO:0008285 " negative regulation of cell population proliferation", \(q\) value: 0.00909). Significant features were then 
+further pruned using a jaccard index similarity cutoff.
+
+\subsection*{Jaccard index for binary feature overlap}
+\label{sec:org254816a}
+
+The Jaccard index that measures the similarity of two sets.  GO terms are binary features (gene is either a member of a GO term or it is not), and can be 
+models as a set, where the genes in the GO terms are the elements of the set. The definition of the Jaccard Index is:
+
+$$ J(A,B) = \frac{|A \cap B |}{A \cup B} = \frac{| A \cap B|}{|A|+|B|-|A \cap B|} $$
+
+The strategy for feature selection works as follows: first take the most significant single-feature model,
+and then remove the most similar features to the selected feature (i.e the features with a jaccard similarity above 0.1).
+Then fit all 2 term models that include the most significant feature, select the feature with the highest significance when tested against the single 
+feature model, and remove all features similar to the features in the selected model. This process of testing all available \(n\) feature models, against the
+(greedily) best \$n-1\$-feature model, and removing from the candidate pool features similar to the chosen \$n\$th feature, is repeated until the most significant model in the \(n\) term vs
+\(n-1\) comparison is not significant at \(p<0.05\) by the likelihood ratio test.
+
+
+\subsection*{Validation against COSMIC Cancer Gene Census}
+\label{sec:orgacb7f47}
+
+The Catalogue of Somatic Mutations in Cancer (COSMIC) Cancer Gene Census (CGC) \cite{COSMIC} is an effort to catalogue genes which contain mutations
+causally implicated in cancer.  
+
+
+
+\subsection*{Data}
+\label{sec:org2e8edcc}
+
+
+\subsubsection*{Prognostic}
+\label{sec:org8f6ca8a}
+
+The Human Pathology Atlas is a dataset of 900,000 patient survival profiles across 17 types of cancersurvival data \cite{uhlen17_pathol_atlas_human_cancer_trans}
+
+\subsubsection*{Gene-Level Summary Statistics}
+\label{sec:org9c35a9f}
+
+A set of Bayes factors from a study of cancer driver genes \cite{zhao19_detail_model_posit_selec_improv}.  For each of 20 TCGA tumor types, roughly 20,000 genes were analyzed and the 
+posterior probability that each gene (in each cancer type) was a causal gene was assessed and summarized via Bayes Factor.  
+
+\subsubsection*{Gene-Level Annotations}
+\label{sec:org6db44cc}
+
+\begin{itemize}
+\item Gene Ontology
+\label{sec:org9a09e61}
+
+The "Biological Process" Gene Ontology \cite{GO}  was downloaded from the Bioconductor package \texttt{GO.db} \cite{godb}. Of the 10,930 possible biological process gene ontology terms, the 2,198 terms that 
+include 10 or more genes were analyzed, so as to reduce the multiple testing burden.
+\end{itemize}
+
+
+\subsection*{Software}
+\label{sec:orga90cb87}
+
+Our method is distributed as a freely available R package \href{https://github.com/CreRecombinase/FGEM}{FGEM} cite:R .FGEM relies on the \texttt{SQUAREM} package to accelerate EM convergence  \cite{squarem}   
+and the hot-path functions are implemented as C++ functions using the \texttt{RcppArmadillo} \cite{RcppArmadillo} package.  
+
+
+\section*{Results}
+\label{sec:orgbf5c63a}
+
+\section*{Discussion}
+\label{sec:org0be4266}
+
+
+
+
+
+
+\bibliographystyle{unsrt}
+\bibliography{references}
+\end{document}

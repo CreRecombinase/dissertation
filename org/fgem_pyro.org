@@ -1,0 +1,148 @@
+
+#+BEGIN_SRC jupyter-python :session pyro :tangle ../scripts/fgem_pyro.py
+  import os
+
+  import jax.numpy as np
+  import jax.random as random
+  from IPython.display import set_matplotlib_formats
+  import jax.numpy as np
+  from jax import random, vmap
+  from jax.scipy.special import logsumexp
+  import matplotlib.pyplot as plt
+  import numpy as onp
+  import pandas as pd
+  import seaborn as sns
+  from jax.scipy.special import expit, logit
+  import numpyro
+  from numpyro.diagnostics import hpdi
+  import numpyro.distributions as dist
+  from numpyro import handlers
+  from numpyro.infer import MCMC, NUTS
+
+  plt.style.use('bmh')
+  if "NUMPYRO_SPHINXBUILD" in os.environ:
+      set_matplotlib_formats('svg')
+
+  assert numpyro.__version__.startswith('0.2.4')
+#+END_SRC
+
+#+RESULTS:
+
+
+#+BEGIN_SRC jupyter-python :session pyro :tangle ../scripts/fgem_pyro.py
+
+
+  def finnish_horseshoe(M, m0, N, var, half_slab_df, slab_scale2, tau_tilde, c2_tilde, lambd, beta_tilde):
+    
+      tau0 = (m0/(M-m0) * (np.sqrt(var)/np.sqrt(1.0*N)))
+      tau = tau0 * tau_tilde
+      c2 = slab_scale2 * c2_tilde
+      lambd_tilde = np.sqrt(c2 * lambd**2 / (c2 + tau**2 * lambd**2))
+      beta = tau * lambd_tilde * beta_tilde
+    
+      return(beta)
+
+
+  def fgem_fin_normal(X,BF=None,slab_df=1,slab_scale=1,expected_large_covar_num=10):
+        r"simplest FGEM possible"
+        #    num_genes = BF.shape[0]
+        num_features = X.shape[1]
+        Beta0_prior = dist.Normal(-1,5)
+    
+
+        # update from pymc3
+        half_slab_df = slab_df/2
+        variance = y_vals.var()
+        slab_scale2 = slab_scale**2
+        hs_shape = (design_mat.shape[1],)
+      
+        beta_tilde = numpyro.sample('beta_tilde', dist.Normal(0., 1.), sample_shape=hs_shape)
+        lambd = numpyro.sample('lambd', dist.HalfCauchy(1.), sample_shape=hs_shape)
+        tau_tilde = numpyro.sample('tau_tilde', dist.HalfCauchy(1.))
+        c2_tilde = numpyro.sample('c2_tilde', dist.InverseGamma(half_slab_df, half_slab_df))
+      
+        bC = finnish_horseshoe(M = hs_shape[0],
+                               m0 = expected_large_covar_num,
+                               N = N,
+                               var = variance,
+                               half_slab_df = half_slab_df, 
+                               slab_scale2 = slab_scale2,
+                               tau_tilde = tau_tilde,
+                               c2_tilde = c2_tilde,
+                               lambd = lambd, 
+                               beta_tilde = beta_tilde)
+      
+      
+        Beta0  = numpyro.sample("Beta0",Beta0_prior)
+        Beta_prior = dist.Normal(np.zeros(num_features),np.ones(num_features)*5)
+        Beta = numpyro.sample("Beta",Beta_prior)
+        pvec = expit(np.sum( Beta * X + Beta0,axis=-1))
+        lik = np.sum(np.log(pvec * BF + (1-pvec)))
+        numpyro.factor('lik',lik)
+
+
+
+
+
+    def fgem_normal(X,BF=None):
+        r"simplest FGEM possible"
+        #    num_genes = BF.shape[0]
+        num_features = X.shape[1]
+        Beta0_prior = dist.Normal(-1,5)
+        Beta0  = numpyro.sample("Beta0",Beta0_prior)
+        Beta_prior = dist.Normal(np.zeros(num_features),np.ones(num_features)*5)
+        Beta = numpyro.sample("Beta",Beta_prior)
+        pvec = expit(np.sum( Beta * X + Beta0,axis=-1))
+        lik = np.sum(np.log(pvec * BF + (1-pvec)))
+        numpyro.factor('lik',lik)
+#+END_SRC
+
+#+RESULTS:
+
+#+BEGIN_SRC jupyter-python :session pyro :tangle ../scripts/fgem_pyro.py
+
+  import h5py
+  import os
+  os.getcwd()
+  with h5py.File("../data/models_hdf/UCS.h5",'r') as h5f:
+      X = (h5f['x'][:,:]).transpose()
+      y= h5f['y'][:]
+
+  print(X.shape)
+    #+END_SRC
+
+    #+RESULTS:
+    : (20041, 41)
+    
+#+BEGIN_SRC jupyter-python :session pyro :async yes :tangle ../scripts/fgem_pyro.py
+
+rng_key = random.PRNGKey(0)
+rng_key, rng_key_ = random.split(rng_key)
+
+num_warmup, num_samples = 1000, 2000
+
+kernel = NUTS(fgem_normal)
+mcmc = MCMC(kernel, num_warmup, num_samples, num_chains=1,
+                progress_bar=True)
+mcmc.run(rng_key, X, y)
+ms=mcmc.get_samples()
+mcmc.print_summary()
+#+END_SRC
+
+
+
+# #+RESULTS:
+# : 9bc1d696-4ee6-4cd2-8013-541524b5fcde
+
+  
+# #+BEGIN_SRC jupyter-python :session pyro 
+#   # Start from this source of randomness. We will split keys for subsequent operations.
+
+#   # Run NUTS.
+#   kernel = NUTS(fgem_normal)
+#   mcmc = MCMC(kernel, num_warmup, num_samples)
+#   mcmc.run(rng_key_, marriage=dset.MarriageScaled.values, divorce=dset.DivorceScaled.values)
+
+#   samples_1 = mcmc.get_samples()
+
+# #+END_SRC

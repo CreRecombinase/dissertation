@@ -1,8 +1,17 @@
 #+TITLE: Functional Enrichment by Expectation Maximization
 #+SETUPFILE: setup.org
-#+OPTIONS: toc:2
+#+OPTIONS: toc:2 |:t
 
 * Introduction
+
+When interpreting the results of a genome-scale genetic association study, be it a GWAS, a whole exome sequencing study, or a whole genome sequencing study, there are two questions that are of interest:
+1) which genes are associated with the trait of interest, and 2) what are the common properties of the genes that contribute to disease risk. The answer to one of these questions can inform the other.  
+Obviously, identifying a set of properties common to causal genes is made much easier if the set of causal genes is known with certainty. Furthermore, if the set of causal genes is not known,
+prior knowledge about the properties of the causal genes is available, that prior knowledge can be used to implicate genes that might otherwise not have been identified due to a lack of statistical power, or
+similarly to deprioritize genes that might otherwise be implicated, despite being false positives.  Despite the complementarity of these 
+
+
+
 
 * Method
 
@@ -36,7 +45,7 @@ Given a particular value of $\boldsymbol{\beta}$, we arrive at a new posterior:
 $$P(z_g=1 | x_g, \boldsymbol{\beta},\textbf{a}_g) = \frac{\pi(\boldsymbol{\beta},\textbf{a}_g) B_g}{\pi(\boldsymbol{\beta} , \textbf{a}_g) B_g + 1 - \pi(\boldsymbol{\beta},\textbf{a}_g)}$$
 
 
-** Algorithm
+** Algorithm 
  
 Our goal is both to estimate $\boldsymbol{\beta}$ as well as $P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)$ for each gene.  We use the EM algorithm cite:EM_algo to
 obtain a maximum likelihood estimate for $\boldsymbol{\beta}$.  If $\textbf{z}$ is our latent variable then our complete data likelihood is:
@@ -60,10 +69,18 @@ The model fitting procedure proceeds as follows
   - Compute $P(z_g=1|x_g,\boldsymbol{\beta_n},\textbf{a}_g)$
   - Maximize the likelihood for $\boldsymbol{\beta}$ using proportional logistic regression
 
+** Algorithm (penalized Maximum Likelihood with BFGS)
+
+An alternative to the Expectation Maximization framework is a direct, maximum-likelihood approach.  The Limited Memory Broyden-Fletcher-Goldfarb-Shanno algorithm (LM-BFGS) cite:LMBFGS  is among the most popular algorithms 
+for unconstrained optimization over scalar, differentiable functions. 
+
+One limitation of LM-BFGS, is that, as mentioned previously, the function that is being optimized must be differentiable.  Unfortunately, sparsity-inducing $l_1$-regularized models of the form
+
+$$f(\boldsymbol{\theta})=p(\boldsymbol{\theta} | \textbf{x}) + C \Vert \boldsymbol{\theta} \Vert_1$$ are not differentiable when any of the elements of the parameter vector $\boldsybmol{\theta}$ are 0.  The Orthant-wise limited-memory quasi-Newton method is a variant of LM-BFGS which is designed precisely for 
+fitting $l_1$-regularized, sparsity inducing models. 
 
 
-
-*** Feature selection
+*** Feature selection (Forward Selection)
 
 The number of gene-level features one might include in such a model is very large.  It is impossible, from both a computability 
 and interpretability standpoint, to include all conceivable features in the model. A related but distinct issue is that of collinearity.
@@ -75,7 +92,8 @@ We employed a forward selection procedure to construct a multivariate model.  We
 fitting all features in single-feature models.  We test the significance of each model against an intercept-only model using the likelihood ratio test.
 From this set of univariate models multivariate models all of the nonsignificant (false discovery rate of 0.05) univariate features for each cancer type
  were removed from the analysis.  In the case of KICH, no features were significant after multiple testing correction (minimum $q$ value: 0.104 correspodning to GO:0071456, "cellular response to hypoxia"), and in the case of CHOL,
-only one feature was significant after multiple testing correction (GO:0008285 " negative regulation of cell population proliferation", $q$ value: 0.00909). Significant features were then 
+only one feature was significant after multiple testing correction (GO:0008285 " negative regulation of cell population proliferation", $q$ value: 0.00909). 
+Significant features were then 
 further pruned using a jaccard index similarity cutoff.
 
 ** Jaccard index for binary feature overlap
@@ -98,7 +116,7 @@ $n-1$ comparison is not significant at $p<0.05$ by the likelihood ratio test.
 The Catalogue of Somatic Mutations in Cancer (COSMIC) Cancer Gene Census (CGC) cite:COSMIC is an effort to catalogue genes which contain mutations
 causally implicated in cancer. To date, the CGC has identified  To validate the FGEM models, CGC genes were used as a gold standard.    
 
-
+** Validation against 
 
 ** Data 
 
@@ -136,7 +154,7 @@ FGEM model using the COSMIC census genes as ground truth.  For each of the 20 ca
 (higher likelihood ratio)
 
 
-| cancer | cross_entropy_functional | cross_entropy_uniform | cross_entropy_ratio |
+| cancer | cross entropy functional | cross entropy uniform | cross entropy ratio |
 |--------+--------------------------+-----------------------+---------------------|
 | BLCA   |        -95662.4678891365 |      -85246.945544574 |   -10415.5223445625 |
 | BRCA   |        -118449.351908682 |     -90864.7631741114 |   -27584.5887345709 |

@@ -27,17 +27,20 @@
 + screen single feature models and use significant ones in a joint model
 *** TODO make plots 
 **** Multivariate enrichment
+
+
+
 * Analysis
-#+BEGIN_SRC R  :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-library(tidyverse)
-library(fgem)
-library(qs)
-#+END_SRC
 
 
 **** Looking at the data
 We'll start by reading the data, pulling out the info we'll use, and saving it back in a nicer format
 #+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/  :results none
+
+library(tidyverse)
+library(fgem)
+library(qs)
+
 data_f <- fs::dir_ls("data/driverMAPS_results_20TumorTypes",glob="*txt")
 cancer_t <- str_replace(data_f, ".+/([A-Z]+)_BayesFactorFDR.txt", "\\1")
 
@@ -57,7 +60,7 @@ vc <- readr::cols(
                  BF = col_double(),
                  predtag = col_skip(),
                  Posterior = col_skip(),
-                 FDR = col_skip()
+                 FDR = col_double()
   )
 
     cancer_df <- map2_df(data_f,
@@ -78,14 +81,14 @@ head(cancer_df)
 #+END_SRC
 
 #+RESULTS:
-| Gene   |            TSG_BF |             OG_BF |               BF | cancer |
-|--------+-------------------+-------------------+------------------+--------|
-| PIK3CA | -1.77971729131923 |  322.833185837287 | 322.140038656727 | BLCA   |
-| FGFR3  |  28.0895429320585 |  246.567548311336 | 245.874401130776 | BLCA   |
-| TP53   |  191.788256479794 |  70.7692247503828 | 191.095109299234 | BLCA   |
-| ERBB2  |  2.30809843606858 |  111.697583835288 | 111.004436654728 | BLCA   |
-| ERCC2  |  14.6298592310469 |   80.657307268368 | 79.9641600878081 | BLCA   |
-| ARID1A |  71.9813145469098 | -11.8163792581274 | 71.2881673663499 | BLCA   |
+| Gene   |            TSG_BF |             OG_BF |               BF | FDR | cancer |
+|--------+-------------------+-------------------+------------------+-----+--------|
+| PIK3CA | -1.77971729131923 |  322.833185837287 | 322.140038656727 |   0 | BLCA   |
+| FGFR3  |  28.0895429320585 |  246.567548311336 | 245.874401130776 |   0 | BLCA   |
+| TP53   |  191.788256479794 |  70.7692247503828 | 191.095109299234 |   0 | BLCA   |
+| ERBB2  |  2.30809843606858 |  111.697583835288 | 111.004436654728 |   0 | BLCA   |
+| ERCC2  |  14.6298592310469 |   80.657307268368 | 79.9641600878081 |   0 | BLCA   |
+| ARID1A |  71.9813145469098 | -11.8163792581274 | 71.2881673663499 |   0 | BLCA   |
 
 
 driverMAPS reports the $\text{BF}$'s as $log(\text{BF})$.  I haven't figured out a way to work with these values without 
@@ -101,37 +104,6 @@ library(tidyverse)
 library(fgem)
 library(GO.db)
 library(qs)
-#+END_SRC
-
-#+RESULTS:
-| GO.db         |
-| fgem          |
-| forcats       |
-| stringr       |
-| dplyr         |
-| purrr         |
-| readr         |
-| tidyr         |
-| tibble        |
-| ggplot2       |
-| tidyverse     |
-| org.Hs.eg.db  |
-| AnnotationDbi |
-| IRanges       |
-| S4Vectors     |
-| Biobase       |
-| BiocGenerics  |
-| parallel      |
-| stats4        |
-| stats         |
-| graphics      |
-| grDevices     |
-| utils         |
-| datasets      |
-| methods       |
-| base          |
-
-#+BEGIN_SRC R :session bioc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :results none
   cancer_df <- qread("data/driverMAPS_results_20TumorTypes.qs")
   tbp <- topGO::annFUN.org("BP",feasibleGenes=unique(cancer_df$Gene),mapping="org.Hs.eg.db",ID="symbol")
   tbp_df <- imap_dfr(tbp,function(Genes,GO)tibble(Gene=Genes,feature_name=GO))
@@ -153,6 +125,63 @@ library(qs)
   qs::qsave(fn_df,"data/GO_Definitions.qs")
 #+END_SRC
 
+
+**** Fitting  Fisher's Exact test
+
+#+BEGIN_SRC R :session fisher :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
+  library(tidyverse)
+  library(fgem)
+  library(progressr)
+  library(furrr)
+  library(qs)
+  plan(multiprocess)
+
+  cancer_df <- qs::qread("data/driverMAPS_results_20TumorTypes.qs") 
+  BPGOdf <- qs::qread("data/GO_df.qs")
+  min_cancer_df <- cancer_df %>%
+  select(Gene, FDR, cancer)
+
+  go_df <- mutate(BPGOdf,Gene=as.character(Gene)) %>%
+  semi_join(distinct(cancer_df,Gene))
+
+  go_df <- group_by(go_df,feature_name) %>%
+    summarise(n_gt=n()) %>%
+    filter(n_gt>=10) %>%
+    select(feature_name) %>%
+    inner_join(go_df)
+
+  go_dfl <- nest(go_df,data=Gene) %>% mutate(isa=NA)
+  cancer_dfl <- nest(min_cancer_df,fdr_data=c(Gene,FDR)) %>% mutate(isa=NA)
+
+  with_progress({
+    p <- progressor(along = xs)
+    y <- future_map(xs, function(x) {
+      p(sprintf("x=%g", x))
+      Sys.sleep(6.0-x)
+      sqrt(x)
+    })
+  })
+
+  fisher_inp <- inner_join(go_dfl,cancer_dfl,by="isa") %>% select(-isa) %>% mutate(ix=1:n())
+  with_progress({
+    p <- progressor(along = fisher_inp$ix)
+    fisher_df <- future_pmap_dfr(fisher_inp,function(cancer,feature_name,fdr_data,data,ix){
+      p(sprintf("x=%g",ix))
+      sig_gene <- fdr_data$FDR<0.1
+      sig_feat <- fdr_data$Gene %in% data$Gene
+      dplyr::mutate(broom::tidy(fisher.test(sig_gene,sig_feat)),feature_name=feature_name,cancer=cancer)
+    })
+  })
+
+  fisher_df <- group_by(fisher_df,cancer) %>%
+    mutate(qval=p.adjust(p.value,method="fdr")) %>%
+    ungroup() %>% arrange(qval)
+
+  qs::qsave(fisher_df,"data/single_fisher.qs")
+#+END_SRC
+
+#+RESULTS:
+
 **** Fitting univariate models
 
 #+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
@@ -161,7 +190,6 @@ library(qs)
   library(progressr)
   library(future.apply)
   library(qs)
-  library(profvis)
 
   cancer_df <- qs::qread("data/driverMAPS_results_20TumorTypes.qs")
   BPGOdf <- qs::qread("data/GO_df.qs")
@@ -170,13 +198,12 @@ library(qs)
     mutate(BF = exp(BF))
 
   go_df <- mutate(BPGOdf,Gene=as.character(Gene)) %>%
-    semi_join(distinct(cancer_df,Gene)) %>%
-    select(-class)
+    semi_join(distinct(cancer_df,Gene))
 
-  go_df <- group_by(go_df,feature) %>%
+  go_df <- group_by(go_df,feature_name) %>%
     summarise(n_gt=n()) %>%
     filter(n_gt>=10) %>%
-    select(feature) %>%
+    select(feature_name) %>%
     inner_join(go_df)
 
   cancers <- distinct(cancer_df,cancer)
@@ -184,6 +211,7 @@ library(qs)
   tcp <- fs::path("data/driverMAPS_results_20TumorTypes",tc,ext="qs")
   cdf <- qread(tcp)
   null_mod <- fgem:::fgem_null(cdf$BF)
+
 
   all_mods <- group_by(go_df,feature) %>%
     do(
@@ -209,6 +237,7 @@ library(qs)
   library(fgem)
   library(ggplot2)
   library(tidyr)
+library(rhdf5)
   bp_name <- readRDS("data/GO_Definitions.RDS") 
   results_df <- readRDS("data/fgem_data.RDS")  %>%
     group_by(cancer) %>%
@@ -253,21 +282,68 @@ library(qs)
   yl <- split(cancer_df$BF,cancer_df$cancer)
   yl <- yl[names(x_mats)]
 
-  ody <- fs::path("data/y_models")
-  fs::dir_create(ody)
-  odx <- fs::path("data/x_models")
-  fs::dir_create(odx)
+  ox <- fs::path("data/models_hdf")
+  fs::dir_create(ox)
   iwalk(x_mats,function(x,y){
-    qs::qsave(x,fs::path(odx,y,ext="qs"))
+  h5write(x, as.character(fs::path(ox,y,ext="h5")),"x")
   })
   iwalk(yl,function(x,y){
-    qs::qsave(x,fs::path(ody,y,ext="qs"))
+  h5write(x, as.character(fs::path(ox,y,ext="h5")),"y")
   })
+
+
+
+  ## ody <- fs::path("data/y_models")
+  ## fs::dir_create(ody)
+  ## odx <- fs::path("data/x_models")
+  ## fs::dir_create(odx)
+  ## iwalk(x_mats,function(x,y){
+  ## qs::qsave(x,fs::path(odx,y,ext="qs"))
+  ## })
+  ## iwalk(yl,function(x,y){
+  ## qs::qsave(x,fs::path(ody,y,ext="qs"))
+  ## })
+
+
 #+END_SRC
 
 #+RESULTS:
 
+**** Comparing univariate models to Fisher's Exact results
 
+#+BEGIN_SRC R :session jacc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
+
+  library(dplyr)
+  library(purrr)
+  library(fgem)
+  library(ggplot2)
+  library(tidyr)
+  bp_name <- readRDS("data/GO_Definitions.RDS") 
+fgem_results <- readRDS("data/fgem_data.RDS")
+  fgem_results_df <- fgem_results  %>%
+    mutate(estimate_fgem=map_dbl(data,~filter(.x,feature_name!="Intercept") %>% pull(Beta))) %>% 
+    group_by(cancer) %>%
+    filter(convergence==TRUE) %>%
+    select(-convergence,-NullLogLik,-Chisq,-data) %>%
+    rename(pval_fgem=pval) %>% 
+    mutate(qval_fgem=p.adjust(pval_fgem,method="fdr")) %>%
+    ungroup() %>%
+    arrange(qval_fgem) %>%
+    rename(feature_name=trait) 
+
+  fisher_df <- qs::qread("data/single_fisher.qs") %>%
+    select(cancer,
+           estimate_fisher = estimate,
+           feature_name,
+           pval_fisher = p.value,
+           qval_fisher = qval)
+
+  single_df <- inner_join(fisher_df,fgem_results_df)
+#+END_SRC
+
+#+RESULTS:
+
+**** Fitting Multivariate models
 
 #+BEGIN_SRC R :session fitmult :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
     library(dplyr)
@@ -279,7 +355,10 @@ library(qs)
     library(progressr)
     library(future.apply)
     plan(multisession)
-    out_d <- fs::path("/home/nwknoblauch/Dropbox/Repos/dissertation/data/fdr_models/")
+
+
+
+    out_d <- fs::path("/home/nwknoblauch/Dropbox/Repos/dissertation/data/fdr_models_strict/")
     fs::dir_create(out_d)
 
     ody <- fs::path("data/y_models")
@@ -298,7 +377,7 @@ library(qs)
         }
         x <- qs::qread(fs::path(odx,cancer_t,ext="qs"))
         y <- qs::qread(fs::path(ody,cancer_t,ext="qs"))
-        fun_result <- dplyr::mutate(fgem::forward_select_fgem_lik(x,y),cancer=cancer_t)
+        fun_result <- dplyr::mutate(fgem::forward_select_fgem_lik(x,y,jaccard_cutoff=0.19,qval_cutoff=0.01),cancer=cancer_t)
         qs::qsave(fun_result,op)
         return(fun_result)
       },
@@ -314,12 +393,15 @@ library(qs)
 **** Plotting multivariate models
 
 #+BEGIN_SRC R :session jacc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-
-
+  library(ggrepel)
+  library(patchwork)
   GO_def <- readRDS("data/GO_Definitions.RDS") %>% select(feature_name,Term)
   GO_def <- bind_rows(GO_def,tibble(feature_name="Intercept",Term="")) %>% distinct()
-  out_d <- fs::path("/home/nwknoblauch/Dropbox/Repos/dissertation/data/fdr_models/")
-  all_results_df <- map_df(fs::dir_ls(out_d),qs::qread) %>%
+  out_d <- fs::path("/home/nwknoblauch/Dropbox/Repos/dissertation/data/elasticnet_models/")
+  all_results_df <- map_df(fs::dir_ls(out_d),function(x){
+    mutate(qs::qread(x),cancer=fs::path_ext_remove(fs::path_file(x)))
+    })
+  %>%
     select(-term)  %>%
     unnest(data)  %>%
     inner_join(GO_def) %>%
@@ -327,7 +409,7 @@ library(qs)
 
   data("BPGOdf")
   head(cancer_df)
-  plot_d <- fs::path("/home/nwknoblauch/Dropbox/Repos/dissertation/org/fgem_plots/")
+  plot_d <- fs::path("/home/nwknoblauch/Dropbox/Repos/dissertation/org/fgem_plots_strict/")
   fs::dir_create(plot_d)
   gen_x <- function(cancer_df,go_df,model_df){
     ig_df <- semi_join(go_df,select(model_df,feature=feature_name),by="feature")
@@ -425,10 +507,6 @@ New overviews of cancer gene function focused on hallmarks of cancer pull togeth
   cancer_census <- readr::read_csv("data/cancer_gene_census.csv",col_names=names(ccols$cols),col_types=ccols,skip=1L) %>% 
   mutate(is_census=TRUE)
 
-
-  ## xl <- qs::qread("~/tmp/x_mats.qs")
-  ## yl <- qs::qread("~/tmp/yl.qs")
-
   GO_def <- readRDS("data/GO_Definitions.RDS") %>% select(feature_name,Term)
   GO_def <- bind_rows(GO_def,tibble(feature_name="Intercept",Term="")) %>% distinct()
   out_d <- fs::path("data/fdr_models/")
@@ -453,11 +531,7 @@ New overviews of cancer gene function focused on hallmarks of cancer pull togeth
     broom::tidy(glm(cl~.+0,data=odf,family=binomial())) %>%
       rename(feature_name=term)
   }
-    ## apply(x,2,function(y){
-    ##   broom::tidy(glm(fisher.test(y,cancer_vec))
-    ## }) %>%
-    ##   bind_rows() %>%
-    ##   mutate(feature_name=colnames(x),cancer=cancer)
+
 
 logit_df <- map2_dfr(all_results$data,all_results$cancer,gen_go_mat,cancer_list=cancer_census$Gene) %>%
     select(cancer,feature_name,pval_fisher=p.value)
@@ -469,11 +543,12 @@ logit_df <- map2_dfr(all_results$data,all_results$cancer,gen_go_mat,cancer_list=
 
 
   filter(all_results_df,feature_name!="Intercept")
-
-
 #+END_SRC
 
 #+BEGIN_SRC R :session drivermaps :colnames yes :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :colnames yes
+  library(fgem)
+  library(tidyverse)
+
   log_pbinom <- function(lp,x){
       sum(x*lp+(1-x)*log(expm1(-lp)))
     }
@@ -491,10 +566,63 @@ logit_df <- map2_dfr(all_results$data,all_results$cancer,gen_go_mat,cancer_list=
            cross_entropy_uniform = -log_pbinom(unifp,cancer_vec),
            cross_entropy_ratio=cross_entropy_functional-cross_entropy_uniform)
   }
+
+
 #+END_SRC
 
+#+RESULTS:
+|                 x |
+|-------------------|
+| -8578.86270568248 |
+
+#+BEGIN_SRC R :session fg :colnames yes :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :colnames yes
+  library(progressr)
+  library(future.apply)
+  library(fgem)
+  plan(multisession)
+  cancerf <- fs::path_ext_remove(fs::path_file(fs::dir_ls("data/fdr_models/")))
+  fgem_results_df <- readRDS("data/fgem_data.RDS")
+  od <- "data/new_correct_elasticnet_models"
+  fs::dir_create(od)
+#+END_SRC
+
+#+RESULTS:
+| x                              |
+|--------------------------------|
+| data/correct_elasticnet_models |
+
 #+BEGIN_SRC R :session drivermaps :colnames yes :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :colnames yes
-map2_dfr(all_results$data,all_results$cancer,prior_post_plot,cancer_list=cancer_census$Gene)
+    iseq <- seq_along(cancerf)
+      with_progress({
+        p <- progressor(along = iseq)  
+        ret_df <- future.apply::future_lapply(iseq,
+                                    function(tf,cancerf,od){
+                                      cancer <- cancerf[tf]
+                                      p(sprintf("i=%g", tf))
+                                      op <- fs::path(od,cancer,ext="qs")
+                                      if(!file.exists(op)){
+                                        ym <- qs::qread(fs::path("data/y_models/",cancer,ext="qs"))
+                                  
+                                        xm <- qs::qread(fs::path("data/x_models/",cancer,ext="qs"))
+                                        X <- xm[,colnames(xm)!="Intercept",drop=FALSE]
+                                        trdf <- dplyr::mutate(fgem::fgem_bfgs(X, ym, alpha=0.8),
+                                                              cancer=cancer)
+                                        qs::qsave(trdf, op)
+                                        return(trdf)
+                                      }else{
+                                        return(qs::qread(op))
+                                      }
+                                    },cancerf=cancerf,
+                                    od=od
+                                    )
+      })
+  ret_df <- dplyr::bind_rows(ret_df)
+#+END_SRC
+
+#+RESULTS:
+
+#+BEGIN_SRC R :session drivermaps :colnames yes :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :colnames yes
+
 
 
 #+END_SRC
@@ -599,6 +727,322 @@ head data/driverMAPS_results_20TumorTypes/BLCA_BayesFactorFDR.txt
 
 
 *** TODO Characterize extent of collinearity issue
+
+** IntOGen validation
+
+An alternative source of validation is cite: cite:gonzalez-perez13_intog_mutat_ident_cancer_driver
+
+#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
+  library(fgem)
+  library(tidyverse)
+
+  out_d <- fs::path("data/new_correct_elasticnet_models/")
+  comp_df <- read_tsv("data/2020-02-02_IntOGen-Drivers-20200213/Compendium_Cancer_Genes.tsv")
+  cohort_df <- read_tsv("data/2020-02-02_IntOGen-Cohorts-20200213/cohorts.tsv")
+
+  cohort_notcga <- filter(cohort_df,SOURCE!="TCGA") %>% rename(cohort=COHORT)
+
+  sub_comp_df <- select(comp_df,Gene=SYMBOL,cohort=COHORT,cancer=CANCER_TYPE,qval_cons=QVALUE_COMBINATION) %>%
+    semi_join(cohort_notcga)
+
+  tcomp_df <- select(comp_df,Gene=SYMBOL,cohort=COHORT,cancer=CANCER_TYPE,qval_cons=QVALUE_COMBINATION) %>%
+    semi_join(cohort_notcga) %>% 
+    distinct(cancer,Gene) %>%
+    mutate(value=1L)
+
+  sub_comp_l <- nest(sub_comp_df,valid_data=c(Gene,qval_cons))
+  all_results <- map_df(fs::dir_ls(out_d),function(x){
+    N <- length(qs::qread(fs::path("data/y_models",fs::path_file(x))))
+    idf <- qs::qread(x) %>% group_by(l1) %>% filter(abs(l1-(lambda*N)*alpha)==min(abs(l1-(lambda*N)*alpha))) %>% ungroup() %>% 
+mutate(max_c=map_dbl(Beta,~max(.x$Beta[-1])))
+    })
+
+
+  pred_fun <- function(df,x,y,log=TRUE){
+    tibble::tibble(Gene=rownames(x),post=fgem:::gen_u(Beta = df$Beta, x = x[, df$feature_name[-1],drop=FALSE], B = y, log = log))
+  }
+  cancer <- "BRCA"
+  ardf <- filter(all_results,convergence==0) %>% nest(tresults=-cancer)
+  log_pbinom <- function(lp,x){
+    mean((x*lp)+(1-x)*log(-expm1(lp)))
+  }
+  post_fun <- function(tresults,cancer){
+    ym <- qs::qread(fs::path("data/y_models", cancer, ext = "qs"))
+    xm <- qs::qread(fs::path("data/x_models", cancer, ext = "qs"))
+    Id <- matrix(0,nrow(xm),0,dimnames=list(rownames(xm),character()))
+    intr <- fgem_bfgs(Id,ym)
+    trdf <- pred_fun(intr$Beta[[1]],
+                     x = Id,
+                     y = ym,
+                     log=TRUE) %>%
+      rename(uniform_post = post)
+    tresults <- filter(tresults) %>%
+      mutate(pred=map(Beta,pred_fun,x=xm,y=ym))
+    unnest(tresults,pred) %>%
+      select(functional_post=post,lambda,Gene) %>%
+      inner_join(trdf,by="Gene") %>%
+      left_join(filter(tcomp_df,cancer=={{cancer}}),by=c("Gene")) %>%
+      replace_na(list(value=0L,cancer=cancer))
+  }
+
+
+
+  post_results <- pmap_dfr(ardf,post_fun) 
+
+
+  cv_results <- post_results %>% group_by(lambda,cancer) %>%
+      summarise(lik_func=log_pbinom(functional_post,value),
+                lik_unif=log_pbinom(uniform_post,value)) %>% ungroup() %>%
+    inner_join(all_results)
+
+#+END_SRC
+
+#+RESULTS:
+
+
+
+I've identified several cancer types where the FGEM model does a better job of predicting known cancer
+genes (using the IntOGen database) than the baseline ~driverMAPS~ model.  
+
+
+#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
+  library(ggrepel)
+  library(patchwork)
+  sup_mod <- filter(cv_results, l0n>1) %>%
+    filter(lik_func > lik_unif) %>%
+    group_by(cancer) %>%
+    filter(lik_func==max(lik_func)) %>%
+    ungroup()
+
+  any_cg <- group_by(post_results,cancer) %>%
+    summarise(has_cg=any(value==1)) %>% filter(has_cg)
+
+  cvb <- semi_join(cv_results,any_cg) %>%
+    group_by(lambda) %>%
+    summarise(p_best=mean(lik_func>lik_unif,na.rm=TRUE),
+              n_best=sum(lik_func>lik_unif,na.rm=TRUE),
+              n=n()) %>%
+    arrange(desc(n_best),desc(p_best))
+
+  any_best <- semi_join(cv_results,any_cg) %>%group_by(cancer) %>%
+    summarise(any_best=any(lik_func>lik_unif,na.rm=T)) %>% filter(any_best)
+    group_by(lambda)
+
+
+  bcvb <- filter(cvb, n_best == max(n_best,na.rm=TRUE),
+                 ) %>% filter(lambda==min(lambda))
+
+  cbd <- semi_join(cv_results,any_best) %>% group_by(cancer) %>% filter(lik_func==max(lik_func,na.rm=T)) %>% filter(l0n>1) %>% ungroup() 
+  bcvbv <- bcvb$lambda
+
+  cvr <- semi_join(cv_results,any_cg) %>% filter(lambda>0) %>% nest(res=-cancer)
+
+  pwalk(cvr, function(res, cancer){
+  plt_a <- res %>% ggplot(aes(x=lambda,y=l0n)) + geom_point(aes(col=lik_func>lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position ="none")+ylab("L0 Norm")
+  plt_b <- res %>% ggplot(aes(x=lambda,y=l1n)) + geom_point(aes(col=lik_func>lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position ="none")+ylab("L1 Norm")
+  plt_c <- res %>% ggplot(aes(x=lambda,y=l2n)) + geom_point(aes(col=lik_func>lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position = "none")+ylab("L2 Norm")
+  plt_d <- res %>% ggplot(aes(x=lambda,y=max_c)) + geom_point(aes(col=lik_func>lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position = "none")+ylab(bquote(max(bgroup("|",beta,"|"))))
+
+  plt <- ((plt_a+plt_b)/(plt_c +plt_d)& stat_smooth(geom='line',alpha=0.2) & xlab(bquote(lambda))) + plot_layout(guides = "collect")+plot_annotation(title=cancer)
+  od <- fs::path("org/fgem_elastic_fits")
+  fs::dir_create(od)
+  ggsave(plt,filename=fs::path(od,cancer,ext="png"))
+  })
+
+  plt_a <-semi_join(cv_results,any_cg)  %>%
+    filter(lambda>0) %>%
+    ggplot(aes(x=lambda,y=l0n)) + geom_point(aes(col=lik_func>lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position ="none")+ylab("L0 Norm")
+  plt_b <-semi_join(cv_results,any_cg)  %>%
+    filter(lambda>0) %>%
+    ggplot(aes(x=lambda,y=l1n)) + geom_point(aes(col=lik_func>lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position ="none")+ylab("L1 Norm")
+  plt_c <-semi_join(cv_results,any_cg)  %>%
+    filter(lambda>0) %>%
+    ggplot(aes(x=lambda,y=l2n)) + geom_point(aes(col=lik_func>lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position = "none")+ylab("L2 Norm")
+  plt_d <-semi_join(cv_results,any_cg)  %>%
+    filter(lambda>0) %>%
+    ggplot(aes(x=lambda,y=max_c)) + geom_point(aes(col=lik_func>lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position = "none")+ylab(bquote(max(bgroup("|",beta,"|"))))
+  ((plt_a+plt_b)/(plt_c +plt_d) & stat_smooth(geom='line',alpha=0.2)) &xlab(bquote(lambda)) & facet_wrap(~cancer,scales="free_y")
+
+  sup_post <- post_results %>%
+    semi_join(any_cg) %>%
+    mutate(isIntoGen = (value == 1))
+
+
+  plot_post <- inner_join(post_results,cbd) %>%
+    mutate(isIntoGen = (value == 1))
+  iig <- filter(plot_post, isIntoGen)
+  plot_post %>% 
+    ggplot(aes(x=exp(uniform_post),y=exp(functional_post),col=isIntoGen))+
+    geom_point() +
+   geom_text_repel(
+     data = iig,
+     aes(label=Gene)) + 
+    facet_wrap(~cancer) + 
+    geom_abline(slope = 1)+
+    xlab("Uniform Posterior")+ylab("Functional Posterior")
+
+  GO_def <- readRDS("data/GO_Definitions.RDS") %>% select(feature_name,Term)
+  GO_def <- bind_rows(GO_def,tibble(feature_name="Intercept",Term="")) %>% distinct()
+
+  best_res <- unnest(cbd,Beta) %>%
+    inner_join(GO_def)  %>%
+    mutate(label=paste0(feature_name,":\n",Term)) %>% nest(Beta=c("Beta","feature_name","label","Term"))
+
+  pp <- inner_join(post_results,best_res) %>%
+    mutate(is_IntoGen = (value == 1)) %>% 
+    nest(post=c("Gene","uniform_post","functional_post","value","is_IntoGen"))
+
+  pp %>% pwalk(function(cancer,Beta,post,...){
+    iig <- filter(post, is_IntoGen)
+    post_plot <- post %>% 
+      ggplot(aes(x=exp(uniform_post),y=exp(functional_post),col=is_IntoGen))+
+      geom_point() +
+      geom_text_repel(
+        data = iig,
+        aes(label=Gene),col="blue") + 
+      geom_abline(slope = 1)+
+      xlab("Uniform Posterior")+
+      ylab("Functional Posterior")
+    coeff_plot <- filter(Beta,Beta!=0) %>% ggplot(aes(x=Beta,y=label))+geom_point()+geom_vline(xintercept=0)
+    plt <- coeff_plot+post_plot+plot_layout(guides = "collect")+plot_annotation(title=cancer)
+    od <- fs::path("org/fgem_post_plots")
+    fs::dir_create(od)
+    ggsave(plt,filename=fs::path(od,cancer,ext="png"))
+  })
+#+END_SRC
+
+
+
+
+#+BEGIN_SRC R :session drivermaps :colnames yes :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :colnames yes
+    log_pbinom <- function(lp,x){
+        mean((x*lp)+(1-x)*log(-expm1(lp)))
+      }
+
+    prior_post_plot <- function(data,cancer,valid_data,cohort,...){
+      log<-TRUE
+      cancer_list <- valid_data$Gene
+      ym <- qs::qread(fs::path("data/y_models/",cancer,ext="qs"))
+      xm <- qs::qread(fs::path("data/x_models/",cancer,ext="qs"))
+      stopifnot(all(data$feature_name %in% colnames(xm)))
+      x <- xm[,data$feature_name,drop=FALSE]
+      unifp <- fgem:::gen_u(fgem:::fgem_null(ym),x[,"Intercept",drop=FALSE],ym,log=log)
+                                            #unifp <- fgem:::prior_mean(BF,log=log)
+      cancer_vec <- rownames(x) %in% cancer_list
+      fp <- fgem:::gen_u(data$Beta,x,ym,log=log)
+      tibble(cancer=cancer, cross_entropy_functional = -log_pbinom(fp,cancer_vec),
+             cross_entropy_uniform = -log_pbinom(unifp,cancer_vec),
+             cross_entropy_ratio=cross_entropy_functional-cross_entropy_uniform,
+             cohort=cohort)
+    }
+
+  validation_df <- pmap_dfr(all_rc,prior_post_plot)
+#+END_SRC
+
+
+#+BEGIN_SRC R :session drivermaps :colnames yes :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :colnames yes
+  log_pbinom <- function(lp,x){
+    mean((x*lp)+(1-x)*log(-expm1(lp)))
+  }
+
+   prior_post_plot <- function(data,cancer,valid_data,...){
+     log<-TRUE
+     cancer_list <- unique(valid_data$Gene)
+     ym <- qs::qread(fs::path("data/y_models/",cancer,ext="qs"))
+     xm <- qs::qread(fs::path("data/x_models/",cancer,ext="qs"))
+     stopifnot(all(data$feature_name %in% colnames(xm)))
+     x <- xm[,data$feature_name,drop=FALSE]
+   
+     unifp <- fgem:::gen_u(fgem:::fgem_null(ym),x[,"Intercept",drop=FALSE],ym,log=log)
+   
+   
+     fp <- fgem:::gen_u(data$Beta,x,ym,log=log)
+     cancer_vec <- rownames(x) %in% cancer_list
+   
+     tibble(cancer=cancer,
+            cross_entropy_functional = log_pbinom(fp,cancer_vec),
+            mean_true_functional=mean(exp(fp)[cancer_vec]),
+            mean_false_functional=mean(exp(fp)[!cancer_vec]),
+            mean_true_uniform=mean(exp(unifp)[cancer_vec]),
+            mean_false_uniform=mean(exp(unifp)[!cancer_vec]),
+            cross_entropy_uniform = log_pbinom(unifp,cancer_vec),
+            cross_entropy_ratio=cross_entropy_functional-cross_entropy_uniform)
+   }
+
+
+
+  sub_comp_df <- select(comp_df,Gene=SYMBOL,cohort=COHORT,cancer=CANCER_TYPE,qval_cons=QVALUE_COMBINATION) %>% semi_join(cohort_notcga)
+
+  sub_comp_l <- nest(sub_comp_df,valid_data=c(Gene,qval_cons,cohort))
+  all_results <- map_df(fs::dir_ls(out_d),qs::qread) %>%
+          select(data,pval,qval,cancer)
+  all_rc <- inner_join(all_results,sub_comp_l)
+
+  cv_df <- pmap_df(all_rc,prior_post_plot)
+#+END_SRC
+
+
+#+RESULTS:
+| cancer | cross_entropy_functional | cross_entropy_uniform | cross_entropy_ratio | cohort                                         |
+|--------+--------------------------+-----------------------+---------------------+------------------------------------------------|
+| BLCA   |        -101800.534658251 |     -91579.8653273648 |   -10220.6693308862 | ICGC_WXS_BLCA_CN                               |
+| BLCA   |        -101943.672606485 |     -91698.0413985765 |   -10245.6312079085 | CBIOP_WXS_BLCA_BGI                             |
+| BLCA   |        -101686.666404048 |     -91464.3307659196 |   -10222.3356381289 | CBIOP_WXS_BLCA_DFARBER_MSKCC_2014              |
+| BLCA   |        -101282.917885261 |     -91077.4732593888 |   -10205.4446258719 | PCAWG_WGS_BLADDER_TCC                          |
+| BLCA   |        -101960.038345998 |     -91695.1680103428 |   -10264.8703356547 | HARTWIG_URINARY_TRACT                          |
+| BRCA   |        -125842.928980545 |     -97452.5546698327 |   -28390.3743107122 | ICGC_WGS_BRCA_FR                               |
+| BRCA   |        -125995.265452084 |     -97538.5032254508 |   -28456.7622266335 | HARTWIG_BREAST                                 |
+| BRCA   |         -125892.64523313 |     -97493.2186353544 |   -28399.4265977752 | ICGC_WXS_BRCA_KR                               |
+| BRCA   |        -126086.431703267 |     -97636.3359009236 |    -28450.095802343 | ICGC_WXS_BRCA_UK                               |
+| BRCA   |        -126093.036206533 |     -97628.5132356922 |   -28464.5229708412 | ICGC_WGS_BRCA_EU                               |
+| BRCA   |        -125981.549102723 |     -97548.2499720629 |   -28433.2991306604 | PCAWG_WGS_BREAST_ADENOCA                       |
+| BRCA   |          -126024.5769704 |     -97585.9045087029 |   -28438.6724616973 | CBIOP_WXS_BRCA_MBCPROJECT_2018_MET_TREAT       |
+| BRCA   |        -126003.417215772 |     -97572.0481878212 |   -28431.3690279512 | CBIOP_WXS_BRCA_MBCPROJECT_2018_MET_UNTREAT     |
+| BRCA   |        -126041.862176433 |     -97635.1138904522 |   -28406.7482859806 | PCAWG_WGS_BREAST_LOBULARCA                     |
+| BRCA   |        -126020.673215169 |      -97593.293809305 |   -28427.3794058639 | CBIOP_WXS_BRCA_MBCPROJECT_2018_PRY_UNTREAT     |
+| BRCA   |        -125924.808747643 |     -97532.6479334078 |   -28392.1608142355 | CBIOP_WXS_BRCA_MBCPROJECT_2018_PRY_TREAT       |
+| CESC   |        -156794.812640317 |     -85719.7261823537 |   -71075.0864579633 | HARTWIG_UTERUS_CERVICAL                        |
+| CESC   |        -156838.918725504 |     -85759.1770236492 |   -71079.7417018551 | PCAWG_WGS_CERVIX_SCC                           |
+| ESCA   |        -126690.490398687 |      -90700.272447601 |   -35990.2179510861 | ICGC_WGS_ESAD_UK                               |
+| ESCA   |        -126667.341698684 |     -90691.9871999199 |   -35975.3544987641 | HARTWIG_ESOPHAGUS                              |
+| ESCA   |        -126791.975083002 |     -90761.6216362305 |    -36030.353446772 | CBIOP_WXS_ESCA_BROAD                           |
+| ESCA   |        -126751.304409353 |     -90754.3091169944 |   -35996.9952923582 | PCAWG_WGS_ESO_ADENOCA                          |
+| ESCA   |        -126720.062478944 |      -90699.819273425 |   -36020.2432055186 | ICGC_WXS_ESCA_CN_WXS                           |
+| ESCA   |        -126815.911877172 |     -90815.5444435446 |   -36000.3674336276 | ICGC_WGS_ESCA_CN_WGS                           |
+| GBM    |        -99042.3395682239 |     -79272.7776224876 |   -19769.5619457363 | ICGC_WXS_GBM_CN                                |
+| GBM    |        -99116.7834047729 |      -79344.631129895 |   -19772.1522748779 | HARTWIG_NERVOUS_SYSTEM_GLIOBLASTOMA_MULTIFORME |
+| GBM    |        -99120.7995294392 |     -79341.6159233663 |   -19779.1836060729 | PCAWG_WGS_CNS_GBM                              |
+| HNSC   |        -151106.817606116 |     -105163.185730885 |   -45943.6318752318 | CBIOP_WXS_HNSC_BROAD                           |
+| HNSC   |        -151050.338145397 |     -105122.378113544 |   -45927.9600318527 | PCAWG_WGS_HEAD_SCC                             |
+| HNSC   |        -150882.154339363 |     -104987.959173356 |    -45894.195166007 | HARTWIG_HEAD_AND_NECK                          |
+| LUAD   |        -189539.427901636 |     -124680.660245038 |   -64858.7676565973 | CBIOP_WXS_LUAD_BROAD                           |
+| LUAD   |        -189795.740435752 |     -124891.346149877 |    -64904.394285875 | PCAWG_WGS_LUNG_ADENOCA                         |
+| LUSC   |        -168717.148089164 |     -114810.645215348 |   -53906.5028738155 | PCAWG_WGS_LUNG_SCC                             |
+| LUSC   |        -168752.860724661 |     -114799.756676876 |    -53953.104047785 | ICGC_WGS_LUSC_KR_WGS                           |
+| LUSC   |        -168762.843352319 |     -114813.351397928 |   -53949.4919543908 | ICGC_WXS_LUSC_KR_WXS                           |
+| PAAD   |        -338679.448045807 |     -71391.5158781764 |   -267287.932167631 | ICGC_WXS_PACA_AU_WXS                           |
+| PAAD   |        -338999.123482552 |     -71469.0995612036 |   -267530.023921349 | ICGC_WGS_PACA_CA_WGS                           |
+| PAAD   |        -338816.274265298 |     -71433.1956668215 |   -267383.078598477 | PCAWG_WGS_PANC_ADENOCA                         |
+| PAAD   |        -338896.274005156 |     -71471.9316591771 |   -267424.342345979 | ICGC_WGS_PACA_AU_WGS                           |
+| PAAD   |         -338923.24134991 |     -71448.5192960084 |   -267474.722053902 | ICGC_WXS_PACA_CA_WXS                           |
+| PAAD   |        -338894.709100981 |     -71457.9272565966 |   -267436.781844384 | HARTWIG_PANCREAS                               |
+| PRAD   |        -948274.039490917 |     -82422.3535625278 |   -865851.685928389 | CBIOP_WXS_PRAD_MSKCC_DCFI_2018_MET             |
+| PRAD   |        -948692.127369113 |     -82455.0757996568 |   -866237.051569457 | CBIOP_WXS_PRAD_SU2C_2019                       |
+| PRAD   |        -948362.632074096 |     -82424.2976943592 |   -865938.334379737 | HARTWIG_PROSTATE                               |
+| PRAD   |        -948227.654986099 |     -82387.0931642791 |    -865840.56182182 | CBIOP_WXS_PRAD_MSKCC_DCFI_2018_PRY             |
+| PRAD   |        -948772.912090976 |     -82439.9525326684 |   -866332.959558307 | CBIOP_WXS_PRAD_BROAD                           |
+| PRAD   |        -948187.173898756 |     -82413.8036846624 |   -865773.370214093 | ICGC_WGS_PRAD_UK                               |
+| PRAD   |        -948688.424023148 |     -82282.0965775022 |   -866406.327445646 | ICGC_WGS_EOPC_DE                               |
+| PRAD   |        -948878.378741073 |     -82488.6182306639 |   -866389.760510409 | CBIOP_WGS_PRAD_EURUROL_2017                    |
+| PRAD   |        -949092.255510145 |     -82503.6976180942 |    -866588.55789205 | CBIOP_WXS_PRAD_BROAD_2013                      |
+| PRAD   |        -948236.563778223 |     -82403.1662242338 |   -865833.397553989 | PCAWG_WGS_PROST_ADENOCA                        |
+| PRAD   |        -948875.648885596 |     -82482.2974501156 |   -866393.351435481 | ICGC_WGS_PRAD_FR                               |
+| UCEC   |        -118582.072145316 |     -92671.7129397189 |   -25910.3592055972 | PCAWG_WGS_UTERUS_ADENOCA                       |
+| UCEC   |        -118588.166445787 |     -92692.9696394923 |   -25895.1968062943 | HARTWIG_UTERUS_ENDOMETRIAL                     |
+
+
+
+
 ** TODO Code [66%]
 *** DONE Write Vignette
 *** DONE Write R package
@@ -607,7 +1051,7 @@ head data/driverMAPS_results_20TumorTypes/BLCA_BayesFactorFDR.txt
 
 
 
-
+    
 * Extras
 
 ** FGEM analyses
@@ -640,7 +1084,7 @@ z_df <- filter(exacdf,
 
 
 
-** Trying Stan
+* Trying Stan
 
 
 #+BEGIN_SRC stan :file simple_logistic_model.stan
@@ -659,8 +1103,7 @@ z_df <- filter(exacdf,
   /* } */
   model {
     // likelihood
-    Beta0 ~ normal(-3.85,5);
-    for
+    Beta0 ~ normal(0,5);
     Beta ~ normal(0,4.5);
     for(n in 1:G){
       real pv=Beta0;
@@ -678,15 +1121,14 @@ z_df <- filter(exacdf,
 
 
 #+BEGIN_SRC stan :file logistic_model.stan
-
   data {
-    int<lower=1> G;  // number of data points
-    int<lower=0> F;  // number of clusters
-    vector[G] B;  // Bayes Factors
-    matrix[G,F] A; //Annotation Matrix
+    int<lower=1> g;  // number of data points
+    int<lower=0> n;  // number of clusters
+    vector[g] B;  // Bayes Factors
+    matrix[g,n] A; //Annotation Matrix
   }
   parameters {
-    vector[F] Beta; // Effect sizes
+    vector[n] Beta; // Effect sizes
     real Beta0; //intercept
   }
   /* transformed parameters { */
@@ -694,788 +1136,953 @@ z_df <- filter(exacdf,
   /* } */
   model {
     // likelihood
-    vector[G] pvec = inv_logit(A*Beta+Beta0);
-    Beta0 ~ normal(-2,5);
-    Beta ~ normal(2,5);
+    vector[g] pvec = inv_logit((A*Beta)+Beta0);
+    Beta0 ~ normal(-1,4);
+    Beta ~ normal(0,4);
     target+=sum(log( pvec .* B + (1 - pvec)));
   }
-
 #+END_SRC
-
-
-#+BEGIN_SRC stan :file gamma_logistic_model.stan
-
-  data {
-    int<lower=1> G;  // number of data points
-    int<lower=0> F;  // number of clusters
-    vector[G] B;  // Bayes Factors
-    matrix[G,F] A; //Annotation Matrix
-  }
-  parameters {
-    vector[F] Beta; // Effect sizes
-    real Beta0; //intercept
-    real<lower=0> shape;
-    real<lower=0> rate;
-  }
-  /* transformed parameters { */
-  /* vector<lower=0,upper=1>[G] pvec=inv_logit(A * Beta + Beta0); */
-  /* } */
-  model {
-    // likelihood
-    vector[G] pvec = inv_logit(A*Beta+Beta0);
-    Beta0 ~ normal(-2,5);
-    Beta ~ gamma(shape,rate);
-    target+=sum(log( pvec .* B + (1 - pvec)));
-  }
-
-#+END_SRC
-
-
-#+BEGIN_SRC stan :file finnish_horseshoe_logistic_model.stan
-  data {
-    int<lower=1> G;  // number of data points
-    int<lower=0> F;  // number of clusters
-    vector[G] B;  // Bayes Factors
-    matrix[G,F] A; //Annotation Matrix
-  }
-  parameters {
-    vector[F] Beta; // Effect sizes
-    real Beta0; //intercept
-    real<lower=0> shape;
-    real<lower=0> rate;
-  }
-  /* transformed parameters { */
-  /* vector<lower=0,upper=1>[G] pvec=inv_logit(A * Beta + Beta0); */
-  /* } */
-  model {
-    // likelihood
-    vector[G] pvec = inv_logit(A*Beta+Beta0);
-    Beta0 ~ normal(-2,5);
-    Beta ~ gamma(shape,rate);
-    target+=sum(log( pvec .* B + (1 - pvec)));
-  }
-
-#+END_SRC
-
-
-
-
-
-
 
 #+RESULTS:
-[[file:gamma_logistic_model.stan]]
+[[file:logistic_model.stan]]
 
 
-#+begin_src R :session stan :result silent :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-options(mc.cores = parallel::detectCores())
-  library(rstan)
-  library(tidyverse)
-  library(fgem)
 
-  data("BPGOdf")
-  cancer_df <- qs::qread("data/driverMAPS_results_20TumorTypes/GBM.qs")
-  go_df <- select(BPGOdf,Gene,feature) %>% mutate(Gene=as.character(Gene)) %>% filter(Gene %in% cancer_df$Gene)
-  
-  genelist_go <- nest(go_df,gene_l=Gene) %>% mutate(gene_l=map(gene_l,"Gene"))
-  
-  golist <- c("GO:0008625")
-  xdf <- filter(genelist_go,feature %in% golist) %>% unnest(gene_l)
-  x <- as.matrix(fgem::trip2sparseMatrix(as.character(xdf$gene_l),
-  xdf$feature,
-  total_rownames=cancer_df$Gene,
-  add_intercept = FALSE))
-  G <- nrow(cancer_df)
-  y <- cancer_df$BF
-  F <- ncol(x)
-#+end_src
+#+BEGIN_SRC stan :file sparse_logistic_model.stan
+  data {
+    int<lower=1> g;  // number of genes
+    int<lower=0> n;  // number of features
+    int<lower=0> nnz; //number of non-zero entries in the feature matrix
+    vector[g] B;  // Bayes Factors
+    vector[nnz] w; //non-zero entries in the feature matrix
+    int v[nnz];//column indices
+    int u[g+1];//row start indices
+  }
+  parameters {
+    vector[n] Beta; // Effect sizes
+    real Beta0; //intercept
+  }
+  /* transformed parameters { */
+  /* vector<lower=0,upper=1>[G] pvec=inv_logit(A * Beta + Beta0); */
+  /* } */
+  model {
+    // likelihood
+    vector[g] pvec = inv_logit(csr_matrix_times_vector(g,n,w,v,u,Beta)+Beta0);
+    Beta0 ~ normal(-1,4);
+    Beta ~ normal(0,4);
+    target+=sum(log( pvec .* B + (1 - pvec)));
+  }
+#+END_SRC
 
 #+RESULTS:
-: 1
+[[file:sparse_logistic_model.stan]]
 
-#+begin_src R :session stan :result silent :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-  xl <- qs::qread("~/tmp/x_mats.qs")
-  yl <- qs::qread("~/tmp/yl.qs")
-  rstan_options(auto_write = TRUE)
+*** The horseshoe prior
 
-  x <- xl[[1]]
-  y <- yl[[1]]
-  walk(names(xl),
-       function(cancer_t){
-    out_f <- fs::path("data/stan_fits",cancer_t,ext="RDS")
-    if(!fs::file_exists(out_f)){
-      x <- xl[[cancer_t]]
-      y <- yl[[cancer_t]]
-      G <- nrow(x)
-      F <- ncol(x)
-      lfit <- stan(file="org/gamma_logistic_model.stan",
-                   model_name=cancer_t,
-                   data=list(G=G, A=x,B=y,F=F),
-                   chains=4,iter=2000)
-      saveRDS(lfit,out_f)
+Scale is a combination of scale for each component as well as a global scale  cite:pmlr-v5-carvalho09a
+
+
+\begin{align*}
+\beta_{m} &\sim \mathcal{N} (0, \tau \cdot \lambda_{m})
+\\
+\lambda_{m} &\sim \text{Half-}\mathcal{C} (0, 1)
+\\
+\tau &\sim \text{Half-}\mathcal{C} (0, \tau_{0}).
+\end{align*}
+
+
+** The Finnish Horseshoe 
+
+There has been a recent improvement to the horseshoe known as the regularized horseshoe (or informally, the "Finnish Horseshoe")
+Using cite:piironen17_spars_infor_regul_horses_other_shrin_prior
+
+$$
+\begin{align*}
+\beta_{m} &\sim \mathcal{N} (0, \tau \cdot \tilde{\lambda}_{m})
+\\
+\tilde{\lambda}_{m} &=
+\frac{c \lambda_{m}}
+{\sqrt{ c^{2} + \tau^{2} \lambda_{m}^{2}}}
+\\
+\lambda_{m} &\sim \text{Half-}\mathcal{C} (0, 1)
+\\
+c^{2} &\sim \text{Inv-}\mathcal{G} \, (\frac{\nu}{2}, \frac{\nu}{2} s^{2})
+\\
+\tau &\sim \text{Half-}\mathcal{C} (0, \tau_{0}).
+\end{align*}
+$$
+
+
+
+#+BEGIN_SRC stan :file sparse_finnish_horseshoe_logistic_model.stan
+    data {
+      int<lower=1> g;  // number of genes
+      int<lower=0> n;  // number of features
+      int<lower=0> nnz; //number of non-zero entries in the feature matrix
+      real m0 ;           // Expected number of large slopes
+      vector[g] B;  // Bayes Factors
+      vector[nnz] w; //non-zero entries in the feature matrix
+      int v[nnz];//column indices
+      int u[g+1];//row start indices
+
     }
-  })
+    transformed data {
+      real slab_scale = 3;    // Scale for large slopes
+      real slab_scale2 = square(slab_scale);
+      real slab_df = 25;      // Effective degrees of freedom for large slopes
+      real half_slab_df = 0.5 * slab_df;
+    }
+    parameters {
+      vector[n] beta_tilde; // Effect sizes
+      real Beta0; //intercept
+      vector<lower=0>[n] lambda;
+      real<lower=0> c2_tilde;
+      real<lower=0> tau_tilde;
+      real<lower=0> sigma;
+    }
+  transformed parameters{
+    vector[n] beta;
+    {
+      real tau0 = (m0 / (n - m0)) * (sigma / sqrt(1.0 * g));
+      real tau = tau0 * tau_tilde; // tau ~ cauchy(0, tau0)
+  
+      // c2 ~ inv_gamma(half_slab_df, half_slab_df * slab_scale2)
+      // Implies that marginally beta ~ student_t(slab_df, 0, slab_scale)
+      real c2 = slab_scale2 * c2_tilde;
+  
+      vector[n] lambda_tilde = sqrt( c2 * square(lambda) ./ (c2 + square(tau) * square(lambda)) );
+  
+      // beta ~ normal(0, tau * lambda_tilde)
+      beta = tau * lambda_tilde .* beta_tilde;
+
+    }
+
+  }
+    model {
+
+      // likelihood
+      vector[g] pvec = inv_logit(csr_matrix_times_vector(g,n,w,v,u,beta)+Beta0);
+      beta_tilde ~ normal(0, 1);
+      Beta0 ~ normal(-1,2);
+      lambda ~ cauchy(0, 1);
+      tau_tilde ~ cauchy(0, 1);
+      c2_tilde ~ inv_gamma(half_slab_df, half_slab_df);
+      target+=sum(log( pvec .* B + (1 - pvec)));
+    }
+
+#+END_SRC
+
+
+#+RESULTS:
+[[file:sparse_finnish_horseshoe_logistic_model.stan]]
+
+
+#+begin_src R :session stan :result silent :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
+  options(mc.cores = parallel::detectCores())
+    library(rstan)
+    library(tidyverse)
+    library(fgem)
+
+
+
+    data("BPGOdf")
+    cancer_df <- qs::qread("data/driverMAPS_results_20TumorTypes/GBM.qs")
+    go_df <- select(BPGOdf,Gene,feature) %>% mutate(Gene=as.character(Gene)) %>% filter(Gene %in% cancer_df$Gene)
+
+
+
+  genelist_go <- nest(go_df,
+                      gene_l = Gene) %>%
+    mutate(gene_l = map(gene_l, "Gene"))
+
+  bg_go <- filter(genelist_go,lengths(gene_l)>=15) %>%
+    sample_n(100,replace=FALSE) %>% unnest(gene_l)
+
+  big_stan_data_sparse <- tidybayes::compose_data(g = nrow(cancer_df),
+                                              n = length(unique(bg_go$feature)),
+                                              nnz = nrow(bg_go),
+                                              B = cancer_df$BF,
+                                              m0=10,
+                                              !!!(fgem::trip2sparseMatrix(
+                                                          as.character(bg_go$gene_l),
+                                                          bg_go$feature,
+                                                          total_rownames = cancer_df$Gene,
+                                                          add_intercept = FALSE,
+                                                          csr = TRUE)))
+
+
+
+    golist <- c("GO:0008625","GO:0000003")
+  xdf <- filter(genelist_go, feature %in% golist) %>%
+    unnest(gene_l)
+
+  stan_data <- tidybayes::compose_data(g = nrow(cancer_df),
+                                       n = length(unique(xdf$feature)),
+                                       B = cancer_df$BF,
+                                       A=fgem::trip2sparseMatrix(
+                                               as.character(xdf$gene_l),
+                                               xdf$feature,
+                                               total_rownames = cancer_df$Gene,
+                                               add_intercept = FALSE,
+                                               csr = FALSE))
+
+  stan_data_sparse <- tidybayes::compose_data(g = nrow(cancer_df),
+                                              n = length(unique(xdf$feature)),
+                                              nnz = nrow(xdf),
+                                              B = cancer_df$BF,
+                                              !!!(fgem::trip2sparseMatrix(
+                                                          as.character(xdf$gene_l),
+                                                          xdf$feature,
+                                                          total_rownames = cancer_df$Gene,
+                                                          add_intercept = FALSE,
+                                                          csr = TRUE)))
+                                     #+end_src
+                                     
+#+begin_src R :session stan :result silent :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
+    options(mc.cores = parallel::detectCores())
+      library(rstan)
+      library(tidyverse)
+      library(fgem)
+
+  cancerf <- fs::path_ext_remove(fs::path_file(fs::dir_ls("../data/fdr_models/")))
+  go_df <- select(BPGOdf,Gene,feature) %>% mutate(Gene=as.character(Gene)) 
+
+
+
+  genelist_go <- nest(go_df,
+                        gene_l = Gene) %>%
+      mutate(gene_l = map(gene_l, "Gene"))
+
+    bg_go <- filter(genelist_go,lengths(gene_l)>=15) %>%
+      sample_n(100,replace=FALSE) %>% unnest(gene_l)
+  for(cancer_t in cancerf){
+    cancer_df <- qs::qread(glue::glue("../data/driverMAPS_results_20TumorTypes/{cancer_t}.qs"))
+    x <- fgem::trip2sparseMatrix(
+                                                            as.character(bg_go$gene_l),
+                                                            bg_go$feature,
+                                                            total_rownames = cancer_df$Gene,
+                                                            add_intercept = FALSE,
+                 csr = FALSE)
+    if(NCOL(x)>10){
+    xl <- extract_sparse_parts(x)
+  big_stan_data_sparse <- tidybayes::compose_data(g = nrow(x),
+                                                  n = NCOL(x),
+                                                  nnz = length(xl$w),
+                                                  B = cancer_df$BF,
+                                                  m0=10,
+                                                  !!!xl
+                                                )
+
+
+  nhsf <- stan(file="sparse_finnish_horseshoe_logistic_model.stan",
+               data=big_stan_data_sparse,
+              chains=4,iter=1000,
+              pars=c("beta","Beta0","lp__"),
+              control=list(adapt_delta=0.99, max_treedepth=15),cores=9)
+    saveRDS(nhsf,fs::path("../data/fhs/",cancer_t,ext="RDS"))
+    }
+  }
+
+
+  #  Elapsed Time: 14.8989 seconds (Warm-up)
+  #Chain 1:                12.5116 seconds (Sampling)
+  #Chain 1:                27.4105 seconds (Total)
+
+  dlfit <- stan(file="org/logistic_model.stan",
+               model_name=cancer_t,
+               data=stan_data,
+               chains=1,iter=2000)
+
+
+
+
+
+
+#+END_SRC 
+
+
+
+#+begin_src R :session stan :result silent :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
+    xl <- qs::qread("~/tmp/x_mats.qs")
+    yl <- qs::qread("~/tmp/yl.qs")
+    rstan_options(auto_write = TRUE)
+
+    x <- xl[[1]]
+    y <- yl[[1]]
+    walk(names(xl),
+         function(cancer_t){
+      out_f <- fs::path("data/stan_fits",cancer_t,ext="RDS")
+      if(!fs::file_exists(out_f)){
+        x <- xl[[cancer_t]]
+        y <- yl[[cancer_t]]
+        G <- nrow(x)
+        F <- ncol(x)
+      
+        saveRDS(lfit,out_f)
+      }
+    })
 #+end_src
 
 #+RESULTS:
 
 
 
-** Optimizing FGEM
+# ** Optimizing FGEM
 
-#+BEGIN_SRC c++
-  #include <iostream>
-  #include <algorithm>
-  #include <cmath>
-  #include <math.h>
-  #include <vector>
-  #include <numeric>
+# #+BEGIN_SRC c++
+#   #include <iostream>
+#   #include <algorithm>
+#   #include <cmath>
+#   #include <math.h>
+#   #include <vector>
+#   #include <numeric>
 
-  using namespace std;
+#   using namespace std;
 
-  //Global Control Variable
-  struct SquaremControl{
-      int K=1;
-      int method=3;//1,2,3 indicates the types of step length to be used in squarem1,squarem2, 4,5 for "rre" and "mpe" in cyclem1 and cyclem2,  standing for reduced-rank ("rre") or minimal-polynomial ("mpe") extrapolation.
-      // K=1 must go with method=1,2 or 3
-      // K>1 must go with method=4 or 5
-      double mstep=4;
-      int maxiter=1500;
-      bool square=true;
-      bool trace=true;//currently set to be true for debugging purpose
-      double stepmin0=1;
-      double stepmax0=1;
-      double kr=1;
-      double objfninc=1;//0 to enforce monotonicity, Inf for non-monotonic scheme, 1 for monotonicity far from solution and allows for non-monotonicity closer to solution
-      double tol=1e-7;
-  } SquaremDefault;
+#   //Global Control Variable
+#   struct SquaremControl{
+#       int K=1;
+#       int method=3;//1,2,3 indicates the types of step length to be used in squarem1,squarem2, 4,5 for "rre" and "mpe" in cyclem1 and cyclem2,  standing for reduced-rank ("rre") or minimal-polynomial ("mpe") extrapolation.
+#       // K=1 must go with method=1,2 or 3
+#       // K>1 must go with method=4 or 5
+#       double mstep=4;
+#       int maxiter=1500;
+#       bool square=true;
+#       bool trace=true;//currently set to be true for debugging purpose
+#       double stepmin0=1;
+#       double stepmax0=1;
+#       double kr=1;
+#       double objfninc=1;//0 to enforce monotonicity, Inf for non-monotonic scheme, 1 for monotonicity far from solution and allows for non-monotonicity closer to solution
+#       double tol=1e-7;
+#   } SquaremDefault;
 
-  //Output Struct
-  struct SquaremOutput{
-      std::vector<double> par;
-      double valueobjfn;
-      int iter=0;
-      int pfevals=0;
-      int objfevals=0;
-      bool convergence=false;
-  } sqobj,sqobjnull;
+#   //Output Struct
+#   struct SquaremOutput{
+#       std::vector<double> par;
+#       double valueobjfn;
+#       int iter=0;
+#       int pfevals=0;
+#       int objfevals=0;
+#       bool convergence=false;
+#   } sqobj,sqobjnull;
 
-  vector<double> fixptfn(std::vector<double> par);
-  double objfn(std::vector<double> par);
-  SquaremOutput squarem1(std::vector<double> par);
+#   vector<double> fixptfn(std::vector<double> par);
+#   double objfn(std::vector<double> par);
+#   SquaremOutput squarem1(std::vector<double> par);
 
-  //Wrapper function
-  SquaremOutput cxxSQUAREM(std::vector<double> par)
-  {
-      if(SquaremDefault.K == 1){
-          sqobj=squarem1(par);
-      }
-      else{
-          sqobj=sqobjnull;
-      }
-      return sqobj;
-  }
+#   //Wrapper function
+#   SquaremOutput cxxSQUAREM(std::vector<double> par)
+#   {
+#       if(SquaremDefault.K == 1){
+#           sqobj=squarem1(par);
+#       }
+#       else{
+#           sqobj=sqobjnull;
+#       }
+#       return sqobj;
+#   }
 
-  //actual acceleration function
-  SquaremOutput squarem1(std::vector<double> par){
-      //std::vector<double> p,p1,p2;//R data types
-      double loldcpp,lnewcpp;
-      std::vector<double> pcpp,p1cpp,p2cpp,pnew;
-      std::vector<double> q1,q2,sr2,sq2,sv2,srv;
-      double sr2_scalar,sq2_scalar,sv2_scalar,srv_scalar,alpha,stepmin,stepmax;
-      int iter,feval,leval;
-      bool conv,extrap;
-      stepmin=SquaremDefault.stepmin0;
-      stepmax=SquaremDefault.stepmax0;
-      if(SquaremDefault.trace){std::cout<<"Squarem-1"<<std::endl;}
+#   //actual acceleration function
+#   SquaremOutput squarem1(std::vector<double> par){
+#       //std::vector<double> p,p1,p2;//R data types
+#       double loldcpp,lnewcpp;
+#       std::vector<double> pcpp,p1cpp,p2cpp,pnew;
+#       std::vector<double> q1,q2,sr2,sq2,sv2,srv;
+#       double sr2_scalar,sq2_scalar,sv2_scalar,srv_scalar,alpha,stepmin,stepmax;
+#       int iter,feval,leval;
+#       bool conv,extrap;
+#       stepmin=SquaremDefault.stepmin0;
+#       stepmax=SquaremDefault.stepmax0;
+#       if(SquaremDefault.trace){std::cout<<"Squarem-1"<<std::endl;}
     
-      iter=1;pcpp=par;pnew=par;
-      try{loldcpp=objfn(pcpp);leval=1;}
-      catch(...){
-          std::cout<<"Error in fixptfn function evaluation";
-          return sqobjnull;
-      }
-      lnewcpp=loldcpp;
-      if(SquaremDefault.trace){std::cout<<"Objective fn: "<<loldcpp<<std::endl;}
-      feval=0;conv=true;
+#       iter=1;pcpp=par;pnew=par;
+#       try{loldcpp=objfn(pcpp);leval=1;}
+#       catch(...){
+#           std::cout<<"Error in fixptfn function evaluation";
+#           return sqobjnull;
+#       }
+#       lnewcpp=loldcpp;
+#       if(SquaremDefault.trace){std::cout<<"Objective fn: "<<loldcpp<<std::endl;}
+#       feval=0;conv=true;
     
-      const long int parvectorlength=pcpp.size();
+#       const long int parvectorlength=pcpp.size();
     
-      while(feval<SquaremDefault.maxiter){
-          //Step 1
-          extrap = true;
-          try{p1cpp=fixptfn(pcpp);feval++;}
-          catch(...){
-              std::cout<<"Error in fixptfn function evaluation";
-              return sqobjnull;
-          }
+#       while(feval<SquaremDefault.maxiter){
+#           //Step 1
+#           extrap = true;
+#           try{p1cpp=fixptfn(pcpp);feval++;}
+#           catch(...){
+#               std::cout<<"Error in fixptfn function evaluation";
+#               return sqobjnull;
+#           }
         
-          sr2_scalar=0;
-          for (int i=0;i<parvectorlength;i++){sr2_scalar+=pow(p1cpp[i]-pcpp[i],2);}
-          if(sqrt(sr2_scalar)<SquaremDefault.tol){break;}
+#           sr2_scalar=0;
+#           for (int i=0;i<parvectorlength;i++){sr2_scalar+=pow(p1cpp[i]-pcpp[i],2);}
+#           if(sqrt(sr2_scalar)<SquaremDefault.tol){break;}
         
-          //Step 2
-          try{p2cpp=fixptfn(p1cpp);feval++;}
-          catch(...){
-              std::cout<<"Error in fixptfn function evaluation";
-              return sqobjnull;
-          }
-          sq2_scalar=0;
-          for (int i=0;i<parvectorlength;i++){sq2_scalar+=pow(p2cpp[i]-p1cpp[i],2);}
-          //sq2_scalar=sqrt(sq2_scalar);
-          if (sqrt(sq2_scalar)<SquaremDefault.tol){break;}
-          sv2_scalar=0;
-          for (int i=0;i<parvectorlength;i++){sv2_scalar+=pow(p2cpp[i]-2*p1cpp[i]+pcpp[i],2);}
-          srv_scalar=0;
-          for (int i=0;i<parvectorlength;i++){srv_scalar+=(p2cpp[i]-2*p1cpp[i]+pcpp[i])*(p1cpp[i]-pcpp[i]);}
-          //std::cout<<"sr2,sv2,srv="<<sr2_scalar<<","<<sv2_scalar<<","<<srv_scalar<<std::endl;//debugging
+#           //Step 2
+#           try{p2cpp=fixptfn(p1cpp);feval++;}
+#           catch(...){
+#               std::cout<<"Error in fixptfn function evaluation";
+#               return sqobjnull;
+#           }
+#           sq2_scalar=0;
+#           for (int i=0;i<parvectorlength;i++){sq2_scalar+=pow(p2cpp[i]-p1cpp[i],2);}
+#           //sq2_scalar=sqrt(sq2_scalar);
+#           if (sqrt(sq2_scalar)<SquaremDefault.tol){break;}
+#           sv2_scalar=0;
+#           for (int i=0;i<parvectorlength;i++){sv2_scalar+=pow(p2cpp[i]-2*p1cpp[i]+pcpp[i],2);}
+#           srv_scalar=0;
+#           for (int i=0;i<parvectorlength;i++){srv_scalar+=(p2cpp[i]-2*p1cpp[i]+pcpp[i])*(p1cpp[i]-pcpp[i]);}
+#           //std::cout<<"sr2,sv2,srv="<<sr2_scalar<<","<<sv2_scalar<<","<<srv_scalar<<std::endl;//debugging
         
-          //Step 3 Proposing new value
-          switch (SquaremDefault.method){
-              case 1: alpha= -srv_scalar/sv2_scalar;
-              case 2: alpha= -sr2_scalar/srv_scalar;
-              case 3: alpha= sqrt(sr2_scalar/sv2_scalar);
-          }
+#           //Step 3 Proposing new value
+#           switch (SquaremDefault.method){
+#               case 1: alpha= -srv_scalar/sv2_scalar;
+#               case 2: alpha= -sr2_scalar/srv_scalar;
+#               case 3: alpha= sqrt(sr2_scalar/sv2_scalar);
+#           }
         
-          alpha=std::max(stepmin,std::min(stepmax,alpha));
-          //std::cout<<"alpha="<<alpha<<std::endl;//debugging
-          for (int i=0;i<parvectorlength;i++){pnew[i]=pcpp[i]+2.0*alpha*(p1cpp[i]-pcpp[i])+pow(alpha,2)*(p2cpp[i]-2*p1cpp[i]+pcpp[i]);}
-          //pnew = pcpp + 2.0*alpha*q1 + alpha*alpha*(q2-q1);
+#           alpha=std::max(stepmin,std::min(stepmax,alpha));
+#           //std::cout<<"alpha="<<alpha<<std::endl;//debugging
+#           for (int i=0;i<parvectorlength;i++){pnew[i]=pcpp[i]+2.0*alpha*(p1cpp[i]-pcpp[i])+pow(alpha,2)*(p2cpp[i]-2*p1cpp[i]+pcpp[i]);}
+#           //pnew = pcpp + 2.0*alpha*q1 + alpha*alpha*(q2-q1);
         
-          //Step 4 stabilization
-          if(std::abs(alpha-1)>0.01){
-              try{pnew=fixptfn(pnew);feval++;}
-              catch(...){
-                  pnew=p2cpp;
-                  try{lnewcpp=objfn(pnew);leval++;}
-                  catch(...){
-                      lnewcpp=loldcpp;
-                  }
-                  if(alpha==stepmax){
-                      stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
-                  }
-                  alpha=1;
-                  extrap=false;
-                  if(alpha==stepmax){stepmax=SquaremDefault.mstep*stepmax;}
-                  if(stepmin<0 && alpha==stepmin){stepmin=SquaremDefault.mstep*stepmin;}
-                  pcpp=pnew;
-                  if(!std::isnan(lnewcpp)){loldcpp=lnewcpp;}
-                  if(SquaremDefault.trace){std::cout<<"Objective fn: "<<lnewcpp<<"  Extrapolation: "<<extrap<<"  Steplength: "<<alpha<<std::endl;}
-                  iter++;
-                  continue;//next round in while loop
-              }
+#           //Step 4 stabilization
+#           if(std::abs(alpha-1)>0.01){
+#               try{pnew=fixptfn(pnew);feval++;}
+#               catch(...){
+#                   pnew=p2cpp;
+#                   try{lnewcpp=objfn(pnew);leval++;}
+#                   catch(...){
+#                       lnewcpp=loldcpp;
+#                   }
+#                   if(alpha==stepmax){
+#                       stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
+#                   }
+#                   alpha=1;
+#                   extrap=false;
+#                   if(alpha==stepmax){stepmax=SquaremDefault.mstep*stepmax;}
+#                   if(stepmin<0 && alpha==stepmin){stepmin=SquaremDefault.mstep*stepmin;}
+#                   pcpp=pnew;
+#                   if(!std::isnan(lnewcpp)){loldcpp=lnewcpp;}
+#                   if(SquaremDefault.trace){std::cout<<"Objective fn: "<<lnewcpp<<"  Extrapolation: "<<extrap<<"  Steplength: "<<alpha<<std::endl;}
+#                   iter++;
+#                   continue;//next round in while loop
+#               }
             
-              if (isfinite(SquaremDefault.objfninc)){
-                  try{lnewcpp=objfn(pnew);leval++;}
-                  catch(...){
-                      pnew=p2cpp;
-                      try{lnewcpp=objfn(pnew);leval++;}
-                      catch(...){
-                          std::cout<<"Error in objfn function evaluation";
-                          return sqobjnull;
-                      }
-                      if(alpha==stepmax){
-                          stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
-                      }
-                      alpha=1;
-                      extrap=false;
-                  }
-              }else{lnewcpp=loldcpp;}
-              if (lnewcpp>loldcpp+SquaremDefault.objfninc) {
-                  pnew=p2cpp;
-                  try{lnewcpp=objfn(pnew);leval++;}
-                  catch(...){
-                      std::cout<<"Error in objfn function evaluation";
-                      return sqobjnull;
-                  }
-                  if(alpha==stepmax){
-                      stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
-                  }
-                  alpha=1;
-                  extrap=false;
-              }
-          }else{//same as above, when stablization is not performed.
-              if (isfinite(SquaremDefault.objfninc)){
-                  try{lnewcpp=objfn(pnew);leval++;}
-                  catch(...){
-                      pnew=p2cpp;
-                      try{lnewcpp=objfn(pnew);leval++;}
-                      catch(...){
-                          std::cout<<"Error in objfn function evaluation";
-                          return sqobjnull;
-                      }
-                      if(alpha==stepmax){
-                          stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
-                      }
-                      alpha=1;
-                      extrap=false;
-                  }
-              }else{lnewcpp=loldcpp;}
-              if (lnewcpp>loldcpp+SquaremDefault.objfninc) {
-                  pnew=p2cpp;
-                  try{lnewcpp=objfn(pnew);leval++;}
-                  catch(...){
-                      std::cout<<"Error in objfn function evaluation";
-                      return sqobjnull;
-                  }
-                  if(alpha==stepmax){
-                      stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
-                  }
-                  alpha=1;
-                  extrap=false;
-              }
-          }
-          if(alpha==stepmax){stepmax=SquaremDefault.mstep*stepmax;}
-          if(stepmin<0 && alpha==stepmin){stepmin=SquaremDefault.mstep*stepmin;}
+#               if (isfinite(SquaremDefault.objfninc)){
+#                   try{lnewcpp=objfn(pnew);leval++;}
+#                   catch(...){
+#                       pnew=p2cpp;
+#                       try{lnewcpp=objfn(pnew);leval++;}
+#                       catch(...){
+#                           std::cout<<"Error in objfn function evaluation";
+#                           return sqobjnull;
+#                       }
+#                       if(alpha==stepmax){
+#                           stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
+#                       }
+#                       alpha=1;
+#                       extrap=false;
+#                   }
+#               }else{lnewcpp=loldcpp;}
+#               if (lnewcpp>loldcpp+SquaremDefault.objfninc) {
+#                   pnew=p2cpp;
+#                   try{lnewcpp=objfn(pnew);leval++;}
+#                   catch(...){
+#                       std::cout<<"Error in objfn function evaluation";
+#                       return sqobjnull;
+#                   }
+#                   if(alpha==stepmax){
+#                       stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
+#                   }
+#                   alpha=1;
+#                   extrap=false;
+#               }
+#           }else{//same as above, when stablization is not performed.
+#               if (isfinite(SquaremDefault.objfninc)){
+#                   try{lnewcpp=objfn(pnew);leval++;}
+#                   catch(...){
+#                       pnew=p2cpp;
+#                       try{lnewcpp=objfn(pnew);leval++;}
+#                       catch(...){
+#                           std::cout<<"Error in objfn function evaluation";
+#                           return sqobjnull;
+#                       }
+#                       if(alpha==stepmax){
+#                           stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
+#                       }
+#                       alpha=1;
+#                       extrap=false;
+#                   }
+#               }else{lnewcpp=loldcpp;}
+#               if (lnewcpp>loldcpp+SquaremDefault.objfninc) {
+#                   pnew=p2cpp;
+#                   try{lnewcpp=objfn(pnew);leval++;}
+#                   catch(...){
+#                       std::cout<<"Error in objfn function evaluation";
+#                       return sqobjnull;
+#                   }
+#                   if(alpha==stepmax){
+#                       stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
+#                   }
+#                   alpha=1;
+#                   extrap=false;
+#               }
+#           }
+#           if(alpha==stepmax){stepmax=SquaremDefault.mstep*stepmax;}
+#           if(stepmin<0 && alpha==stepmin){stepmin=SquaremDefault.mstep*stepmin;}
         
-          pcpp=pnew;
-          if(!std::isnan(lnewcpp)){loldcpp=lnewcpp;}
-          if(SquaremDefault.trace){std::cout<<"Objective fn: "<<lnewcpp<<"  Extrapolation: "<<extrap<<"  Steplength: "<<alpha<<std::endl;}
-          iter++;
-          //std::cout<<"leval="<<leval<<std::endl;//debugging
-      }
+#           pcpp=pnew;
+#           if(!std::isnan(lnewcpp)){loldcpp=lnewcpp;}
+#           if(SquaremDefault.trace){std::cout<<"Objective fn: "<<lnewcpp<<"  Extrapolation: "<<extrap<<"  Steplength: "<<alpha<<std::endl;}
+#           iter++;
+#           //std::cout<<"leval="<<leval<<std::endl;//debugging
+#       }
     
-      if (feval >= SquaremDefault.maxiter){conv=false;}
-      if (!isfinite(SquaremDefault.objfninc)){loldcpp=objfn(pcpp);leval++;}
+#       if (feval >= SquaremDefault.maxiter){conv=false;}
+#       if (!isfinite(SquaremDefault.objfninc)){loldcpp=objfn(pcpp);leval++;}
     
-      //assigning values
-      sqobj.par=pcpp;
-      sqobj.valueobjfn=loldcpp;
-      sqobj.iter=iter;
-      sqobj.pfevals=feval;
-      sqobj.objfevals=leval;
-      sqobj.convergence=conv;
-      return(sqobj);
-  }
+#       //assigning values
+#       sqobj.par=pcpp;
+#       sqobj.valueobjfn=loldcpp;
+#       sqobj.iter=iter;
+#       sqobj.pfevals=feval;
+#       sqobj.objfevals=leval;
+#       sqobj.convergence=conv;
+#       return(sqobj);
+#   }
 
 
-  SquaremOutput squarem2(std::vector<double> par){
-      double res,parnorm,kres;
-      std::vector<double> pcpp,p1cpp,p2cpp,pnew,ptmp;
-      std::vector<double> q1,q2,sr2,sq2,sv2,srv;
-      double sr2_scalar,sq2_scalar,sv2_scalar,srv_scalar,alpha,stepmin,stepmax;
-      int iter,feval;
-      bool conv,extrap;
-      stepmin=SquaremDefault.stepmin0;
-      stepmax=SquaremDefault.stepmax0;
-      if(SquaremDefault.trace){std::cout<<"Squarem-1"<<std::endl;}
+#   SquaremOutput squarem2(std::vector<double> par){
+#       double res,parnorm,kres;
+#       std::vector<double> pcpp,p1cpp,p2cpp,pnew,ptmp;
+#       std::vector<double> q1,q2,sr2,sq2,sv2,srv;
+#       double sr2_scalar,sq2_scalar,sv2_scalar,srv_scalar,alpha,stepmin,stepmax;
+#       int iter,feval;
+#       bool conv,extrap;
+#       stepmin=SquaremDefault.stepmin0;
+#       stepmax=SquaremDefault.stepmax0;
+#       if(SquaremDefault.trace){std::cout<<"Squarem-1"<<std::endl;}
     
-      iter=1;pcpp=par;pnew=par;
-      feval=0;conv=true;
+#       iter=1;pcpp=par;pnew=par;
+#       feval=0;conv=true;
     
-      const long int parvectorlength=pcpp.size();
+#       const long int parvectorlength=pcpp.size();
     
-      while(feval<SquaremDefault.maxiter){
-          //Step 1
-          extrap = true;
-          try{p1cpp=fixptfn(pcpp);feval++;}
-          catch(...){
-              std::cout<<"Error in fixptfn function evaluation";
-              return sqobjnull;
-          }
+#       while(feval<SquaremDefault.maxiter){
+#           //Step 1
+#           extrap = true;
+#           try{p1cpp=fixptfn(pcpp);feval++;}
+#           catch(...){
+#               std::cout<<"Error in fixptfn function evaluation";
+#               return sqobjnull;
+#           }
         
-          sr2_scalar=0;
-          for (int i=0;i<parvectorlength;i++){sr2_scalar+=pow(p1cpp[i]-pcpp[i],2);}
-          if(sqrt(sr2_scalar)<SquaremDefault.tol){break;}
+#           sr2_scalar=0;
+#           for (int i=0;i<parvectorlength;i++){sr2_scalar+=pow(p1cpp[i]-pcpp[i],2);}
+#           if(sqrt(sr2_scalar)<SquaremDefault.tol){break;}
         
-          //Step 2
-          try{p2cpp=fixptfn(p1cpp);feval++;}
-          catch(...){
-              std::cout<<"Error in fixptfn function evaluation";
-              return sqobjnull;
-          }
-          sq2_scalar=0;
-          for (int i=0;i<parvectorlength;i++){sq2_scalar+=pow(p2cpp[i]-p1cpp[i],2);}
-          sq2_scalar=sqrt(sq2_scalar);
-          if (sq2_scalar<SquaremDefault.tol){break;}
-          res=sq2_scalar;
+#           //Step 2
+#           try{p2cpp=fixptfn(p1cpp);feval++;}
+#           catch(...){
+#               std::cout<<"Error in fixptfn function evaluation";
+#               return sqobjnull;
+#           }
+#           sq2_scalar=0;
+#           for (int i=0;i<parvectorlength;i++){sq2_scalar+=pow(p2cpp[i]-p1cpp[i],2);}
+#           sq2_scalar=sqrt(sq2_scalar);
+#           if (sq2_scalar<SquaremDefault.tol){break;}
+#           res=sq2_scalar;
         
-          sv2_scalar=0;
-          for (int i=0;i<parvectorlength;i++){sv2_scalar+=pow(p2cpp[i]-2*p1cpp[i]+pcpp[i],2);}
-          srv_scalar=0;
-          for (int i=0;i<parvectorlength;i++){srv_scalar+=(p2cpp[i]-2*p1cpp[i]+pcpp[i])*(p1cpp[i]-pcpp[i]);}
-          //std::cout<<"sr2,sv2,srv="<<sr2_scalar<<","<<sv2_scalar<<","<<srv_scalar<<std::endl;//debugging
+#           sv2_scalar=0;
+#           for (int i=0;i<parvectorlength;i++){sv2_scalar+=pow(p2cpp[i]-2*p1cpp[i]+pcpp[i],2);}
+#           srv_scalar=0;
+#           for (int i=0;i<parvectorlength;i++){srv_scalar+=(p2cpp[i]-2*p1cpp[i]+pcpp[i])*(p1cpp[i]-pcpp[i]);}
+#           //std::cout<<"sr2,sv2,srv="<<sr2_scalar<<","<<sv2_scalar<<","<<srv_scalar<<std::endl;//debugging
         
-          //Step 3 Proposing new value
-          switch (SquaremDefault.method){
-              case 1: alpha= -srv_scalar/sv2_scalar;
-              case 2: alpha= -sr2_scalar/srv_scalar;
-              case 3: alpha= sqrt(sr2_scalar/sv2_scalar);
-          }
+#           //Step 3 Proposing new value
+#           switch (SquaremDefault.method){
+#               case 1: alpha= -srv_scalar/sv2_scalar;
+#               case 2: alpha= -sr2_scalar/srv_scalar;
+#               case 3: alpha= sqrt(sr2_scalar/sv2_scalar);
+#           }
         
-          alpha=std::max(stepmin,std::min(stepmax,alpha));
-          //std::cout<<"alpha="<<alpha<<std::endl;//debugging
-          for (int i=0;i<parvectorlength;i++){pnew[i]=pcpp[i]+2.0*alpha*(p1cpp[i]-pcpp[i])+pow(alpha,2)*(p2cpp[i]-2*p1cpp[i]+pcpp[i]);}
-          //pnew = pcpp + 2.0*alpha*q1 + alpha*alpha*(q2-q1);
+#           alpha=std::max(stepmin,std::min(stepmax,alpha));
+#           //std::cout<<"alpha="<<alpha<<std::endl;//debugging
+#           for (int i=0;i<parvectorlength;i++){pnew[i]=pcpp[i]+2.0*alpha*(p1cpp[i]-pcpp[i])+pow(alpha,2)*(p2cpp[i]-2*p1cpp[i]+pcpp[i]);}
+#           //pnew = pcpp + 2.0*alpha*q1 + alpha*alpha*(q2-q1);
         
-          //Step 4 stabilization
-          if(std::abs(alpha-1)>0.01){
-              try{ptmp=fixptfn(pnew);feval++;}
-              catch(...){
-                  pnew=p2cpp;
-                  if(alpha==stepmax){
-                      stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
-                  }
-                  alpha=1;
-                  extrap=false;
-                  if(alpha==stepmax){stepmax=SquaremDefault.mstep*stepmax;}
-                  if(stepmin<0 && alpha==stepmin){stepmin=SquaremDefault.mstep*stepmin;}
-                  pcpp=pnew;
-                  if(SquaremDefault.trace){std::cout<<"Residual: "<<res<<"  Extrapolation: "<<extrap<<"  Steplength: "<<alpha<<std::endl;}
-                  iter++;
-                  continue;//next round in while loop
-              }
-              res=0;
-              for (int i=0;i<parvectorlength;i++){res+=pow(ptmp[i]-pnew[i],2);}
-              res=sqrt(res);
-              parnorm=0;
-              for (int i=0;i<parvectorlength;i++){parnorm+=pow(p2cpp[i],2);}
-              parnorm=sqrt(parnorm/parvectorlength);
-              kres=SquaremDefault.kr*(1+parnorm)+sq2_scalar;
-              if(res <= kres){
-                  pnew=ptmp;
-              }else{
-                  pnew=p2cpp;
-                  if(alpha==stepmax){stepmax=SquaremDefault.mstep*stepmax;}
-                  alpha=1;
-                  extrap=false;
-              }
-          }
+#           //Step 4 stabilization
+#           if(std::abs(alpha-1)>0.01){
+#               try{ptmp=fixptfn(pnew);feval++;}
+#               catch(...){
+#                   pnew=p2cpp;
+#                   if(alpha==stepmax){
+#                       stepmax=std::max(SquaremDefault.stepmax0,stepmax/SquaremDefault.mstep);
+#                   }
+#                   alpha=1;
+#                   extrap=false;
+#                   if(alpha==stepmax){stepmax=SquaremDefault.mstep*stepmax;}
+#                   if(stepmin<0 && alpha==stepmin){stepmin=SquaremDefault.mstep*stepmin;}
+#                   pcpp=pnew;
+#                   if(SquaremDefault.trace){std::cout<<"Residual: "<<res<<"  Extrapolation: "<<extrap<<"  Steplength: "<<alpha<<std::endl;}
+#                   iter++;
+#                   continue;//next round in while loop
+#               }
+#               res=0;
+#               for (int i=0;i<parvectorlength;i++){res+=pow(ptmp[i]-pnew[i],2);}
+#               res=sqrt(res);
+#               parnorm=0;
+#               for (int i=0;i<parvectorlength;i++){parnorm+=pow(p2cpp[i],2);}
+#               parnorm=sqrt(parnorm/parvectorlength);
+#               kres=SquaremDefault.kr*(1+parnorm)+sq2_scalar;
+#               if(res <= kres){
+#                   pnew=ptmp;
+#               }else{
+#                   pnew=p2cpp;
+#                   if(alpha==stepmax){stepmax=SquaremDefault.mstep*stepmax;}
+#                   alpha=1;
+#                   extrap=false;
+#               }
+#           }
         
-          if(alpha==stepmax){stepmax=SquaremDefault.mstep*stepmax;}
-          if(stepmin<0 && alpha==stepmin){stepmin=SquaremDefault.mstep*stepmin;}
+#           if(alpha==stepmax){stepmax=SquaremDefault.mstep*stepmax;}
+#           if(stepmin<0 && alpha==stepmin){stepmin=SquaremDefault.mstep*stepmin;}
         
-          pcpp=pnew;
-          if(SquaremDefault.trace){std::cout<<"Residual: "<<res<<"  Extrapolation: "<<extrap<<"  Steplength: "<<alpha<<std::endl;}
-          iter++;
-      }
+#           pcpp=pnew;
+#           if(SquaremDefault.trace){std::cout<<"Residual: "<<res<<"  Extrapolation: "<<extrap<<"  Steplength: "<<alpha<<std::endl;}
+#           iter++;
+#       }
     
-      if (feval >= SquaremDefault.maxiter){conv=false;}
+#       if (feval >= SquaremDefault.maxiter){conv=false;}
     
-      //assigning values
-      sqobj.par=pcpp;
-      sqobj.valueobjfn=NAN;
-      sqobj.iter=iter;
-      sqobj.pfevals=feval;
-      sqobj.objfevals=0;
-      sqobj.convergence=conv;
-      return(sqobj);
-  }
+#       //assigning values
+#       sqobj.par=pcpp;
+#       sqobj.valueobjfn=NAN;
+#       sqobj.iter=iter;
+#       sqobj.pfevals=feval;
+#       sqobj.objfevals=0;
+#       sqobj.convergence=conv;
+#       return(sqobj);
+#   }
 
-  SquaremOutput fpiter(std::vector<double> par){
-      //std::vector<double> p,p1,p2;//R data types
-      double lnewcpp,res;
-      std::vector<double> pcpp,pnew;
-      int iter;
-      bool conv;
-      if(SquaremDefault.trace){std::cout<<"Standaard Fixed Point Iteration:"<<std::endl;}
-      iter=1;res=NAN;conv=false;
-      pcpp=par;
-      const long int parvectorlength=pcpp.size();
-      while(iter<SquaremDefault.maxiter*4){
-          pnew=fixptfn(pcpp);
-          res=0;
-          for (int i=0;i<parvectorlength;i++){res+=pow(pnew[i]-pcpp[i],2);}
-          res=sqrt(res);
-          if(res<SquaremDefault.tol){conv=true;break;}
-          if(SquaremDefault.trace){
-              if(fmod(iter,100)==0){
-                  std::cout<<"Iter: "<<iter<<"Residual: "<<res<<std::endl;
-              }
-          }
-          pcpp=pnew;
-          iter++;
-      }
+#   SquaremOutput fpiter(std::vector<double> par){
+#       //std::vector<double> p,p1,p2;//R data types
+#       double lnewcpp,res;
+#       std::vector<double> pcpp,pnew;
+#       int iter;
+#       bool conv;
+#       if(SquaremDefault.trace){std::cout<<"Standaard Fixed Point Iteration:"<<std::endl;}
+#       iter=1;res=NAN;conv=false;
+#       pcpp=par;
+#       const long int parvectorlength=pcpp.size();
+#       while(iter<SquaremDefault.maxiter*4){
+#           pnew=fixptfn(pcpp);
+#           res=0;
+#           for (int i=0;i<parvectorlength;i++){res+=pow(pnew[i]-pcpp[i],2);}
+#           res=sqrt(res);
+#           if(res<SquaremDefault.tol){conv=true;break;}
+#           if(SquaremDefault.trace){
+#               if(fmod(iter,100)==0){
+#                   std::cout<<"Iter: "<<iter<<"Residual: "<<res<<std::endl;
+#               }
+#           }
+#           pcpp=pnew;
+#           iter++;
+#       }
     
-      lnewcpp=objfn(pcpp);
-      //assigning values
-      sqobj.par=pcpp;
-      sqobj.valueobjfn=lnewcpp;
-      sqobj.iter=iter;
-      sqobj.pfevals=iter;
-      sqobj.objfevals=1;
-      sqobj.convergence=conv;
-      return(sqobj);
-  }
-
-
-  //main() used for demostration
-
-  std::vector<int> Other_input1 {162,267,271,185,111,61,27,8,3,1};
-
-  int main(){
-      std::cout<<"Hi, this is a demostration using Poisson mixture!"<<std::endl;
-      std::vector<double> par_initial {0.5,3,1};//some random starting point,
-      SquaremOutput SQ_result;
-    
-      std::cout<<"\n\n\nDemo1: using squarem1 and the objective function"<<endl;
-      SQ_result=squarem1(par_initial);
-      cout<<"Initial input vector:"<<endl;
-      for(int i=0;i<par_initial.size();i++) cout<<par_initial[i]<<" ";
-      cout<<"\nOutput vector by SQUAREM:"<<endl;
-      for(int i=0;i<par_initial.size();i++) cout<<SQ_result.par[i]<<" ";
-      cout<<"\nNumber of evaluations on fixed point function:"<<endl;
-      cout<<SQ_result.pfevals<<endl;
-      cout<<"Number of evaluations on objective function:"<<endl;
-      cout<<SQ_result.objfevals<<endl;
-    
-      std::cout<<"\n\n\nDemo2: using squarem2 without objective function"<<endl;
-      SQ_result=squarem2(par_initial);
-      cout<<"Initial input vector:"<<endl;
-      for(int i=0;i<par_initial.size();i++) cout<<par_initial[i]<<" ";
-      cout<<"\nOutput vector by SQUAREM:"<<endl;
-      for(int i=0;i<par_initial.size();i++) cout<<SQ_result.par[i]<<" ";
-      cout<<"\nNumber of evaluations on fixed point function:"<<endl;
-      cout<<SQ_result.pfevals<<endl;
-      cout<<"Number of evaluations on objective function:"<<endl;
-      cout<<SQ_result.objfevals<<endl;
-    
-      std::cout<<"\n\n\nDemo3: using simple fixed point iteration"<<endl;
-      SQ_result=fpiter(par_initial);
-      cout<<"Initial input vector:"<<endl;
-      for(int i=0;i<par_initial.size();i++) cout<<par_initial[i]<<" ";
-      cout<<"\nOutput vector by SQUAREM:"<<endl;
-      for(int i=0;i<par_initial.size();i++) cout<<SQ_result.par[i]<<" ";
-      cout<<"\nNumber of evaluations on fixed point function:"<<endl;
-      cout<<SQ_result.pfevals<<endl;
-      cout<<"Number of evaluations on objective function:"<<endl;
-      cout<<SQ_result.objfevals<<endl;
-    
-      return 0;
-  }
+#       lnewcpp=objfn(pcpp);
+#       //assigning values
+#       sqobj.par=pcpp;
+#       sqobj.valueobjfn=lnewcpp;
+#       sqobj.iter=iter;
+#       sqobj.pfevals=iter;
+#       sqobj.objfevals=1;
+#       sqobj.convergence=conv;
+#       return(sqobj);
+#   }
 
 
-  //Fixed point function and objective function that take only the vector for EM acceleration as input, while others are defined as global variables(const within the scope of cxxSQUAREM)
+#   //main() used for demostration
 
-  vector<double> fixptfn(std::vector<double> par){
-      std::vector<double> parnew=par;
+#   std::vector<int> Other_input1 {162,267,271,185,111,61,27,8,3,1};
+
+#   int main(){
+#       std::cout<<"Hi, this is a demostration using Poisson mixture!"<<std::endl;
+#       std::vector<double> par_initial {0.5,3,1};//some random starting point,
+#       SquaremOutput SQ_result;
     
-      std::vector<double> zi(Other_input1.size());
-      for (int i=0;i<Other_input1.size();i++){
-          zi[i]=par[0]*exp(-par[1])*pow(par[1],i)/(par[0]*exp(-par[1])*pow(par[1],i)+(1-par[0])*exp(-par[2])*pow(par[2],i));
-      }
+#       std::cout<<"\n\n\nDemo1: using squarem1 and the objective function"<<endl;
+#       SQ_result=squarem1(par_initial);
+#       cout<<"Initial input vector:"<<endl;
+#       for(int i=0;i<par_initial.size();i++) cout<<par_initial[i]<<" ";
+#       cout<<"\nOutput vector by SQUAREM:"<<endl;
+#       for(int i=0;i<par_initial.size();i++) cout<<SQ_result.par[i]<<" ";
+#       cout<<"\nNumber of evaluations on fixed point function:"<<endl;
+#       cout<<SQ_result.pfevals<<endl;
+#       cout<<"Number of evaluations on objective function:"<<endl;
+#       cout<<SQ_result.objfevals<<endl;
     
+#       std::cout<<"\n\n\nDemo2: using squarem2 without objective function"<<endl;
+#       SQ_result=squarem2(par_initial);
+#       cout<<"Initial input vector:"<<endl;
+#       for(int i=0;i<par_initial.size();i++) cout<<par_initial[i]<<" ";
+#       cout<<"\nOutput vector by SQUAREM:"<<endl;
+#       for(int i=0;i<par_initial.size();i++) cout<<SQ_result.par[i]<<" ";
+#       cout<<"\nNumber of evaluations on fixed point function:"<<endl;
+#       cout<<SQ_result.pfevals<<endl;
+#       cout<<"Number of evaluations on objective function:"<<endl;
+#       cout<<SQ_result.objfevals<<endl;
     
-      double temp1,temp2;
-      //parnew[0]=1;
-      temp1=0,temp2=0;
-      for (int i=0;i<Other_input1.size();i++){
-          temp1+=Other_input1[i]*zi[i];
-          temp2+=Other_input1[i];
-      }
-      parnew[0]=temp1/temp2;
+#       std::cout<<"\n\n\nDemo3: using simple fixed point iteration"<<endl;
+#       SQ_result=fpiter(par_initial);
+#       cout<<"Initial input vector:"<<endl;
+#       for(int i=0;i<par_initial.size();i++) cout<<par_initial[i]<<" ";
+#       cout<<"\nOutput vector by SQUAREM:"<<endl;
+#       for(int i=0;i<par_initial.size();i++) cout<<SQ_result.par[i]<<" ";
+#       cout<<"\nNumber of evaluations on fixed point function:"<<endl;
+#       cout<<SQ_result.pfevals<<endl;
+#       cout<<"Number of evaluations on objective function:"<<endl;
+#       cout<<SQ_result.objfevals<<endl;
+    
+#       return 0;
+#   }
+
+
+#   //Fixed point function and objective function that take only the vector for EM acceleration as input, while others are defined as global variables(const within the scope of cxxSQUAREM)
+
+#   vector<double> fixptfn(std::vector<double> par){
+#       std::vector<double> parnew=par;
+    
+#       std::vector<double> zi(Other_input1.size());
+#       for (int i=0;i<Other_input1.size();i++){
+#           zi[i]=par[0]*exp(-par[1])*pow(par[1],i)/(par[0]*exp(-par[1])*pow(par[1],i)+(1-par[0])*exp(-par[2])*pow(par[2],i));
+#       }
     
     
-      temp1=0,temp2=0;
-      for (int i=0;i<Other_input1.size();i++){
-          temp1+=Other_input1[i]*zi[i]*i;
-          temp2+=Other_input1[i]*zi[i];
-      }
-      parnew[1]=temp1/temp2;
+#       double temp1,temp2;
+#       //parnew[0]=1;
+#       temp1=0,temp2=0;
+#       for (int i=0;i<Other_input1.size();i++){
+#           temp1+=Other_input1[i]*zi[i];
+#           temp2+=Other_input1[i];
+#       }
+#       parnew[0]=temp1/temp2;
     
-      temp1=0,temp2=0;
-      for (int i=0;i<Other_input1.size();i++){
-          temp1+=Other_input1[i]*(1-zi[i])*i;
-          temp2+=Other_input1[i]*(1-zi[i]);
-      }
-      parnew[2]=temp1/temp2;
     
-      return parnew;
-  }
+#       temp1=0,temp2=0;
+#       for (int i=0;i<Other_input1.size();i++){
+#           temp1+=Other_input1[i]*zi[i]*i;
+#           temp2+=Other_input1[i]*zi[i];
+#       }
+#       parnew[1]=temp1/temp2;
+    
+#       temp1=0,temp2=0;
+#       for (int i=0;i<Other_input1.size();i++){
+#           temp1+=Other_input1[i]*(1-zi[i])*i;
+#           temp2+=Other_input1[i]*(1-zi[i]);
+#       }
+#       parnew[2]=temp1/temp2;
+    
+#       return parnew;
+#   }
 
 
-  double objfn(std::vector<double> par){
-      double objvalue=0;
-      vector<double> loglik(Other_input1.size());
-      for (int i=0;i<Other_input1.size();i++){
-          loglik[i]=Other_input1[i]*log(par[0]*exp(-par[1])*pow(par[1],i)/exp(lgamma(i+1))+
-                                        (1-par[0])*exp(-par[2])*pow(par[2],i)/exp(lgamma(i+1)));
-          objvalue-=loglik[i];
-      }
-      return objvalue;
-  };
+#   double objfn(std::vector<double> par){
+#       double objvalue=0;
+#       vector<double> loglik(Other_input1.size());
+#       for (int i=0;i<Other_input1.size();i++){
+#           loglik[i]=Other_input1[i]*log(par[0]*exp(-par[1])*pow(par[1],i)/exp(lgamma(i+1))+
+#                                         (1-par[0])*exp(-par[2])*pow(par[2],i)/exp(lgamma(i+1)));
+#           objvalue-=loglik[i];
+#       }
+#       return objvalue;
+#   };
 
-#+END_SRC
-
-
+# #+END_SRC
 
 
-** Prognostic signatures
-
-#+BEGIN_QUOTE
-Based on the FPKM value of each gene, 
-patients were classified into two expression groups 
-and the correlation between expression level and 
-patient survival was examined. 
-The prognosis of each group of patients was examined by Kaplan-Meier 
-survival estimators, and the survival outcomes of the two groups were 
-compared by log-rank tests. Both median and maximally separated 
-Kaplan-Meier plots are presented in the Human Protein Atlas, and genes 
-with log rank P values less than 0.001 in maximally separated Kaplan-Meier 
-analysis were defined as prognostic genes. If the group of patients with 
-high expression of a selected prognostic gene has a higher observed event than 
-expected event, it is an unfavourable prognostic gene; otherwise, it is a 
-favourable prognostic gene. Genes with a median expression less than FPKM 1 
-were lowly expressed, and classified as unprognostic in the database even if 
-they exhibited significant prognostic effect in survival analysis
-#+END_QUOTE
 
 
-#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :colnames yes
-  library(dplyr)
-  library(purrr)
-  library(fgem)
-  library(readr)
-  library(ggplot2)
-  library(tidyr)
-#+END_SRC
+# ** Prognostic signatures
+
+# #+BEGIN_QUOTE
+# Based on the FPKM value of each gene, 
+# patients were classified into two expression groups 
+# and the correlation between expression level and 
+# patient survival was examined. 
+# The prognosis of each group of patients was examined by Kaplan-Meier 
+# survival estimators, and the survival outcomes of the two groups were 
+# compared by log-rank tests. Both median and maximally separated 
+# Kaplan-Meier plots are presented in the Human Protein Atlas, and genes 
+# with log rank P values less than 0.001 in maximally separated Kaplan-Meier 
+# analysis were defined as prognostic genes. If the group of patients with 
+# high expression of a selected prognostic gene has a higher observed event than 
+# expected event, it is an unfavourable prognostic gene; otherwise, it is a 
+# favourable prognostic gene. Genes with a median expression less than FPKM 1 
+# were lowly expressed, and classified as unprognostic in the database even if 
+# they exhibited significant prognostic effect in survival analysis
+# #+END_QUOTE
 
 
-#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
-prior_post_plot <- function(name=NULL,log=FALSE,use_null=TRUE){
-      tcancer_df <- qs::qread(glue::glue("data/driverMAPS_results_20TumorTypes/{name}.qs"))
-      Genes <- tcancer_df$Gene
-      BF <- tcancer_df$BF
-      fit <- qs::qread(glue::glue("data/models/{name}.qs"))
-      tbm <- unnest(fit,data) %>% pull(feature_name)
-      go_df <- dplyr::filter(BPGOdf, feature %in% tbm)
-      x <- fgem::trip2sparseMatrix(as.character(go_df$Gene),
-                                   go_df$feature,
-                                   go_df$value,
-                                   Genes,
-                                   unique(go_df$feature),
-                                   add_intercept = TRUE)
-      if(use_null){
-        unifp <- fgem:::gen_u(fgem:::fgem_null(BF),x[,"Intercept",drop=FALSE],BF,log=log)
-      }else{
-        unifp <- fgem:::prior_mean(BF,log=log)
-      }
-      tibble::tibble(Gene=Genes,
-                     functional_posterior = predict_fgem(fit, x, BF, log=log),
-                     uniform_posterior = unifp)
-  }
-#+END_SRC
-
-#+RESULTS:
-
-#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
-cancer_map <-tibble::tribble(
-                         ~cancer,~cancer_name,
-                         "GBM","glioma",
-                         "BRCA","breast cancer",
-                         "PRAD","prostate cancer",
-                         "UCEC", "endometrial cancer",
-                         "CESC", "cervical cancer",
-                         "BLCA", "urotherial cancer",
-                         "LUAD", "lung cancer",
-                         "HNSC", "head and neck cancer",
-                         "KIRP", "renal cancer",
-                         "UCS", NA,
-                         "KIRC", "KIRC",
-                         "SARC", NA,
-                         "SKCM", "melanoma",
-                         "LUSC", "lung cancer",
-                         "PAAD", "pancreatic cancer",
-                         "TGCT", "testis cancer",
-                         "ESCA", NA,
-                         "LIHC", "liver cancer")
+# #+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :colnames yes
+#   library(dplyr)
+#   library(purrr)
+#   library(fgem)
+#   library(readr)
+#   library(ggplot2)
+#   library(tidyr)
+# #+END_SRC
 
 
-posterior_df <- select(cancer_map,cancer) %>% 
-mutate(data=map(cancer,prior_post_plot,log=TRUE)) %>% 
-unnest(data)
+# #+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
+# prior_post_plot <- function(name=NULL,log=FALSE,use_null=TRUE){
+#       tcancer_df <- qs::qread(glue::glue("data/driverMAPS_results_20TumorTypes/{name}.qs"))
+#       Genes <- tcancer_df$Gene
+#       BF <- tcancer_df$BF
+#       fit <- qs::qread(glue::glue("data/models/{name}.qs"))
+#       tbm <- unnest(fit,data) %>% pull(feature_name)
+#       go_df <- dplyr::filter(BPGOdf, feature %in% tbm)
+#       x <- fgem::trip2sparseMatrix(as.character(go_df$Gene),
+#                                    go_df$feature,
+#                                    go_df$value,
+#                                    Genes,
+#                                    unique(go_df$feature),
+#                                    add_intercept = TRUE)
+#       if(use_null){
+#         unifp <- fgem:::gen_u(fgem:::fgem_null(BF),x[,"Intercept",drop=FALSE],BF,log=log)
+#       }else{
+#         unifp <- fgem:::prior_mean(BF,log=log)
+#       }
+#       tibble::tibble(Gene=Genes,
+#                      functional_posterior = predict_fgem(fit, x, BF, log=log),
+#                      uniform_posterior = unifp)
+#   }
+# #+END_SRC
 
-#+END_SRC
+# #+RESULTS:
 
-#+RESULTS:
+# #+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
+# cancer_map <-tibble::tribble(
+#                          ~cancer,~cancer_name,
+#                          "GBM","glioma",
+#                          "BRCA","breast cancer",
+#                          "PRAD","prostate cancer",
+#                          "UCEC", "endometrial cancer",
+#                          "CESC", "cervical cancer",
+#                          "BLCA", "urotherial cancer",
+#                          "LUAD", "lung cancer",
+#                          "HNSC", "head and neck cancer",
+#                          "KIRP", "renal cancer",
+#                          "UCS", NA,
+#                          "KIRC", "KIRC",
+#                          "SARC", NA,
+#                          "SKCM", "melanoma",
+#                          "LUSC", "lung cancer",
+#                          "PAAD", "pancreatic cancer",
+#                          "TGCT", "testis cancer",
+#                          "ESCA", NA,
+#                          "LIHC", "liver cancer")
 
-#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
+
+# posterior_df <- select(cancer_map,cancer) %>% 
+# mutate(data=map(cancer,prior_post_plot,log=TRUE)) %>% 
+# unnest(data)
+
+# #+END_SRC
+
+# #+RESULTS:
+
+# #+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
   
 
-  sfit_df <- unnest(fit,data) %>%
-  select(feature=feature_name,Beta)
-  sub_BPGO_df <- go_df %>%
-  inner_join(nGO_def,by="feature") %>%
-  select(-class) %>% 
-  mutate(Gene=as.character(Gene))
-      pldf <- left_join(plotdf, sub_BPGO_df,by="Gene") %>%
-        tidyr::replace_na(list(feature="Intercept",
-                               feature_term="None/Other",
-                               Term="",
-                               value=0L)) %>%
-        left_join(sfit_df,by="feature") %>%
-        mutate(feature_term=paste0(feature,"\n",Term,"\n", "Beta: ",format(Beta,digits=3)))
+#   sfit_df <- unnest(fit,data) %>%
+#   select(feature=feature_name,Beta)
+#   sub_BPGO_df <- go_df %>%
+#   inner_join(nGO_def,by="feature") %>%
+#   select(-class) %>% 
+#   mutate(Gene=as.character(Gene))
+#       pldf <- left_join(plotdf, sub_BPGO_df,by="Gene") %>%
+#         tidyr::replace_na(list(feature="Intercept",
+#                                feature_term="None/Other",
+#                                Term="",
+#                                value=0L)) %>%
+#         left_join(sfit_df,by="feature") %>%
+#         mutate(feature_term=paste0(feature,"\n",Term,"\n", "Beta: ",format(Beta,digits=3)))
 
-      lf <- as_labeller(set_names(pldf$feature_term,pldf$feature))
+#       lf <- as_labeller(set_names(pldf$feature_term,pldf$feature))
 
-      ggplot(pldf, aes(x = uniform_posterior, y = functional_posterior, col = feature)) +
-        geom_point() + geom_abline(slope=1)+
-        facet_wrap(~feature,labeller=lf)+ ggtitle(paste0(name,"\nModel pvalue: ",fit$pval))
-    }
-#+END_SRC
+#       ggplot(pldf, aes(x = uniform_posterior, y = functional_posterior, col = feature)) +
+#         geom_point() + geom_abline(slope=1)+
+#         facet_wrap(~feature,labeller=lf)+ ggtitle(paste0(name,"\nModel pvalue: ",fit$pval))
+#     }
+# #+END_SRC
 
-#+RESULTS:
-
-
-#+BEGIN_SRC  R :session drivermaps :colnames yes :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
-  library(ggrepel)
-  library(readr)
-
-  prog_cols <- cols(
-    ensembl = col_character(),
-    Gene = col_character(),
-    cancer_name = col_character(),
-    High = col_double(),
-    Medium = col_double(),
-    Low = col_double(),
-    Not_detected = col_double(),
-    prognostic_favourable = col_double(),
-    unprognostic_favourable = col_double(),
-    prognostic_unfavourable = col_double(),
-    unprognostic_unfavourable = col_double()
-  )
-
-  prog_df  <- read_tsv("data/pathology.tsv",skip=1L,col_names=names(prog_cols$cols),col_types=prog_cols) %>%
-      select(-ensembl) %>%
-      distinct() %>%
-      pivot_longer(cols=contains("prognostic")) %>%
-      distinct()  %>% separate(name,into=c("isPrognostic","isFavourable"))
+# #+RESULTS:
 
 
-      all_prog_df <- inner_join(prog_df,cancer_map) %>%
-      select(-cancer_name) %>% group_by(cancer,Gene) %>%
-      summarise(prognostic_p=min(value)) %>%
-      ungroup()
+# #+BEGIN_SRC  R :session drivermaps :colnames yes :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
+#   library(ggrepel)
+#   library(readr)
 
-    ap_df <- distinct(all_prog_df,cancer) %>%
-      mutate(data=map(cancer,prior_post_plot)) %>%
-      unnest(data) %>%
-      left_join(all_prog_df) %>%
-      replace_na(list(prognostic_p=1.0)) %>%
-      mutate(is_prognostic=prognostic_p<0.01) %>%
-      inner_join(model_size) %>%
-      filter(model_terms>10)
+#   prog_cols <- cols(
+#     ensembl = col_character(),
+#     Gene = col_character(),
+#     cancer_name = col_character(),
+#     High = col_double(),
+#     Medium = col_double(),
+#     Low = col_double(),
+#     Not_detected = col_double(),
+#     prognostic_favourable = col_double(),
+#     unprognostic_favourable = col_double(),
+#     prognostic_unfavourable = col_double(),
+#     unprognostic_unfavourable = col_double()
+#   )
 
-    plot_l <- split(ap_df,ap_df$cancer) %>% map(~ggplot(.x,aes(x=uniform_posterior,y=functional_posterior,label=Gene,col=is_prognostic))+
-                                                  geom_point() +
-                                                  geom_text_repel(
-                                                    data          = filter(.x, is_prognostic)) +
-                                                  geom_abline(slope=1))
+#   prog_df  <- read_tsv("data/pathology.tsv",skip=1L,col_names=names(prog_cols$cols),col_types=prog_cols) %>%
+#       select(-ensembl) %>%
+#       distinct() %>%
+#       pivot_longer(cols=contains("prognostic")) %>%
+#       distinct()  %>% separate(name,into=c("isPrognostic","isFavourable"))
 
-    prog_mod <- gather(ap_df, key = "model", value = "posterior",
-                       functional_posterior,
-                       uniform_posterior) %>%
-      mutate(is_prognostic = prognostic_p<0.05) %>% 
-      group_by(cancer, model) %>% 
-      do(glance(glm(is_prognostic~posterior,
-                    data=.,
-                    family=binomial()))) %>%
-      ungroup()
 
-    select(prog_mod, cancer, model, logLik) %>%
-      spread(model,logLik) %>%
-      mutate(dev_diff=functional_posterior>uniform_posterior) %>% inner_join(model_size)
-#+END_SRC
+#       all_prog_df <- inner_join(prog_df,cancer_map) %>%
+#       select(-cancer_name) %>% group_by(cancer,Gene) %>%
+#       summarise(prognostic_p=min(value)) %>%
+#       ungroup()
 
-#+RESULTS:
+#     ap_df <- distinct(all_prog_df,cancer) %>%
+#       mutate(data=map(cancer,prior_post_plot)) %>%
+#       unnest(data) %>%
+#       left_join(all_prog_df) %>%
+#       replace_na(list(prognostic_p=1.0)) %>%
+#       mutate(is_prognostic=prognostic_p<0.01) %>%
+#       inner_join(model_size) %>%
+#       filter(model_terms>10)
 
+#     plot_l <- split(ap_df,ap_df$cancer) %>% map(~ggplot(.x,aes(x=uniform_posterior,y=functional_posterior,label=Gene,col=is_prognostic))+
+#                                                   geom_point() +
+#                                                   geom_text_repel(
+#                                                     data          = filter(.x, is_prognostic)) +
+#                                                   geom_abline(slope=1))
+
+#     prog_mod <- gather(ap_df, key = "model", value = "posterior",
+#                        functional_posterior,
+#                        uniform_posterior) %>%
+#       mutate(is_prognostic = prognostic_p<0.05) %>% 
+#       group_by(cancer, model) %>% 
+#       do(glance(glm(is_prognostic~posterior,
+#                     data=.,
+#                     family=binomial()))) %>%
+#       ungroup()
+
+#     select(prog_mod, cancer, model, logLik) %>%
+#       spread(model,logLik) %>%
+#       mutate(dev_diff=functional_posterior>uniform_posterior) %>% inner_join(model_size)
+# #+END_SRC
+
+# #+RESULTS:
+
+bibliography:references.bib
