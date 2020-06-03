@@ -44,12 +44,34 @@ Given a particular value of $\boldsymbol{\beta}$, we arrive at a new posterior:
 
 $$P(z_g=1 | x_g, \boldsymbol{\beta},\textbf{a}_g) = \frac{\pi(\boldsymbol{\beta},\textbf{a}_g) B_g}{\pi(\boldsymbol{\beta} , \textbf{a}_g) B_g + 1 - \pi(\boldsymbol{\beta},\textbf{a}_g)}$$
 
-
-** Algorithm 
  
-Our goal is both to estimate $\boldsymbol{\beta}$ as well as $P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)$ for each gene.  We use the EM algorithm cite:EM_algo to
-obtain a maximum likelihood estimate for $\boldsymbol{\beta}$.  If $\textbf{z}$ is our latent variable then our complete data likelihood is:
+Our goal is both to estimate $\boldsymbol{\beta}$ for a relevant set of features as well as $P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)$ for each gene.  We use a penalized maximum-likelihood
+ approach to estimate $\boldsymbol{\beta}$, from which we then $P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)$. The number of gene-level features one might include in such a model is very large.  It is impossible, from both a computability 
+and interpretability standpoint, to include all conceivable features in the model. A related but distinct issue is that of collinearity.
+As the number of features in the model increases, there is a higher probability that some subset of features will be collinear with one-another,
+which can complicate model-fitting. This is especially important when a binary, hierarchical feature set like the Gene Ontology.To avoid this issue, 
+we employ a multi-stage model fitting procedure. In the first step, all single-feature-plus-intercept
+models are fit, and a $p$-value is obtained for each model byt comparing to the intercept-only model via the likelihood ratio test.  
 
+From this set of single-feature models, all of the nonsignificant (i.e features with Benjamini-Hochberg adjusted $p$-values greater than 0.05) univariate features for each cancer type
+were removed from the analysis.  In the case of KICH, no features were significant after multiple testing correction (minimum $q$ value: 0.104 correspodning to GO:0071456, "cellular response to hypoxia"), and in the case of CHOL,
+only one feature was significant after multiple testing correction (GO:0008285 " negative regulation of cell population proliferation", $q$ value: 0.00909). 
+
+
+Significant features for each cancer type were then combined in a joint model and fit with 
+
+The Limited Memory Broyden-Fletcher-Goldfarb-Shanno algorithm (LM-BFGS) cite:LMBFGS  is among the most popular algorithms 
+for unconstrained optimization over scalar, differentiable functions. 
+
+One limitation of LM-BFGS, is that, as mentioned previously, the function that is being optimized must be differentiable.  Unfortunately, sparsity-inducing $l_1$-regularized models of the form
+
+$$f(\boldsymbol{\theta})=p(\boldsymbol{\theta} | \textbf{x}) + C \Vert \boldsymbol{\theta} \Vert_1$$ are not differentiable when any of the elements of the parameter vector $\boldsybmol{\theta}$ are 0.  The Orthant-wise limited-memory quasi-Newton method is a variant of LM-BFGS which is designed precisely for 
+fitting $l_1$-regularized, sparsity inducing models. 
+
+As the number of features in 
+
+
+If $\textbf{z}$ is our latent variable then our complete data likelihood is:
 $$P(\textbf{x},\textbf{z}|\boldsymbol{\beta},\textbf{A}) = 
 \prod_{g=1}^G \left[P(z_g|\boldsymbol{\beta},\textbf{a}_g) P(x_g|z_g)\right] = 
 \prod_{g=1}^G \left[\pi(\boldsymbol{\beta},\textbf{a}_g)^{z_g} (1-\pi(\boldsymbol{\beta},\textbf{a}_g))^{1-z_g}B_g^{z_g}\right]$$ 
@@ -69,52 +91,12 @@ The model fitting procedure proceeds as follows
   - Compute $P(z_g=1|x_g,\boldsymbol{\beta_n},\textbf{a}_g)$
   - Maximize the likelihood for $\boldsymbol{\beta}$ using proportional logistic regression
 
-** Algorithm (penalized Maximum Likelihood with BFGS)
 
-An alternative to the Expectation Maximization framework is a direct, maximum-likelihood approach.  The Limited Memory Broyden-Fletcher-Goldfarb-Shanno algorithm (LM-BFGS) cite:LMBFGS  is among the most popular algorithms 
-for unconstrained optimization over scalar, differentiable functions. 
+** Validation against intOGen
 
-One limitation of LM-BFGS, is that, as mentioned previously, the function that is being optimized must be differentiable.  Unfortunately, sparsity-inducing $l_1$-regularized models of the form
-
-$$f(\boldsymbol{\theta})=p(\boldsymbol{\theta} | \textbf{x}) + C \Vert \boldsymbol{\theta} \Vert_1$$ are not differentiable when any of the elements of the parameter vector $\boldsybmol{\theta}$ are 0.  The Orthant-wise limited-memory quasi-Newton method is a variant of LM-BFGS which is designed precisely for 
-fitting $l_1$-regularized, sparsity inducing models. 
-
-
-*** Feature selection (Forward Selection)
-
-The number of gene-level features one might include in such a model is very large.  It is impossible, from both a computability 
-and interpretability standpoint, to include all conceivable features in the model. A related but distinct issue is that of collinearity.
-As the number of features in the model increases, there is a higher probability that some subset of features will be collinear with one-another,
-which can complicate model-fitting.  To avoid this issue, we employ a multi-stage model fitting procedure. In the first step, all single-feature-plus-intercept
-models are fit, and their $p$-value 
-
-We employed a forward selection procedure to construct a multivariate model.  We begin the procedure by 
-fitting all features in single-feature models.  We test the significance of each model against an intercept-only model using the likelihood ratio test.
-From this set of univariate models multivariate models all of the nonsignificant (false discovery rate of 0.05) univariate features for each cancer type
- were removed from the analysis.  In the case of KICH, no features were significant after multiple testing correction (minimum $q$ value: 0.104 correspodning to GO:0071456, "cellular response to hypoxia"), and in the case of CHOL,
-only one feature was significant after multiple testing correction (GO:0008285 " negative regulation of cell population proliferation", $q$ value: 0.00909). 
-Significant features were then 
-further pruned using a jaccard index similarity cutoff.
-
-** Jaccard index for binary feature overlap
-
-The Jaccard index that measures the similarity of two sets.  GO terms are binary features (gene is either a member of a GO term or it is not), and can be 
-models as a set, where the genes in the GO terms are the elements of the set. The definition of the Jaccard Index is:
-
-$$ J(A,B) = \frac{|A \cap B |}{A \cup B} = \frac{| A \cap B|}{|A|+|B|-|A \cap B|} $$
-
-The strategy for feature selection works as follows: first take the most significant single-feature model,
-and then remove the most similar features to the selected feature (i.e the features with a jaccard similarity above 0.1).
-Then fit all 2 term models that include the most significant feature, select the feature with the highest significance when tested against the single 
-feature model, and remove all features similar to the features in the selected model. This process of testing all available $n$ feature models, against the
-(greedily) best $n-1$-feature model, and removing from the candidate pool features similar to the chosen $n$th feature, is repeated until the most significant model in the $n$ term vs
-$n-1$ comparison is not significant at $p<0.05$ by the likelihood ratio test.
-
-
-** Validation against COSMIC Cancer Gene Census
-
-The Catalogue of Somatic Mutations in Cancer (COSMIC) Cancer Gene Census (CGC) cite:COSMIC is an effort to catalogue genes which contain mutations
-causally implicated in cancer. To date, the CGC has identified  To validate the FGEM models, CGC genes were used as a gold standard.    
+IntOGen is a database of cancer driver genes cite:gonzalez-perez13_intog_mutat_ident_cancer_driver.  It is populated by an ensembl method that incorporates seven different methods for identifying cancer driver genes.  
+It weights each of the 7 methods according to their ability to predict membership in the The Catalogue of Somatic Mutations in Cancer (COSMIC) Cancer Gene Census (CGC) cite:COSMIC.
+To validate the FGEM models, 
 
 ** Validation against 
 
