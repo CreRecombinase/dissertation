@@ -2,45 +2,46 @@
 #+SETUPFILE: setup.org
 #+OPTIONS: toc:2
 
+* TODO find immune genes
+* TODO Fisher's exact test detailed comparison
+** TODO create table for fisher's exact test
+
 * TODO FGEM Project [0%]
 ** TODO Write Paper [0%]
    DEADLINE: <2020-05-13 Wed>
 + Target submission to Bioinformatics
+*** TODO figures
+**** TODO figure for workflow
+**** TODO figure for validation
+**** TODO figure for specific genes
+**** TODO table of full results
+***** TODO each feature and beta, univariate p value and beta
+***** TODO each gene BF functional and uniform prior (and pathways) and evidence of  the gene
 *** TODO Introduction 
 *** TODO Statistical Method 
 *** Application to Cancer
 *** TODO Software
 *** TODO Results 
 *** TODO Discussion
-** TODO Analyses [30%]
+** TODO Analyses [38%]
    DEADLINE: <2020-05-04 Mon>
 *** DONE Run FGEM on driverMAPS TCGA
-
-*** DONE use multiple testing correction in forward selection
-**** TODO fisher's exact test
-***** 1 at a time followed by joint analysis
-**** TODO posterior for genes with and without prior
-**** TODO Yuwen's annotation data 
-**** TODO CancerMAPS Bayes Factors from driverMAPS
-***** Get list of genes from siming 
-***** What gene sets to use for Siming:
-+ screen single feature models and use significant ones in a joint model
 *** TODO make plots 
-*** TODO compare to univariate results
+*** DONE compare to univariate results
 *** DONE plot of fisher exact test
 *** TODO check against siming's results
 *** TODO find (top) innate immune response
-*** TODO do cross validation of FGEM
-*** TODO show performance as a function of lambda
+*** DONE do cross validation of FGEM
+*** DONE show performance as a function of lambda
 *** TODO double check with Siming
-
-
-
 **** Multivariate enrichment
-
-
-
+*** TODO number of (significant) genes per cancer
+*** TODO find out what the outliers are
+*** TODO filter to 20 genes for gene ontology
+*** TODO choose a cancer to present
+**** List 
 * Analysis
+
 
 
 **** Looking at the data
@@ -149,6 +150,41 @@ library(qs)
   qs::qsave(fn_df,"data/GO_Definitions.qs")
 #+END_SRC
 
+**** MsigDB
+
+You can download the full msigdb from https://www.gsea-msigdb.org/gsea/msigdb/download_file.jsp?filePath=/msigdb/release/7.1/msigdb.v7.1.symbols.gmt (you have to register)
+
+#+BEGIN_SRC R :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
+  library(tidyverse)
+  msigf <- "data/msigdb.v7.1.symbols.gmt"
+  #msig_xml <- read_xml("~/Dropbox/Repos/dissertation/data/msigdb_v7.1.xml") %>% xml_root() %>% xml_children() %>% map_dfr(~tibble(!!!xml_attrs(.x))) 
+  msig_xml <- qs::qread("data/msig_metadata.qs")
+
+
+  msig_db <- read_lines(msigf) %>%
+    str_split(pattern="\t") %>% map_dfr(function(x){
+      tibble(feature_name=x[1],feature_url=x[2],Gene=list(x[-c(1,2)]))
+      })
+  msig_xml <- qs::qread("data/msig_metadata.qs")
+  
+  msig_meta <- msig_xml %>% select(feature_name=STANDARD_NAME,
+                                   organism=ORGANISM,
+                                   category=CATEGORY_CODE,
+                                   sub_category=SUB_CATEGORY_CODE,
+                                   description=DESCRIPTION_BRIEF) %>% 
+                                   inner_join(msig_db)
+
+  qs::qsave(msig_db,"data/msigdb.qs")
+  qs::qsave(msig_meta,"data/msigdb_metadata.qs")
+
+
+
+#+END_SRC
+
+#+RESULTS:
+: 9819802
+
+
 
 **** Fitting  Fisher's Exact test
 
@@ -158,9 +194,9 @@ library(qs)
   library(progressr)
   library(furrr)
   library(qs)
-  plan(multiprocess)
+  plan(multisession)
 
-  cancer_df <- qs::qread("data/driverMAPS_results_20TumorTypes.qs") 
+  cancer_df <- qs::qread("data/clean_driverMAPS_results_20TumorTypes.qs") 
   BPGOdf <- qs::qread("data/GO_df.qs")
   min_cancer_df <- cancer_df %>%
   select(Gene, FDR, cancer)
@@ -177,15 +213,6 @@ library(qs)
   go_dfl <- nest(go_df,data=Gene) %>% mutate(isa=NA)
   cancer_dfl <- nest(min_cancer_df,fdr_data=c(Gene,FDR)) %>% mutate(isa=NA)
 
-  with_progress({
-    p <- progressor(along = xs)
-    y <- future_map(xs, function(x) {
-      p(sprintf("x=%g", x))
-      Sys.sleep(6.0-x)
-      sqrt(x)
-    })
-  })
-
   fisher_inp <- inner_join(go_dfl,cancer_dfl,by="isa") %>% select(-isa) %>% mutate(ix=1:n())
   with_progress({
     p <- progressor(along = fisher_inp$ix)
@@ -201,20 +228,143 @@ library(qs)
     mutate(qval=p.adjust(p.value,method="fdr")) %>%
     ungroup() %>% arrange(qval)
 
-  qs::qsave(fisher_df,"data/single_fisher.qs")
+  qs::qsave(fisher_df,"data/clean_single_fisher.qs")
 #+END_SRC
 
 #+RESULTS:
 
 **** Fitting univariate models
 
-#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-  library(tidyverse)
-  library(fgem)
-  library(progressr)
+
+
+#+END_SRC
+
+#+BEGIN_SRC R :session univ :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
+library(tidyverse)
+library(fgem)
+library(progressr)
+cancer_df <- qs::qread("data/clean_driverMAPS_results_20TumorTypes.qs")
+    msig_df <- qs::qread("data/msigdb.qs") %>% select(-feature_url)  %>% unnest(Gene)  %>% semi_join(distinct(cancer_df,Gene))
+    #25701
+    msig_df <- group_by(msig_df, feature_name) %>%
+      summarise(n_gt = n()) %>%
+      filter(n_gt >= 10) %>%
+      select(feature_name) %>%
+      inner_join(msig_df)
+    msig_df  <-  mutate(msig_df,value=1.0)
+
+    min_cancer_df <- cancer_df %>%
+      select(Gene, BF, cancer) %>%
+      mutate(BF = exp(BF))
+                                            #21657
+
+    nidf <-   nest(min_cancer_df,cdf=c("Gene","BF")) %>% mutate(ix=1:n())
+
+    epsilon <- 1e-06
+    max_iter <- 150
+    fs::dir_create("data/msigdb_X")
+    fs::dir_create("data/msigdb_y")
+  with_progress({
+    p <- progressor(along = seq_len(nrow(nidf)))
+    pwalk(nidf,function(cancer,cdf,ix){
+      p(sprintf("x=%g",ix))
+      X <- as.matrix(fgem::trip2sparseMatrix(rowname_vals = as.character(msig_df$Gene),
+                                             colname_vals = msig_df$feature_name,
+                                             values = msig_df$value,
+                                             total_rownames = cdf$Gene,
+                                             total_colnames = unique(msig_df$feature_name),
+                                             add_intercept = FALSE,
+                                             csr=FALSE))
+      oxf <- fs::path("data/msigdb_X",cancer,ext="qs")
+      oyf <- fs::path("data/msigdb_y",cancer,ext="qs")
+      qs::qsave(X,oxf)
+      qs::qsave(cdf,oyf)
+    })
+    })
+
+
+#+END_SRC
+
+#+BEGIN_SRC R :session remote_univ  :dir /ssh:rcc2|ssh:gardner:/home/t.cri.nknoblauch/data/
+library(future.batchtools)
+ plan(list(
+        tweak(batchtools_torque,
+              template  = "/home/t.cri.nknoblauch/torque_batchtools.tmpl",
+              resources = list(ncpus=10,mem=29000L,walltime=3600L*3)),multiprocess))
+
+#+END_SRC
+
+#+BEGIN_SRC R :session univ :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
+
+
+  library(furrr)
+
   library(qs)
 
-  cancer_df <- qs::qread("data/driverMAPS_results_20TumorTypes.qs")
+ 
+    cancerf <- c("BLCA", "BRCA", "CESC", "CHOL", "ESCA", "GBM", "HNSC", "KICH", 
+                 "KIRC", "KIRP", "LIHC", "LUAD", "LUSC", "PAAD", "PRAD", "SARC", 
+                 "SKCM", "TGCT", "UCEC", "UCS")
+    #  plan(list(
+    #    tweak(batchtools_slurm,
+    #          template  = "/home/nwknoblauch/slurm_batchtools.tmpl",
+    #          resources = list(ncpus=8,mem=19000L,walltime=3600L)),multiprocess))
+
+  
+
+#+END_SRC
+
+
+
+
+#+BEGIN_SRC R :session univ  
+
+#+END_SRC
+
+
+#+BEGIN_SRC R :session univ  
+  fs::dir_create("data/msigdb_results/")
+  ix  <- 1
+  library(fgem)
+  library(progressr)
+  marg_fun <- function(ix,cancerf){
+    cancer <- cancerf[ix]
+    X <- qs::qread(fs::path("data/msigdb_X",cancer,ext="qs"))
+    cdf <- qs::qread(fs::path("data/msigdb_y",cancer,ext="qs"))
+
+    fgmr <- dplyr::mutate(fgem:::fgem_marginal(X,cdf$BF,parallel=TRUE),cancer=cancer)
+    p(sprintf("x=%g",ix))
+    qs::qsave(fgmr,fs::path("data/msigdb_results/",cancer,ext="qs"))
+    return(cancer)
+  }
+  ixv <- seq_along(cancerf)
+  with_progress({
+    p <- progressor(along = ixv)
+    resl <- furrr::future_map(ixv,marg_fun,cancerf=cancerf)
+  })
+
+
+
+
+  ## cdf <- 
+  ##   X <- fgem::trip2sparseMatrix(rowname_vals = as.character(msig_df$Gene),
+  ##                                colname_vals = go_df$feature_name,
+  ##                                values = go_df$value,
+  ##                                total_rownames = cdf$Gene,
+  ##                                total_colnames = unique(msig_df$feature_name),
+  ##                                add_intercept = FALSE,
+  ##                                csr=FALSE)
+
+  ##   BF <- cdf$BF
+
+  ## }
+  ## Qworkers <- workers(n_jobs=5,data=msig_df,verbose=TRUE,template=list(memory=8096,cores=4),log_worker=TRUE)
+  ## qres <- Q_rows(nidf,marg_fun,pkgs=c("future","fgem"),workers=Qworkers)
+#+END_SRC
+
+
+
+#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
   BPGOdf <- qs::qread("data/GO_df.qs")
   min_cancer_df <- cancer_df %>%
     select(Gene, BF, cancer) %>%
@@ -225,47 +375,34 @@ library(qs)
 
   go_df <- group_by(go_df,feature_name) %>%
     summarise(n_gt=n()) %>%
-    filter(n_gt>=2) %>%
+    filter(n_gt>=10) %>%
     select(feature_name) %>%
     inner_join(go_df)
   go_df <- mutate(go_df,value=1.0)
-  nest(min_cancer_df,cdf=c("Gene","BF")) %>% 
-    pmap_dfr(function(cancer,cdf){
-    
-      mutate(fgem_marginal(fgem::trip2sparseMatrix(rowname_vals = as.character(go_df$Gene),
-                                                   colname_vals = go_df$feature_name,
-                                                   values = go_df$value,
-                                                   total_rownames = cdf$Gene,
-                                                   total_colnames = unique(go_df$feature_name),
-                                                   add_intercept = FALSE,
-                                                   csr=FALSE),BF=cdf$BF),cancer=cancer)
+ 
+#+END_SRC
+
+#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
+
+  with_progress({
+    p <- progressor(along = seq_len(nrow(nidf)))
+    nidf %>% furrr::future_pmap_dfr(function(cancer,cdf,ix){
+      p(sprintf("x=%g",ix))
+
+      X <- fgem::trip2sparseMatrix(rowname_vals = as.character(go_df$Gene),
+                                   colname_vals = go_df$feature_name,
+                                   values = go_df$value,
+                                   total_rownames = cdf$Gene,
+                                   total_colnames = unique(go_df$feature_name),
+                                   add_intercept = FALSE,
+                                   csr=FALSE)
+
+      BF <- cdf$BF
+      fgmr <- fgem_marginal(X,BF)
+      mutate(fgmr,cancer=cancer)
     }) %>% 
-    qs::qsave("data/big_new_fgem_marginal_results.qs")
-
-
-#+END_SRC
-
-
-#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-
-#+END_SRC
-
-#+RESULTS:
-
-#+BEGIN_SRC R :session drivermaps :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-
-
-  all_mods <- group_by(go_df,feature) %>%
-    do(
-      fgem(
-        x = as.matrix(fgem::trip2sparseMatrix(as.character(.$Gene),
-                                            .$feature,
-                                            .$value,
-                                            cdf$Gene,
-                                            unique(.$feature),
-                                            add_intercept = TRUE)),
-        BF = cdf$BF,
-        null_beta = null_mod))
+    qs::qsave("data/alt_new_fgem_marginal_results.qs")
+  })
 
 
 #+END_SRC
@@ -274,77 +411,79 @@ library(qs)
 **** Analyzing univariate models
 
 #+BEGIN_SRC R :session jacc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
-  library(dplyr)
-  library(purrr)
-  library(fgem)
-  library(ggplot2)
-  library(tidyr)
-  library(rhdf5)
-  bp_name <- readRDS("data/GO_Definitions.RDS") 
-  results_df <- readRDS("data/fgem_data.RDS")  %>%
-    group_by(cancer) %>%
-    filter(convergence==TRUE) %>%
-    select(-convergence,-NullLogLik,-Chisq) %>%
-    mutate(qval=p.adjust(pval,method="fdr")) %>%
-    ungroup() %>%
-    arrange(qval) %>%
-    rename(feature_name=trait) %>%
-    inner_join(bp_name)
-  data("BPGOdf")
+   library(dplyr)
+   library(purrr)
+   library(fgem)
+   library(ggplot2)
+   library(tidyr)
+   library(rhdf5)
+   bp_name <- readRDS("data/GO_Definitions.RDS") 
 
-  sig_features <- group_by(results_df,cancer) %>%
-    filter(qval<0.2)  %>%
-    ungroup() %>%
-    select(cancer,feature=feature_name,qval,data)
+  msig_df <- map_df(fs::dir_ls("data/msigdb_results"),qs::qread)
+   results_df <- qs::qread("data/clean_new_fgem_marginal_results.qs")  %>%
+     group_by(cancer) %>%
+     filter(iter<100) %>%
+     mutate(qval=p.adjust(pval,method="fdr")) %>%
+     ungroup() %>%
+     arrange(qval) %>%
+     inner_join(bp_name)
+   data("BPGOdf")
 
-  data("BPGOdf")
-  go_df <- select(BPGOdf,Gene,feature) %>% 
-    mutate(Gene=as.character(Gene))
-  genelist_go <- nest(go_df,gene_l=Gene) %>% 
-    mutate(gene_l=map(gene_l,"Gene"))  %>%
-    inner_join(select(sig_features,feature,cancer))
-  cancer_df <- qs::qread("data/driverMAPS_results_20TumorTypes.qs") %>%
-    mutate(BF=exp(BF)) %>% select(Gene,BF,cancer)
+   sig_features <- group_by(results_df,cancer) %>%
+     filter(qval<0.2)  %>%
+     ungroup() %>%
+     select(cancer,feature=feature_name,qval)
 
-  cancer_genes <- cancer_df %>% select(Gene,cancer) %>%
-    nest(cancer_genes=Gene) %>% mutate(cancer_genes=map(cancer_genes,"Gene"))
+   data("BPGOdf")
+   go_df <- select(BPGOdf,Gene,feature) %>% 
+     mutate(Gene=as.character(Gene))
+   genelist_go <- nest(go_df,gene_l=Gene) %>% 
+     mutate(gene_l=map(gene_l,"Gene"))  %>%
+     inner_join(select(sig_features,feature,cancer))
+   cancer_df <- qs::qread("data/clean_driverMAPS_results_20TumorTypes.qs") %>%
+     mutate(BF=exp(BF)) %>% 
+     select(Gene,BF,cancer)
 
-  go_list_dfl <- genelist_go %>% 
-    inner_join(cancer_genes,by="cancer") %>%
-    mutate(gene_l = map2(gene_l, cancer_genes, ~factor(.x[.x %in% .y], levels = .y)),
-                         n_genes = lengths(gene_l)) %>%
-    select(-cancer_genes)
+   cancer_genes <- cancer_df %>% select(Gene,cancer) %>%
+     nest(cancer_genes=Gene) %>% mutate(cancer_genes=map(cancer_genes,"Gene"))
 
-  x_mats <- split(go_list_dfl,go_list_dfl$cancer) %>% 
-  map(function(x){
-    tdf <- unnest(x,gene_l)
-    as.matrix(trip2sparseMatrix(as.character(tdf$gene_l),tdf$feature,total_rownames=levels(tdf$gene_l)))
-  })
-  x_mats <- x_mats[order(map_int(x_mats,NCOL))]
-  yl <- split(cancer_df$BF,cancer_df$cancer)
-  yl <- yl[names(x_mats)]
+   go_list_dfl <- genelist_go %>% 
+     inner_join(cancer_genes,by="cancer") %>%
+     mutate(gene_l = map2(gene_l, cancer_genes, ~factor(.x[.x %in% .y], levels = .y)),
+                          n_genes = lengths(gene_l)) %>%
+     select(-cancer_genes)
 
-  ox <- fs::path("data/models_hdf")
-  fs::dir_create(ox)
-  iwalk(x_mats,function(x,y){
-  h5write(x, as.character(fs::path(ox,y,ext="h5")),"x")
-  })
-  iwalk(yl,function(x,y){
-  h5write(x, as.character(fs::path(ox,y,ext="h5")),"y")
-  })
+   x_mats <- split(go_list_dfl,go_list_dfl$cancer) %>% 
+   map(function(x){
+     tdf <- unnest(x,gene_l)
+     as.matrix(trip2sparseMatrix(as.character(tdf$gene_l),tdf$feature,total_rownames=levels(tdf$gene_l),add_intercept=FALSE))
+   })
+   x_mats <- x_mats[order(map_int(x_mats,NCOL))]
+   yl <- split(cancer_df$BF,cancer_df$cancer)
+   yl <- yl[names(x_mats)]
+
+   ox <- fs::path("data/new_models_hdf")
+   fs::dir_create(ox)
+   iwalk(x_mats,function(x,y){
+   h5write(x, as.character(fs::path(ox,y,ext="h5")),"x")
+   })
+   iwalk(yl,function(x,y){
+   h5write(x, as.character(fs::path(ox,y,ext="h5")),"y")
+   })
 
 
 
-  ## ody <- fs::path("data/y_models")
-  ## fs::dir_create(ody)
-  ## odx <- fs::path("data/x_models")
-  ## fs::dir_create(odx)
-  ## iwalk(x_mats,function(x,y){
-  ## qs::qsave(x,fs::path(odx,y,ext="qs"))
-  ## })
-  ## iwalk(yl,function(x,y){
-  ## qs::qsave(x,fs::path(ody,y,ext="qs"))
-  ## })
+   ody <- fs::path("data/clean_y_models")
+   fs::dir_create(ody)
+   odx <- fs::path("data/clean_x_models")
+
+   fs::dir_create(odx)
+   iwalk(x_mats,function(x,y){
+   qs::qsave(x,fs::path(odx,y,ext="qs"))
+   })
+   iwalk(yl,function(x,y){
+   qs::qsave(x,fs::path(ody,y,ext="qs"))
+   })
 
 
 #+END_SRC
@@ -360,158 +499,168 @@ library(qs)
     library(fgem)
     library(ggplot2)
     library(tidyr)
+
+    cancer_df <- qs::qread("data/clean_driverMAPS_results_20TumorTypes.qs")
     bp_name <- readRDS("data/GO_Definitions.RDS") 
-  fgem_results <- readRDS("data/fgem_data.RDS")
-    fgem_results_df <- fgem_results  %>%
-      mutate(estimate_fgem=map_dbl(data,~filter(.x,feature_name!="Intercept") %>% pull(Beta))) %>% 
-      group_by(cancer) %>%
-      filter(convergence==TRUE) %>%
-      select(-convergence,-NullLogLik,-Chisq,-data) %>%
-      rename(pval_fgem=pval) %>% 
-      mutate(qval_fgem=p.adjust(pval_fgem,method="fdr")) %>%
-      ungroup() %>%
-      arrange(qval_fgem) %>%
-      rename(feature_name=trait) 
 
-  fisher_df <- qs::qread("data/single_fisher.qs") %>%
-      select(cancer,
-             estimate_fisher = estimate,
-             feature_name,
-             pval_fisher = p.value,
-             qval_fisher = qval)
-
-  single_df <- inner_join(fisher_df,fgem_results_df)
 #+END_SRC
+
+#+RESULTS:
+
+
+#+BEGIN_SRC R :session jacc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
+  fgem_results <- qs::qread("data/alt_new_fgem_marginal_results.qs")
+
+  fgem_results_df <- fgem_results %>%
+    mutate(trait = map_chr(Beta, ~.x$feature_name[2])) %>% unnest(Beta) %>% 
+    mutate(feature_name = dplyr::if_else(feature_name == "Intercept", "Intercept", "estimate_fgem")) %>%
+    spread(key = "feature_name", value = "Beta") %>%
+    rename(feature_name=trait, pval_fgem = pval, qval_fgem = qval)
+
+  fisher_df <- qs::qread("data/clean_single_fisher.qs") %>%
+      dplyr::select(cancer,
+                    estimate_fisher = estimate,
+                    feature_name,
+                    pval_fisher = p.value,
+                    qval_fisher = qval)
+
+  single_df <- inner_join(fisher_df, fgem_results_df, by = c("cancer", "feature_name"))
+#+END_SRC
+
+#+RESULTS:
 
 #+BEGIN_SRC R :session jacc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :results graphics :file org/fisher_fgem.png
 ggplot(single_df,aes(x=pval_fisher,y=pval_fgem))+geom_point()+geom_abline(slope=1)+facet_wrap(~cancer)
 #+END_SRC
 
 #+RESULTS:
-[[file:/home/nwknoblauch/Dropbox/Repos/dissertation/org/fisher_fgem.png]]
 
-#+BEGIN_SRC R :session jacc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :results graphics :file org/fisher_fgem.png
-ggplot(single_df,aes(x=pval_fisher,y=pval_fgem,col=cancer))+geom_point()+geom_abline(slope=1)+scale_x_log10()+scale_y_log10()+geom_smooth(method="lm")
+#+BEGIN_SRC R :session jacc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
+ggs <- filter(single_df,1-pval_fisher>.Machine$double.eps) %>% ggplot(aes(x=pval_fisher,y=pval_fgem))+geom_point()+facet_wrap(~cancer,scales="free")+scale_x_log10()+scale_y_log10()+geom_smooth(method="lm")+geom_abline(slope=1)+ggtitle("Fisher's Exact Test vs FGEM p-values")
+ggsave("org/fisher_fgem.png",plot=ggs)
 #+END_SRC
-
-#+RESULTS:
-[[file:/home/nwknoblauch/Dropbox/Repos/dissertation/org/fisher_fgem.png]]
 
 **** Fitting Multivariate models
 
-#+BEGIN_SRC R :session fitmult :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-    library(dplyr)
-    library(purrr)
-    library(fgem)
-    library(ggplot2)
-    library(tidyr)
+***** MSigDB
 
-    library(progressr)
-    library(future.apply)
-    plan(multisession)
+#+BEGIN_SRC R :session univ  :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
+  library(fgem)
+  library(progressr)
+  library(dplyr)
+  library(purrr)
+  library(future)
+  library(Matrix)
+if(!file.exists("~/tmp/feat_df.qs")){
+
+  msig_df <- map_df(fs::dir_ls("data/msigdb_results"),qs::qread) %>% select(Beta,time,convergence,pval,qval,sum_X,cancer) 
+  msig_xml <- qs::qread("data/msig_metadata.qs")
+  
+  msig_meta <- msig_xml %>% select(feature_name=STANDARD_NAME,
+                                   organism=ORGANISM,
+                                   category=CATEGORY_CODE,
+                                   sub_category=SUB_CATEGORY_CODE,
+                                   description=DESCRIPTION_BRIEF,
+                                   Genes=MEMBERS_SYMBOLIZED)
+
+  msig_df <- msig_df %>% mutate(feature_name=map_chr(Beta, pluck, "feature_name", 2))
 
 
-
-    out_d <- fs::path("/home/nwknoblauch/Dropbox/Repos/dissertation/data/fdr_models_strict/")
-    fs::dir_create(out_d)
-
-    ody <- fs::path("data/y_models")
-    odx <- fs::path("data/x_models")
-    ct <- fs::path_ext_remove(fs::path_file(fs::dir_ls(odx)))
-    cancer_i <- seq_along(ct)
-
-    with_progress({
-        p <- progressor(along=cancer_i)
-      all_results <- future_lapply(cancer_i,function(a,best_models,odx,ody,out_d){
-        p(sprintf("i=%g",a))
-        cancer_t <- best_models[a]
-        op <- fs::path(out_d,cancer_t,ext="qs")
-        if(fs::file_exists(op)){
-          return(qs::qread(op))
-        }
-        x <- qs::qread(fs::path(odx,cancer_t,ext="qs"))
-        y <- qs::qread(fs::path(ody,cancer_t,ext="qs"))
-        fun_result <- dplyr::mutate(fgem::forward_select_fgem_lik(x,y,jaccard_cutoff=0.19,qval_cutoff=0.01),cancer=cancer_t)
-        qs::qsave(fun_result,op)
-        return(fun_result)
-      },
-      best_models=ct,
-      odx=odx,
-      ody=ody,
-      out_d=out_d,
-      future.packages=c("dplyr","purrr","qs","fgem"))
-    })
+  feat_df <- inner_join(msig_df,msig_meta)
+  qs::qsave(feat_df,"~/tmp/feat_df.qs")
+}else{
+feat_df <- qs::qread("~/tmp/feat_df.qs")
+}
+  sig_feat_df <- filter(feat_df,qval<0.1)
+  ssig_feat <- filter(feat_df,qval<0.01)
 #+END_SRC
 
+#+RESULTS:
 
-**** Plotting multivariate models
+#+BEGIN_SRC R :session tuniv  :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
 
-#+BEGIN_SRC R :session jacc :dir /home/nwknoblauch/Dropbox/Repos/dissertation/
-  library(ggrepel)
-  library(patchwork)
-  GO_def <- readRDS("data/GO_Definitions.RDS") %>% select(feature_name,Term)
-  GO_def <- bind_rows(GO_def,tibble(feature_name="Intercept",Term="")) %>% distinct()
-  out_d <- fs::path("/home/nwknoblauch/Dropbox/Repos/dissertation/data/elasticnet_models/")
-  all_results_df <- map_df(fs::dir_ls(out_d),function(x){
-    mutate(qs::qread(x),cancer=fs::path_ext_remove(fs::path_file(x)))
-    })
-  %>%
-    select(-term)  %>%
-    unnest(data)  %>%
-    inner_join(GO_def) %>%
-    mutate(label=paste0(feature_name,":\n",Term))
+  cancer <- "SARC"
 
-  data("BPGOdf")
-  head(cancer_df)
-  plot_d <- fs::path("/home/nwknoblauch/Dropbox/Repos/dissertation/org/fgem_plots_strict/")
-  fs::dir_create(plot_d)
-  gen_x <- function(cancer_df,go_df,model_df){
-    ig_df <- semi_join(go_df,select(model_df,feature=feature_name),by="feature")
-    as.matrix(suppressWarnings(fgem::trip2sparseMatrix(rowname_vals=as.character(ig_df$Gene),
-                                      colname_vals=ig_df$feature,
-                                      ig_df$value,
-                                      total_rownames=cancer_df$Gene,
-                                      unique(ig_df$feature),
-                                      add_intercept = TRUE)))
-  }
-
-  gen_beta <- function(df){
-    magrittr::set_names(df$Beta,df$feature_name)
-    }
-
-
-
-  split(all_results_df,all_results_df$cancer) %>% walk(function(df){
-    name <- df$cancer[1]
-    tcf <- glue::glue("data/driverMAPS_results_20TumorTypes/{name}.qs")
-    if(file.exists(tcf)){
-      tcancer_df <- qs::qread(tcf)
-      x <- gen_x(tcancer_df,BPGOdf,df)
-      cn <- factor(colnames(x))
-      beta <- gen_beta(df)[colnames(x)]
-
-      sbpdf <- filter(BPGOdf,feature %in% levels(cn)) %>% mutate(feature=factor(feature,levels=levels(cn)))
-      df <- mutate(df,feature_name=factor(feature_name,levels=levels(cn)))
-      prior_p <- fgem:::gen_p(beta,x)
-      post_p <- fgem::predict_fgem(nest(df,data=c("feature_name","Beta")),x,tcancer_df$BF)
-
-      null_post <- fgem:::gen_u(fgem:::fgem_null(tcancer_df$BF),x[,"Intercept",drop=FALSE],tcancer_df$BF,log=FALSE)
-      pa <- rename(df,feature=feature_name) %>% ggplot(aes(x=Beta,y=label))+geom_point(aes(col=feature))+xlab("Beta")+ylab("Feature")+ggtitle(name)+theme(legend.position = "none")
-      pb_df <- tibble(uniform_posterior=null_post,
-                      functional_posterior=post_p,
-                      Gene=tcancer_df$Gene) 
-      top_change <- bind_rows(slice(arrange(pb_df,uniform_posterior-functional_posterior),1:4),
-                              slice(arrange(pb_df,desc(uniform_posterior-functional_posterior)),1:4))
-      pb_df <- pb_df %>% left_join(sbpdf) %>%
-        replace_na(list(feature=factor("Intercept",levels=levels(cn))))
-      pb <- ggplot(pb_df,aes(x=uniform_posterior,y=functional_posterior,label=Gene))+geom_point(aes(col=feature))+ geom_text_repel(data = top_change,col="red")
-      ggsave(filename=fs::path(plot_d,name,ext="png"),plot=pa+pb+plot_layout(guides = "collect"),dpi=300)
-    }
+  cancerf <- unique(feat_df$cancer)
+  cancerf <- cancerf[cancerf!="CHOL"]
+  out_d <- fs::path("data/cv_msigdb_models_2/")
+fs::dir_create(out_d)
+  ssig_feat <- filter(feat_df,qval<0.1)
+  rl <- furrr::future_map(cancerf, function(cancer){
+    cdf <- filter(ssig_feat,cancer=={{cancer}})
+    cf <- fs::path("data/multi_msigdb_X/",cancer,ext="qs")
+    sX <- qs::qread(cf)
+    ydf <- qs::qread(fs::path("data/msigdb_y",cancer,ext="qs"))
+    out_d <- fs::path("data/cv_msigdb_models_2/")
+      tfg <- fgem::cv_fgem(sX, ydf$BF, alpha = 0.95)
+    qs::qsave(mutate(tfg,cancer={{cancer}}),fs::path(out_d,cancer,ext="qs"))
+    return(tfg)
   })
 
 #+END_SRC
 
 
+
+***** GO only
+
+
+
+#+BEGIN_SRC R :session fitmult :dir /ssh:trcc:/home/nwknoblauch/xm
+
+    library(dplyr)
+    library(purrr)
+    library(fgem)
+    library(ggplot2)
+    library(tidyr)
+    library(progressr)
+    library(future.apply)
+    
+    plan(list(tweak(multisession,workers=4),multicore))
+
+    out_d <- fs::path("data/cv_elasticnet_models/")
+    fs::dir_create(out_d)
+
+    ody <- fs::path("data/y_models")
+    odx <- fs::path("data/x_models")
+    ct <- fs::path_ext_remove(fs::path_file(fs::dir_ls(odx)))
+    opf <- purrr::map_chr(ct,~fs::path(out_d,.x, ext="qs"))
+    ct <- ct[!file.exists(opf)]
+    iseq <- seq_along(ct)
+
+    sub_fun <- function(tf, cancerf, od){
+      cancer <- cancerf[tf]
+      p(sprintf("i=%g", tf))
+      op <- fs::path(od,cancer, ext="qs")
+      if(!file.exists(op)){
+        ym <- qs::qread(fs::path("data/y_models/", cancer, ext = "qs"))
+
+        xm <- qs::qread(fs::path("data/x_models/", cancer, ext = "qs"))
+
+        X <- xm[,colnames(xm) != "Intercept", drop = FALSE]
+        with_progress({
+          cv_df <- dplyr::mutate(cv_fgem(X,ym,alpha=0.8),cancer=cancer)})                                      
+        qs::qsave(cv_df, op)
+        return(cv_df)
+      }else{
+        return(qs::qread(op))
+      }
+      }
+#+END_SRC
+
+#+BEGIN_SRC R :session fitmult :dir /ssh:trcc:/home/nwknoblauch/xm
+
+  with_progress({
+    p <- progressor(along = iseq)  
+    ret_df <- future.apply::future_lapply(iseq,sub_fun,cancerf=ct,od=out_d)
+  })
+  ret_df <- dplyr::bind_rows(ret_df)
+
+#+END_SRC
+
+
+**** Plotting multivariate models
+
+     
 ** COSMIC census
 
 From [[https://cancer.sanger.ac.uk/census][Cosmic:]]
@@ -624,91 +773,73 @@ logit_df <- map2_dfr(all_results$data,all_results$cancer,gen_go_mat,cancer_list=
 
 #+END_SRC
 
-#+RESULTS:
-|                 x |
-|-------------------|
-| -8578.86270568248 |
-
-#+BEGIN_SRC R :session fg :colnames yes :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
-  library(progressr)
-#  library(future.batchtools)
-  library(future)
-  library(furrr)
-  library(rsample)
-  library(fgem)
-  ## plan(list(
-  ##   tweak(batchtools_slurm,
-  ##         template  = "/home/nwknoblauch/slurm_batchtools.tmpl",
-  ##         resources = list(ncpus=8)),multiprocess))
-#  plan(multisession)
-  cancerf <- c("BLCA", "BRCA", "CESC", "CHOL", "ESCA", "GBM", "HNSC", "KICH", 
-  "KIRC", "KIRP", "LIHC", "LUAD", "LUSC", "PAAD", "PRAD", "SARC", 
-  "SKCM", "TGCT", "UCEC", "UCS")
-  od <- "data/cv_elasticnet_models"
-  fs::dir_create(od)
-#+END_SRC
-
-#+RESULTS:
-| x                         |
-|---------------------------|
-| data/cv_elasticnet_models |
-
-#+BEGIN_SRC R :session fg  :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
-  lik0  <-  filter(cv_df,group_l1==0) %>% summarise(cv_lik=sum(cv_lik)) %>% pull(cv_lik)
-  filter(cv_df,group_l1!=0) %>% group_by(group_l1) %>% summarise(cv_lik=sum(cv_lik),
-                                                                 rand_lik=sum(rand_cv_lik)) %>% ggplot(aes(x=group_l1,y=cv_lik))+geom_point()+scale_x_log10()  + geom_hline(yintercept=lik0)
-  filter(cv_df, group_lambda != 0)  %>%
-    ggplot(aes(x=l0n,y=scale_lik)) + geom_point()
-  #+END_SRC
-  
-#+BEGIN_SRC R :session fg :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
-
-    sub_fun <- function(tf,cancerf,od){
-      cancer <- cancerf[tf]
-      p(sprintf("i=%g", tf))
-      op <- fs::path(od,cancer,ext="qs")
-      if(!file.exists(op)){
-        ym <- qs::qread(fs::path("data/y_models/",cancer,ext="qs"))
-
-        xm <- qs::qread(fs::path("data/x_models/",cancer,ext="qs"))
-
-        X <- xm[,colnames(xm)!="Intercept",drop=FALSE]
-        with_progress({
-          cv_df <- dplyr::mutate(cv_fgem(X,ym,alpha=0.8),cancer=cancer)})                                      
-        qs::qsave(cv_df, op)
-        return(cv_df)
-      }else{
-        return(qs::qread(op))
-      }
-    }
-
-    iseq <- seq_along(cancerf)
-    with_progress({
-      p <- progressor(along = iseq)  
-      ret_df <- lapply(iseq,sub_fun,cancerf=cancerf,od=od)
-    })
-    ret_df <- dplyr::bind_rows(ret_df)
-#+END_SRC
-
 #+BEGIN_SRC R :session fg :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
   library(tidyverse)
-  library(firatheme)
-  ret_df0  <-  filter(ret_df,group_l1==0) %>% group_by(cancer) %>% summarise(cv_lik0=mean(cv_lik),cv_sum0=sum(cv_lik))
+                                          #oo_cv_elasticnet_models/
+  ret_df <- map_df(fs::dir_ls("data/o_cv_elasticnet_models/",glob="*qs"),qs::qread)
+  new_ret_df <- map_df(fs::dir_ls("data/cv_elasticnet_models/"),qs::qread)
 
-  cv_df <- filter(ret_df) %>%
-    group_by(cancer,group_l1,group_l2) %>%
-    summarize(cv_sd = sd(cv_lik),
-    cv_sum=sum(cv_lik),
-              cv_lik=mean(cv_lik),
-              mean_l0=mean(l0n),
-              sd_l0=sd(l0n)) %>% ungroup() %>%
-    group_by(cancer) %>% 
-    mutate(best_lambda=group_l1[which.max(cv_lik)][1]) %>% 
+  cret_df <- bind_rows(mutate(new_ret_df,
+  cv_i = as.character(cv_i),
+  model = "new"),
+  mutate(ret_df, model = "old")) 
+
+
+
+
+  ret_df0  <-  filter(cret_df, group_l1 == 0) %>%
+    group_by(cancer,model) %>%
+    summarise(cv_lik0 = mean(cv_lik),
+              cv_sum0 = sum(cv_lik)) %>%
+    ungroup()
+
+  cv_df <-  cret_df %>% 
+    group_by(cancer, group_l1, group_l2, model) %>%
+    summarize(
+      cv_sum = sum(cv_lik),
+      l0_mean = mean(l0n),
+      l0_sd = sd(l0n),
+      ) %>%
     ungroup() %>%
-    inner_join(ret_df0)  
-#+END_SRC
+    group_by(cancer, model) %>% 
+    mutate(rel_lik = c(scale(cv_sum)),
+           best_lambda = group_l1[which.max(cv_sum)][1]) %>% 
+    ungroup() 
 
-#+RESULTS:
+  cv_df  <- filter(cv_df,
+                   group_l1 == 0) %>%
+    select(cancer,
+           model,
+           lik0 = rel_lik) %>%
+    inner_join(cv_df)
+
+
+  cv_df  %>% 
+    filter(group_l1 > 0) %>% 
+    ggplot(aes(x = group_l1, y = rel_lik, col = model)) +
+    geom_point() +
+    facet_wrap(~cancer, scale = "free_y") +
+    scale_x_log10() +
+    geom_vline(aes(xintercept = best_lambda, col = model)) +
+    xlab("L1 Penalty") +
+    ylab("CV-Likelihood") +
+    geom_hline(aes(yintercept = lik0, col = model))
+
+
+
+  cv_df  %>% 
+    filter(group_l1 > 0) %>% 
+    ggplot(aes(x = group_l1, y = l0_mean, col = model)) +
+    geom_point() +
+    facet_wrap(~cancer, scale = "free_y") +
+    scale_x_log10() +
+    geom_vline(aes(xintercept = best_lambda, col = model)) +
+    xlab("L1 Penalty") +
+    ylab("CV-Likelihood")
+
+
+
+#+END_SRC
 
 #+BEGIN_SRC R :session fg :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :results graphics :file cv_enet.png
 
@@ -730,28 +861,42 @@ logit_df <- map2_dfr(all_results$data,all_results$cancer,gen_go_mat,cancer_list=
 #+END_SRC
 
 #+BEGIN_SRC R :session fg :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :results graphics :file org/univ_multiv.png
-    GO_def <- readRDS("data/GO_Definitions.RDS") %>% select(feature_name,Term)
+  GO_def <- readRDS("data/GO_Definitions.RDS") %>%
+    select(feature_name,Term)
 
-  fgem_results <- readRDS("data/fgem_data.RDS") %>% unnest(data) %>% select(cancer,Beta_univariate=Beta,feature_name)
+  fgem_results <- readRDS("data/fgem_data.RDS") %>%
+    unnest(data) %>%
+    select(cancer,Beta_univariate=Beta,feature_name)
   head(cv_df)
-  best_cv <- cv_df %>% filter(group_l1==best_lambda,cv_sum>cv_sum0) %>%
-    select(cancer,best_group_l1=group_l1,best_group_l2=group_l2)
+  best_cv <- filter(cv_df, model == "new") %>%
+    filter(group_l1 == best_lambda, cv_sum > lik0) %>%
+    select(cancer, best_group_l1 = group_l1, best_group_l2 = group_l2)
 
-  best_ret_p <- ret_df %>%  inner_join(best_cv) %>% unnest(Beta)
 
-  filter(best_ret_p,group_l1==best_group_l1,feature_name!="Intercept") %>%
-    group_by(cancer) %>% filter(abs(Beta)==max(abs(Beta))) %>% ungroup()  %>% inner_join(GO_def) %>%
-    mutate(label=paste0(feature_name,":\n",Term)) %>% ggplot(aes(x=Beta,y=label,col=cancer))+geom_point()
+  unrdf <- unnest(new_ret_df,Beta)
+  best_ret_p <- new_ret_df %>%  inner_join(best_cv) %>% unnest(Beta)
+
+  filter(best_ret_p,group_l1==best_group_l1,feature_name!="Intercept",best_group_l1>0) %>%
+    group_by(cancer, feature_name, group_l1,best_group_l1) %>%
+    summarise(mean_Beta = mean(Beta),
+              sd_Beta = sd(Beta)) %>%
+    ungroup() %>%
+    group_by(cancer) %>%
+    filter(abs(mean_Beta)==max(abs(mean_Beta))) %>%
+    ungroup()  %>%
+    inner_join(GO_def) %>%
+    mutate(label=paste0(feature_name,":\n",Term)) %>%
+    ggplot(aes(x=mean_Beta,y=label,label=cancer)) + geom_point() + geom_text_repel()
 
 
 
   ggp <- filter(best_ret_p,group_l1>0,group_l1<=1e-03) %>%
-    group_by(cancer, feature_name, l1n,best_group_l1) %>%
+    group_by(cancer, feature_name, group_l1,best_group_l1) %>%
     summarise(mean_Beta = mean(Beta),
               sd_Beta = sd(Beta)) %>%
     ungroup() %>%
     filter(feature_name!="Intercept") %>%
-    ggplot(aes(x=l1n,y=mean_Beta,col=feature_name)) +
+    ggplot(aes(x = group_l1, y = mean_Beta, col = feature_name)) +
     geom_line()+
     scale_x_log10()+
     facet_wrap(~cancer,scales="free")+
@@ -769,36 +914,229 @@ logit_df <- map2_dfr(all_results$data,all_results$cancer,gen_go_mat,cancer_list=
     geom_abline(slope=1)
 #+END_SRC
 
+
+** Post plots
+
 #+BEGIN_SRC R :session fg :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
+  library(tidyverse)
+  library(fgem)
+  library(ggrepel)
+  library(patchwork)
+  cancer_df <- qs::qread("data/clean_driverMAPS_results_20TumorTypes.qs") %>%
+    mutate(BF = exp(BF)) %>%
+    select(Gene,cancer,BF) %>% 
+    group_by(cancer) %>%
+    mutate(uniform_posterior = c(fgem:::BF2posterior(BF,Gene)))
 
-  new_ret_df <- map_df(fs::dir_ls("data/cv_elasticnet_models_2/"),qs::qread)
+  all_genes <- unique(cancer_df$Gene)
 
-  new_ret_df0  <-  filter(new_ret_df,group_l1==0) %>% group_by(cancer) %>% summarise(cv_lik0=mean(cv_lik),cv_sum0=sum(cv_lik))
+  cancer_dfl  <-  group_nest(cancer_df,.key="data")
 
-  new_cv_df <- filter(new_ret_df) %>%
-      group_by(cancer,group_l1,group_l2) %>%
-      summarize(cv_sd = sd(cv_lik),
-      cv_sum=sum(cv_lik),
-                cv_lik=mean(cv_lik),
-                mean_l0=mean(l0n),
-                sd_l0=sd(l0n)) %>% ungroup() %>%
-      group_by(cancer) %>% 
-      mutate(best_lambda=group_l1[which.max(cv_lik)][1]) %>% 
-      ungroup() %>%
-    inner_join(new_ret_df0)
-  plt_lik <- filter(new_cv_df,group_l1<1e-02) %>% ggplot(aes(x=group_l1,y=cv_sum)) + geom_point() +
-    facet_wrap(~cancer,scales="free_y")+scale_x_log10()+geom_hline(aes(yintercept = cv_sum0),col="red")+geom_vline(aes(xintercept=best_lambda))+xlab("L1 Penalty")+ylab("CV-Likelihood")
+  long_df <- qs::qread("data/msigdb.qs") %>% select(-feature_url) %>% unnest(Gene)
+#  long_df <- qs::qread("data/GO_df.qs")
+  blong_df <- bind_rows(long_df,
+                        tibble(Gene=all_genes,feature_name="Intercept"))
+  xMS <- fgem:::df2sparse(long_df,total_rownames=all_genes)
+#+END_SRC
 
-  filter(new_cv_df,group_l1<1e-02) %>% ggplot(aes(x=group_l1,y=mean_l0)) + geom_point() +
-      geom_errorbar(aes(x=group_l1,ymax=mean_l0+sd_l0/2,ymin=mean_l0-sd_l0/2)) +
-    facet_wrap(~cancer,scales="free_y")+scale_x_log10()+geom_vline(aes(xintercept=best_lambda))+xlab("L1 Penalty")+ylab("L0 norm")
+#+BEGIN_SRC R :session fg :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :results graphics :file org/univ_multiv.png
 
-  bind_rows(new_cv_df,cv_df) %>% filter(cancer %in% c("BRCA","PRAD")) %>% ggplot(aes(x=group_l2,y=cv_sum)) + geom_point() +
-    facet_wrap(~cancer,scales="free_y") +
-    scale_x_log10() +
-    geom_hline(aes(yintercept = cv_sum0),col="red") +
-    xlab("L1 Penalty") +
-    ylab("CV-Likelihood")
+  ## GO_def <- readRDS("data/GO_Definitions.RDS") %>%
+  ##   dplyr::select(feature_name,Term)
+  MS_def <- qs::qread("data/msigdb_metadata.qs")
+
+  ofit_df <- map_df(fs::dir_ls("data/cv_msigdb_models/"), qs::qread) %>%
+    group_by(cancer) 
+  fit_df  <- ofit_df %>% 
+    fgem:::summarise_cv_lik(.)
+
+  fit_df <- mutate(fit_df,cv_max=max(cv_sum),lik0=cv_sum[group_l1==0],lambda_max=group_l1[cv_sum==cv_max])
+  feat_l  <- unnest(fit_df,Beta) %>% filter(feature_name!="Intercept") %>% distinct(cancer,feature_name) %>% nest(feat_list=-cancer)
+
+
+#+END_SRC
+
+#+BEGIN_SRC R :session fg :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :results graphics :file org/univ_multiv.png
+
+  add_pred <- function(beta_df,cancer_df){
+      ret_df <- mutate(cancer_df, functional_prior = c(fgem:::predict_long_df(beta_df, xMS[cancer_df$Gene,])),
+                       functional_posterior=c(fgem:::BF2posterior(BF, Gene, functional_prior)))
+      return(ret_df)
+  }
+
+
+  top_fits <- filter(fit_df,lambda_max>0, group_l1>=lambda_max) %>%
+    inner_join(cancer_dfl) %>%
+    mutate(data=map2(Beta, data,add_pred),
+           Beta=map(Beta,inner_join,y=select(MS_def,-Gene,-feature_url),by="feature_name")) %>%
+    ungroup()
+
+  refit_fun <- function(cancer,group_l1,group_l2,Beta,feat_list,data,...){
+    lambda <- group_l1/0.85
+    alpha <- 0.85
+    fldf <- feat_list
+    fldf <- add_row(fldf,feature_name="Intercept",.before = 1)
+    beta_df <- left_join(fldf,Beta) %>% replace_na(list(Beta=0))
+    stopifnot(beta_df$feature_name[1]=="Intercept")
+    X <- as.matrix(xGO[data$Gene,beta_df$feature_name[-1],drop=FALSE])
+    fgr <- fgem:::fgem_elasticnet(X,data$BF,Beta0=beta_df$Beta,alpha=alpha,lambda=lambda)
+    dplyr::mutate(fgr,cancer=cancer,data=list(add_pred(Beta[[1]],data)))
+  }
+
+
+
+#+END_SRC
+                       
+
+
+
+** IntOGen validation
+
+An alternative source of validation is cite: cite:gonzalez-perez13_intog_mutat_ident_cancer_driver
+
+
+#+BEGIN_SRC R :session fg :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ 
+  out_d <- fs::path("data/new_correct_elasticnet_models/")
+  comp_df <- read_tsv("data/2020-02-02_IntOGen-Drivers-20200213/Compendium_Cancer_Genes.tsv") 
+  cohort_df <- read_tsv("data/2020-02-02_IntOGen-Cohorts-20200213/cohorts.tsv") %>% mutate(is_TCGA=SOURCE=="TCGA")
+
+  is_tcga <- select(cohort_df,cohort=COHORT,is_TCGA) %>% distinct()
+
+  cohort_tcga <- filter(cohort_df,is_TCGA) %>%
+    rename(cohort=COHORT) %>%
+    mutate(cancer=str_remove(cohort,"TCGA_W.S_")) %>%
+    select(intogen_cancer=CANCER_TYPE,cancer)
+  #cohort_notcga <- filter(cohort_df,SOURCE!="TCGA") %>% rename(cohort=COHORT)
+
+  sub_comp_df <- select(comp_df,Gene=SYMBOL,cohort=COHORT,intogen_cancer=CANCER_TYPE,qval_cons=QVALUE_COMBINATION) %>%
+    inner_join(is_tcga) %>% 
+    left_join(cohort_tcga) %>%
+    mutate(cancer=if_else(is.na(cancer),intogen_cancer,cancer)) %>%
+    select(-intogen_cancer)  %>%
+    distinct(cancer,Gene,is_TCGA)
+
+ 
+
+  intogen_l <- nest(sub_comp_df,intogen_l=-cancer)
+
+#+END_SRC
+
+#+BEGIN_SRC R :session fg :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :results graphics :file org/univ_multiv.png
+  library(firatheme)
+
+  assign_intogen <-  function(data,cancer){
+    intogen_l <- mutate(sub_comp_df,intogen_gene = if_else(cancer == {{cancer}},
+                                                           if_else(is_TCGA, 2L, 1L),
+                                                           if_else(is_TCGA, 4L, 3L))) %>%
+        group_by(Gene) %>%
+        summarise(intogen_gene=min(intogen_gene), .groups = "drop")
+      left_join(data, intogen_l, by="Gene") %>%
+        replace_na(list(intogen_gene = 5L))  %>%
+        group_by(Gene) %>%
+        filter(intogen_gene==min(intogen_gene)) %>%
+        slice(1) %>% 
+        ungroup()
+  }
+
+
+  new_best_fits <- filter(top_fits,
+                          group_l1 == lambda_max) %>%
+    inner_join(feat_l) %>%
+    filter(l0_mean > 2) %>%
+    dplyr::mutate(data = map2(data, cancer, assign_intogen ))
+
+
+
+
+
+
+  plot_post <- function(data){
+    kt <- c("Known Type-Specific Cancer Gene (Non-TCGA)",
+            "Known Type-Specific Cancer Gene (TCGA)",
+            "Known Cancer Gene (Non-TCGA)",
+            "Known Cancer Gene (TCGA)",
+            "Unknown Cancer Gene")
+    data <-   filter(data,
+                     uniform_posterior>1e-05,
+                     functional_posterior>1e-05
+                     ) %>% arrange(desc(functional_posterior-uniform_posterior)) %>%
+      mutate(idn=1:n(),
+             `intOGen Validation Status`=factor(kt[intogen_gene],levels=kt))
+    top_diff <- filter(data,idn < 15 | as.integer(`intOGen Validation Status`)<3 | functional_posterior > 0.95 | uniform_posterior > 0.95)
+
+    data %>%
+      ggplot(aes(x=uniform_posterior,
+                    y=functional_posterior,
+                    col = `intOGen Validation Status`,
+                    label=Gene)) + 
+       geom_point() +
+       geom_label_repel(data=top_diff,max.overlaps=50) +
+       geom_abline(slope=1)+scale_x_log10()+scale_y_log10()
+  }
+
+  plot_beta <- function(Beta){
+    k <- 22
+    tBeta <- filter(Beta,feature_name!="Intercept",Beta!=0)
+    nr <- ceiling(nrow(tBeta)/k)
+    BR <- range(tBeta$Beta)
+    l <- nrow(tBeta)
+    Beta_p <- tBeta %>% arrange(abs(Beta)) %>%
+      mutate(label=str_wrap(paste0(feature_name,":\n",description),width=50),
+             label=factor(label,levels=label),Beta_ct=gl(n=nr,k=k,length=l),
+             feature_name=factor(feature_name,levels=feature_name),
+             idx=1:n())
+    top_Beta_p <- filter(Beta_p,Beta_ct==Beta_ct[l])
+    ggplot(top_Beta_p,aes(y=feature_name,x=Beta,label=description)) +
+      geom_point(col="red") + ylab("Feature index")+
+      geom_text_repel(max.overlaps=50,direction="x")+theme_minimal()
+  }
+
+
+  plt_fun <- function(Beta,data,cancer,l0n,...){
+     ## out_png_e <- fs::path("org/t_cv_fits_enrichment")
+     ## fs::dir_create(out_png_e)
+     out_png_p <- fs::path("org/l_cv_fits_posterior")
+     fs::dir_create(out_png_p)
+
+     out_png_p <- fs::path(out_png_p,cancer,ext="png")
+     ## out_png_e <- fs::path(out_png_e,cancer,ext="png")
+     ## pa <- plot_beta(Beta) + theme_fira() + plot_annotation(title=cancer,subtitle=paste0("L0: ",as.integer(l0n)))
+     ## ggsave(out_png_e,pa,dpi=320,width=13.33,height=7.5)
+     pb <- plot_post(data) + theme_fira()+ plot_annotation(title=cancer,subtitle=paste0("L0: ",as.integer(l0n)))
+     ggsave(out_png_p,pb,dpi=320,width=13.33,height=7.5)
+
+     ## plt <- pa/pb & theme_minimal()
+     ## ggsave(out_png,nplt,dpi=320,width=13.33,height=7.5)
+  }
+
+  new_best_fits %>% 
+    rename(l0n=l0_mean) %>%
+    pwalk(plt_fun)
+
+
+
+  top_ofit_genes <- new_best_fits %>% mutate(top_diff = map(data, 
+                                                            function(data){
+                                                              arrange(data,
+                                                                      desc(functional_posterior - uniform_posterior)) %>%
+                                                                slice(1:5) 
+                                                         })) %>%
+     select(cancer, top_diff) %>%
+     unnest(top_diff)
+
+   top_ofit_feature_gene <- select(new_best_fits, cancer, Beta) %>%
+     unnest(Beta) %>%
+     inner_join(inner_join(top_ofit_genes,long_df))
+  top_ofit_features <- top_ofit_feature_gene %>%
+    distinct(cancer, feature_name, Beta) %>%
+    inner_join(GO_def)
+
+   semi_join(ungroup(cancer_df),filter(long_df,feature_name=="GO:0050911")) %>% arrange(desc(BF)) %>% pull(Gene) %>% head(10) %>% unique() %>% paste0(collapse=",")
+
+
+
+
+
 #+END_SRC
 
 #+RESULTS:
@@ -806,7 +1144,10 @@ logit_df <- map2_dfr(all_results$data,all_results$cancer,gen_go_mat,cancer_list=
 
 
 
-#+BEGIN_SRC R :session drivermaps :colnames yes :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :colnames yes
+
+
+
+
 
 
 #+BEGIN_SRC R :session drivermaps :colnames yes :dir /home/nwknoblauch/Dropbox/Repos/dissertation/ :colnames yes
@@ -883,6 +1224,7 @@ head data/driverMAPS_results_20TumorTypes/BLCA_BayesFactorFDR.txt
 
 
 *** TODO Characterize extent of collinearity issue
+
 
 ** IntOGen validation
 
@@ -1221,9 +1563,31 @@ genes (using the IntOGen database) than the baseline ~driverMAPS~ model.
     DEADLINE: <2020-05-16 Sat>
 
 
-
+    
     
 * Extras
+
+** Trying GLM family function
+
+#+BEGIN_SRC R
+
+
+logexp <- function(days = 1)
+{
+    linkfun <- function(mu) qlogis(mu^(1/days))
+    linkinv <- function(eta) plogis(eta)^days
+    mu.eta  <- function(eta) days * plogis(eta)^(days-1) *
+                  binomial()$mu.eta(eta)
+    valideta <- function(eta) TRUE
+    link <- paste0("logexp(", days, ")")
+    structure(list(linkfun = linkfun, linkinv = linkinv,
+                   mu.eta = mu.eta, valideta = valideta, name = link),
+              class = "link-glm")
+}
+(bil3 <- binomial(logexp(3)))
+
+
+#+END_SRC
 
 ** FGEM analyses
 
