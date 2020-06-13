@@ -1,0 +1,16 @@
+\begin{thebibliography}{1}
+
+\bibitem{zhao19_detail_model_posit_selec_improv}
+Siming Zhao, Jun Liu, Pranav Nanga, Yuwen Liu, A.~Ercument Cicek, Nicholas
+  Knoblauch, Chuan He, Matthew Stephens, and Xin He.
+\newblock Detailed modeling of positive selection improves detection of cancer
+  driver genes.
+\newblock {\em Nature Communications}, 10(1):3399, 2019.
+
+\bibitem{gonzalez-perez13_intog_mutat_ident_cancer_driver}
+Abel Gonzalez-Perez, Christian Perez-Llamas, Jordi Deu-Pons, David Tamborero,
+  Michael~P Schroeder, Alba Jene-Sanz, Alberto Santos, and Nuria Lopez-Bigas.
+\newblock Intogen-mutations identifies cancer drivers across tumor types.
+\newblock {\em Nature Methods}, 10(11):1081--1082, 2013.
+
+\end{thebibliography}

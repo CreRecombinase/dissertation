@@ -17,7 +17,7 @@ similarly to deprioritize genes that might otherwise be implicated, despite bein
 
 ** Model
 
-Suppose we have gathered genetic data for a set of individuals to identify which genes are causally related to a disease or trait of interest.  For each gene $g \in \{1 \dots G\}$, let the indicator variable $z_g=1$ indicate that
+Suppose we have gathered genetic data for a set of individuals to identify which genes are causally related to a disease or trait of interest. For each gene $g \in \{1 \dots G\}$, let the indicator variable $z_g=1$ indicate that
 gene $g$ is causaully related to our trait or disease of interest.  We can summarise the evidence for and against our hypothesis that $z_g=1$ using a bayes factor:
 
 $$B_g=\frac{P(x_g|z_g=1)}{P(x_g|z_g=0)}$$
@@ -28,9 +28,9 @@ Suppose further that we know a set of $F$ functional annotations or properties f
 columns consisting of $\textbf{a}_1 ...  \textbf{a}_G$
 We define the vector $\boldsymbol{\beta}$ and the function $\pi(\boldsymbol{\beta},\textbf{a}_g)$ such that:
 
-$$P\pi(\boldsymbol{\beta},\textbf{a}_g) =  \frac{1}{1+e^{-(\beta_{0}+\sum_{f=1}^F{A_{f,g}\beta_f})}} =  (z_g=1|\textbf{a}_g,\boldsymbol{\beta})$$
+$$\pi(\boldsymbol{\beta},\textbf{a}_g) =  \frac{1}{1+e^{-(\beta_{0}+\sum_{f=1}^F{A_{f,g}\beta_f})}} =  P(z_g=1|\textbf{a}_g,\boldsymbol{\beta})$$
 
-We can compute the likelihood of a particular value of $\boldsymbol{\beta}$ as:
+We can compute the likelihood of a particular value of $\boldsymbol{\beta}$ by treating the data from each gene as coming from a two component mixture model (where $z_g=1$ and where $z_g=0$) and marginalizing over the two components
 
 $$ P(\textbf{x}|\boldsymbol{\beta},\textbf{A})=\prod_{g=1}^{G}P(x_g|\boldsymbol{\beta})=\prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{a}_g) P(x_g|z_g=1)+(1-\pi(\boldsymbol{\beta},\textbf{a}_g))P(x_g|z_g=0)]$$
 
@@ -40,16 +40,16 @@ By factorizing out the term $\prod_{g=1}^{G} P(x_g|z_g=0)$ which does not depend
 $$P(\textbf{x}|\boldsymbol{\beta},\textbf{A}) \propto \prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{a}_g)B_g+(1-\pi(\boldsymbol{\beta},\textbf{a}_g))]$$
 
 
-Given a particular value of $\boldsymbol{\beta}$, we arrive at a new posterior:
+Given a particular value of $\boldsymbol{\beta}$, and a bayes factor $B_g$, we arrive at a new posterior probability that $z_g=1$:
 
-$$P(z_g=1 | x_g, \boldsymbol{\beta},\textbf{a}_g) = \frac{\pi(\boldsymbol{\beta},\textbf{a}_g) B_g}{\pi(\boldsymbol{\beta} , \textbf{a}_g) B_g + 1 - \pi(\boldsymbol{\beta},\textbf{a}_g)}$$
+$$P(z_g=1 | B_g, \boldsymbol{\beta},\textbf{a}_g) = \frac{\pi(\boldsymbol{\beta},\textbf{a}_g) B_g}{\pi(\boldsymbol{\beta} , \textbf{a}_g) B_g + 1 - \pi(\boldsymbol{\beta},\textbf{a}_g)}$$
 
  
 Our goal is both to estimate $\boldsymbol{\beta}$ for a relevant set of features as well as $P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)$ for each gene.  We use a penalized maximum-likelihood
  approach to estimate $\boldsymbol{\beta}$, from which we then $P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)$. The number of gene-level features one might include in such a model is very large.  It is impossible, from both a computability 
 and interpretability standpoint, to include all conceivable features in the model. A related but distinct issue is that of collinearity.
-As the number of features in the model increases, there is a higher probability that some subset of features will be collinear with one-another,
-which can complicate model-fitting. This is especially important when a binary, hierarchical feature set like the Gene Ontology.To avoid this issue, 
+As the number of features in the model increases, the probability that some subset of features will be collinear with one-another increases,
+which can complicate model-fitting, as $\beta$ becomes unidentifiable. This is especially important when a binary, hierarchical feature set like the Gene Ontology.To avoid this issue, 
 we employ a multi-stage model fitting procedure. In the first step, all single-feature-plus-intercept
 models are fit, and a $p$-value is obtained for each model byt comparing to the intercept-only model via the likelihood ratio test.  
 
@@ -118,6 +118,23 @@ posterior probability that each gene (in each cancer type) was a causal gene was
 
 The "Biological Process" Gene Ontology cite:GO  was downloaded from the Bioconductor package ~GO.db~ cite:godb. Of the 10,930 possible biological process gene ontology terms, the 2,198 terms that 
 include 10 or more genes were analyzed, so as to reduce the multiple testing burden.  
+
+**** Molecular Signatures Database
+
+The Molecular Signatures Database (MSigDB) cite:msigdb is among the most popular collections of annotated gene sets. Originally
+deveoped for the method Gene Set Enrichment Analysis (GSEA) cite:Subramanian_2005, it contains over 25000 gene sets across 
+8 major collections.  
+
+These collections are :
+1) Hallmark (H) gene sets represent "well-defined biological states or processses and display coherent expression"
+2) Positional (C1) gene sets correspond to each of the human chromosomes and cytogenic bands that contain at least one gene. 
+3) Curated (C2) gene sets are manually curated gene sets from various databases and biomedical publications.  C2 includes gene sets 
+from: CGP cite:CGP , BIOCARTA cite:BIOCARTA, KEGG cite:KEGG, PID, cite:PID and REACTOME cite:REACTOME.  
+4) Regulatory gene sets  (C3)
+5) Computational gene sets (C4)
+6) GO gene sets (C5)
+7) oncogenic gene sets (C6)
+8) immunologic gene sets (C7)
 
 
 ** Software

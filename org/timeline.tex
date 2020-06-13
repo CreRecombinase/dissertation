@@ -1,0 +1,90 @@
+% Created 2020-05-20 Wed 22:59
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\author{Nicholas Knoblauch}
+\date{\today}
+\title{Graduation Timeline}
+\begin{document}
+
+\maketitle
+My plan is that by the end of July I have convinced the committee that no substantial additional work needs to be done before I defend my thesis. 
+ I've put down times for when I would like to have certain items finished so as to make that deadline.  I believe the timeline is aggressive but (hopefully) achievable. 
+\texttt{TODO} items are highlighted in red, and where there are multiple items in a category, they are prioritized by letter, (with "A" being the highest).
+
+\section*{Functional Genetics by Expectation Maximization Project}
+\label{sec:orgbabf710}
+My plan is for this chapter to consist of a submitted paper (targeting Bioinformatics).
+DEADLINE: \textit{<2020-06-06 Sat>}
+\subsubsection*{{\bfseries\sffamily TODO} Finish analyses}
+\label{sec:org8d9711c}
+\noindent\textbf{DEADLINE:} \textit{<2020-05-22 Fri>}\\
+\begin{itemize}
+\item {\bfseries\sffamily DONE} \framebox{\#A} Run FGEM on putative cancer genes from driverMAPS paper
+\label{sec:org25905e2}
+\noindent\textbf{DEADLINE:} \textit{<2020-05-07 Thu>}\\
+I ran FGEM on 20 lists of gene-level Bayes Factors obtained from \cite{zhao19_detail_model_posit_selec_improv}
+\item {\bfseries\sffamily TODO} \framebox{\#A} Validate FGEM features against gold standard (IntOGen)
+\label{sec:orgc16920b}
+\noindent\textbf{DEADLINE:} \textit{<2020-05-21 Thu>}\\
+I will validate the set of gene-level features I identify by estimating enrichment for cancer genes in the intOGen database \cite{gonzalez-perez13_intog_mutat_ident_cancer_driver}
+\item {\bfseries\sffamily DONE} \framebox{\#B} Make a decision about feature collinearity issue
+\label{sec:org2fbafbf}
+\noindent\textbf{DEADLINE:} \textit{<2020-05-19 Tue>}\\
+If the features from genes are highly correlated, the parameter estimates can be unstable. The current plan is to 
+detect and merge or remove highly correlated features from the analysis
+\end{itemize}
+\subsubsection*{{\bfseries\sffamily TODO} Finish draft}
+\label{sec:org215ba2a}
+\noindent\textbf{DEADLINE:} \textit{<2020-05-29 Fri>}\\
+\section*{Polygenic RSS}
+\label{sec:org34344aa}
+As it stands there will probably more than one paper's worth of work to be written up for this project
+by the time it is finished. The current plan is for this project is to get one submitted paper out of 
+the project and for the rest of the work to go in the dissertation.
+\subsection*{Write Paper}
+\label{sec:orgb322035}
+\noindent\textbf{DEADLINE:} \textit{<2020-06-30 Tue>}\\
+\subsubsection*{{\bfseries\sffamily TODO} Finish analyses}
+\label{sec:org7602660}
+\noindent\textbf{DEADLINE:} \textit{<2020-06-04 Thu>}\\
+\begin{itemize}
+\item {\bfseries\sffamily DONE} \framebox{\#A} Simulate UK Biobank GWAS with polygenic genetic architecture
+\label{sec:org9820114}
+\item {\bfseries\sffamily TODO} \framebox{\#A} Simulate UK Biobank GWAS with sparse genetic architecture
+\label{sec:org57521dd}
+\item {\bfseries\sffamily TODO} \framebox{\#B} Finish UK-biobank/Genbank GWAS real-data analysis
+\label{sec:org00748ae}
+\end{itemize}
+\section*{Preterm Birth Fine Mapping}
+\label{sec:org4d89bb9}
+\noindent\textbf{DEADLINE:} \textit{<2020-07-30 Thu>}\\
+My plan is to write up the analyses that I've already done (that went in to the first March of Dimes paper) as my third chapter.  Depending on how things go, additional 
+analyses that need to be done can go in to another paper or simply into the chapter.
+\subsection*{{\bfseries\sffamily TODO} \framebox{\#A} Write up analyses for chapter}
+\label{sec:org26358b3}
+\noindent\textbf{DEADLINE:} \textit{<2020-07-15 Wed>   }\\
+\subsection*{{\bfseries\sffamily TODO} \framebox{\#B} Finish additional analyses}
+\label{sec:org1a3d459}
+\subsubsection*{{\bfseries\sffamily TODO} \framebox{\#C} Incorporate TCM term vs preterm ATAC annotations into a new model}
+\label{sec:orgc7ebf33}
+\subsubsection*{{\bfseries\sffamily TODO} \framebox{\#D} Incorporate TF ChIP-seq annotations into a new model}
+\label{sec:org9974a4f}
+\subsubsection*{{\bfseries\sffamily TODO} \framebox{\#D} Compare which loci are implicated by which models}
+\label{sec:orgbd02185}
+
+\bibliographystyle{unsrt}
+\bibliography{references}
+\end{document}

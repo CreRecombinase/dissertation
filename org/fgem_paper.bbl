@@ -1,0 +1,58 @@
+\begin{thebibliography}{1}
+
+\bibitem{EM_algo}
+A.~P. Dempster, N.~M. Laird, and D.~B. Rubin.
+\newblock Maximum likelihood from incomplete data via the em algorithm.
+\newblock {\em Journal of the Royal Statistical Society. Series B
+  (Methodological)}, 39(1):1--38, 1977.
+
+\bibitem{COSMIC}
+Zbyslaw Sondka, Sally Bamford, Charlotte~G. Cole, Sari~A. Ward, Ian Dunham, and
+  Simon~A. Forbes.
+\newblock The cosmic cancer gene census: describing genetic dysfunction across
+  all human cancers.
+\newblock {\em Nature Reviews Cancer}, 18(11):696–705, Oct 2018.
+
+\bibitem{uhlen17_pathol_atlas_human_cancer_trans}
+Mathias Uhlen, Cheng Zhang, Sunjae Lee, Evelina Sj{\"o}stedt, Linn Fagerberg,
+  Gholamreza Bidkhori, Rui Benfeitas, Muhammad Arif, Zhengtao Liu, Fredrik
+  Edfors, Kemal Sanli, Kalle von Feilitzen, Per Oksvold, Emma Lundberg, Sophia
+  Hober, Peter Nilsson, Johanna Mattsson, Jochen~M. Schwenk, Hans
+  Brunnstr{\"o}m, Bengt Glimelius, Tobias Sj{\"o}blom, Per-Henrik Edqvist,
+  Dijana Djureinovic, Patrick Micke, Cecilia Lindskog, Adil Mardinoglu, and
+  Fredrik Ponten.
+\newblock A pathology atlas of the human cancer transcriptome.
+\newblock {\em Science}, 357(6352):eaan2507, 2017.
+
+\bibitem{zhao19_detail_model_posit_selec_improv}
+Siming Zhao, Jun Liu, Pranav Nanga, Yuwen Liu, A.~Ercument Cicek, Nicholas
+  Knoblauch, Chuan He, Matthew Stephens, and Xin He.
+\newblock Detailed modeling of positive selection improves detection of cancer
+  driver genes.
+\newblock {\em Nature Communications}, 10(1):3399, 2019.
+
+\bibitem{GO}
+The Gene Ontology Consortium.
+\newblock {The Gene Ontology Resource: 20 years and still GOing strong}.
+\newblock {\em Nucleic Acids Research}, 47(D1):D330--D338, 11 2018.
+
+\bibitem{godb}
+Marc Carlson.
+\newblock {\em GO.db: A set of annotation maps describing the entire Gene
+  Ontology}, 2020.
+\newblock R package version 3.11.0.
+
+\bibitem{squarem}
+Yu~Du and Ravi Varadhan.
+\newblock {SQUAREM}: An {R} package for off-the-shelf acceleration of {EM},
+  {MM} and other {EM}-like monotone algorithms.
+\newblock {\em Journal of Statistical Software}, 92(7):1--41, 2020.
+
+\bibitem{RcppArmadillo}
+Dirk Eddelbuettel and Conrad Sanderson.
+\newblock Rcpparmadillo: Accelerating r with high-performance c++ linear
+  algebra.
+\newblock {\em Computational Statistics and Data Analysis}, 71:1054--1063,
+  March 2014.
+
+\end{thebibliography}
