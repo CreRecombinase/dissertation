@@ -54,47 +54,40 @@ we employ a multi-stage model fitting procedure. In the first step, all single-f
 models are fit, and a $p$-value is obtained for each model byt comparing to the intercept-only model via the likelihood ratio test.  
 
 From this set of single-feature models, all of the nonsignificant (i.e features with Benjamini-Hochberg adjusted $p$-values greater than 0.05) univariate features for each cancer type
-were removed from the analysis.  In the case of KICH, no features were significant after multiple testing correction (minimum $q$ value: 0.104 correspodning to GO:0071456, "cellular response to hypoxia"), and in the case of CHOL,
-only one feature was significant after multiple testing correction (GO:0008285 " negative regulation of cell population proliferation", $q$ value: 0.00909). 
+were removed from the analysis.  
+
+# In the case of KICH, no features were significant after multiple testing correction (minimum $q$ value: 0.104 correspodning to GO:0071456, "cellular response to hypoxia"), and in the case of CHOL,
+# only one feature was significant after multiple testing correction (GO:0008285 " negative regulation of cell population proliferation", $q$ value: 0.00909). 
 
 
-Significant features for each cancer type were then combined in a joint model and fit with 
+Significant features for each cancer type were then combined in a joint model and fit by maximizing the marginalized likelihood, penalized with an elastic-net penalty.  
 
 The Limited Memory Broyden-Fletcher-Goldfarb-Shanno algorithm (LM-BFGS) cite:LMBFGS  is among the most popular algorithms 
 for unconstrained optimization over scalar, differentiable functions. 
 
-One limitation of LM-BFGS, is that, as mentioned previously, the function that is being optimized must be differentiable.  Unfortunately, sparsity-inducing $l_1$-regularized models of the form
+One limitation of LM-BFGS, is that the function that is being optimized must be differentiable.  Unfortunately, sparsity-inducing $l_1$-regularized models of the form
 
 $$f(\boldsymbol{\theta})=p(\boldsymbol{\theta} | \textbf{x}) + C \Vert \boldsymbol{\theta} \Vert_1$$ are not differentiable when any of the elements of the parameter vector $\boldsybmol{\theta}$ are 0.  The Orthant-wise limited-memory quasi-Newton method is a variant of LM-BFGS which is designed precisely for 
 fitting $l_1$-regularized, sparsity inducing models. 
 
-As the number of features in 
 
+*** Regularization by elastic-net
 
-If $\textbf{z}$ is our latent variable then our complete data likelihood is:
-$$P(\textbf{x},\textbf{z}|\boldsymbol{\beta},\textbf{A}) = 
-\prod_{g=1}^G \left[P(z_g|\boldsymbol{\beta},\textbf{a}_g) P(x_g|z_g)\right] = 
-\prod_{g=1}^G \left[\pi(\boldsymbol{\beta},\textbf{a}_g)^{z_g} (1-\pi(\boldsymbol{\beta},\textbf{a}_g))^{1-z_g}B_g^{z_g}\right]$$ 
+Our fitting procedure consists of minimizing the objective function corresponding to the negative of the penalized log-likelihood:
+$$ -\mathcal{L}(\textbf{x}|\boldsymbol{\beta},\textbf{A}) + \lambda\left( \frac{1-\alpha}{2} \sum_{j=2}^F\beta_j^2 + \alpha \sum_{j=2}^F|\beta_j| \right) $$
 
-From which we form the $Q$ function
+Where $\mathcal{L}(\textbf{x}|\boldsymbol{\beta},\textbf{A}) = \sum_{g=1}^{G}[\log\left(\pi(\boldsymbol{\beta},\textbf{a}_g)B_g+(1-\pi(\boldsymbol{\beta},\textbf{a}_g))\right)]$ .
 
-$$ Q(\boldsymbol{\beta}|\boldsymbol{\beta}_n) = \sum_{g=1}^G \left[P(z_g=1|x_g,\boldsymbol{\beta}_n,\textbf{a}_g) \log\left(P(x_g,z_g=1|\boldsymbol{\beta})\right) +
-P(z_g=0|x_g,\boldsymbol{\beta}_n,\textbf{a}_g) \log\left(P(x_g,z_g=0|\boldsymbol{\beta})\right) \right] = 
-\sum_{g=1}^G \left [u_g(\log(\pi(\boldsymbol{\beta_n},\textbf{a}_g))+B_g)+(1-u_g)\log(1-\pi(\boldsymbol{\beta_n},\textbf{a}_g)) \right]$$
+The overall level of sparsity in the model is controlled by the parameter $\lambda$, while the proportion of $L_1$ vs $L_2$ penalty is determined by $\alpha$.  As a default, the value of $\alpha$ is fixed at 0.85, and $\lambda$ 
+takes on 75 values of  between zero, and $\lambda_{\text{max}}$, on a log scale.  $\lambda_{\text{max}}$ is defined as the smallest value of $\lambda$ for which the objective function is minimized when all coefficients but the intercept are 0 (the intercept is not subject to the elastic net penalty).
+The final value of $\lambda$ was arrived at from 10-fold cross-validation.  
 
-Where $u_g=P(z_g=1|x_g,\boldsymbol{\beta_n},\textbf{a}_g) = \frac{\pi(\boldsymbol{\beta_n},\textbf{a}_g)B_g}{\pi(\boldsymbol{\beta_n},\textbf{a}_g)B_g+1-\pi(\boldsymbol{\beta_n},\textbf{a}_g)}$
-
-The model fitting procedure proceeds as follows 
-
-+ Start with an initial guess of $\boldsymbol{\beta}$
-+ Repeat until $Q(\boldsymbol{\beta}|\boldsymbol{\beta}_{n-1})-Q(\boldsymbol{\beta}|\boldsymbol{\beta}_n)< \text{tol}$:
-  - Compute $P(z_g=1|x_g,\boldsymbol{\beta_n},\textbf{a}_g)$
-  - Maximize the likelihood for $\boldsymbol{\beta}$ using proportional logistic regression
+**** 
 
 
 ** Validation against intOGen
 
-IntOGen is a database of cancer driver genes cite:gonzalez-perez13_intog_mutat_ident_cancer_driver.  It is populated by an ensembl method that incorporates seven different methods for identifying cancer driver genes.  
+IntOGen is a database of cancer driver genes cite:gonzalez-perez13_intog_mutat_ident_cancer_driver.  It is populated by an ensemble method that incorporates seven different methods for identifying cancer driver genes.  
 It weights each of the 7 methods according to their ability to predict membership in the The Catalogue of Somatic Mutations in Cancer (COSMIC) Cancer Gene Census (CGC) cite:COSMIC.
 To validate the FGEM models, 
 
