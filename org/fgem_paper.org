@@ -1,15 +1,13 @@
 #+TITLE: Functional Enrichment by Expectation Maximization
 #+SETUPFILE: setup.org
-#+OPTIONS: toc:2 |:t
 
 * Introduction
 
 When interpreting the results of a genome-scale genetic association study, be it a GWAS, a whole exome sequencing study, or a whole genome sequencing study, there are two questions that are of interest:
 1) which genes are associated with the trait of interest, and 2) what are the common properties of the genes that contribute to disease risk. The answer to one of these questions can inform the other.  
-Obviously, identifying a set of properties common to causal genes is made much easier if the set of causal genes is known with certainty. Furthermore, if the set of causal genes is not known,
-prior knowledge about the properties of the causal genes is available, that prior knowledge can be used to implicate genes that might otherwise not have been identified due to a lack of statistical power, or
-similarly to deprioritize genes that might otherwise be implicated, despite being false positives.  Despite the complementarity of these 
-
+Obviously, identifying a set of properties common to causal genes is made much easier if the set of causal genes is known with certainty. Furthermore, if the set of causal genes is not known, but
+prior knowledge about the properties of the causal genes is available, that prior knowledge can be incorporated to implicate genes that might otherwise not have been identified due to a lack of statistical power.
+Prior information can also be used to deprioritize genes that might otherwise be implicated, despite being false positives.  Despite the complementarity of these 
 
 
 
@@ -39,7 +37,6 @@ By factorizing out the term $\prod_{g=1}^{G} P(x_g|z_g=0)$ which does not depend
 
 $$P(\textbf{x}|\boldsymbol{\beta},\textbf{A}) \propto \prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{a}_g)B_g+(1-\pi(\boldsymbol{\beta},\textbf{a}_g))]$$
 
-
 Given a particular value of $\boldsymbol{\beta}$, and a bayes factor $B_g$, we arrive at a new posterior probability that $z_g=1$:
 
 $$P(z_g=1 | B_g, \boldsymbol{\beta},\textbf{a}_g) = \frac{\pi(\boldsymbol{\beta},\textbf{a}_g) B_g}{\pi(\boldsymbol{\beta} , \textbf{a}_g) B_g + 1 - \pi(\boldsymbol{\beta},\textbf{a}_g)}$$
@@ -50,15 +47,15 @@ Our goal is both to estimate $\boldsymbol{\beta}$ for a relevant set of features
 and interpretability standpoint, to include all conceivable features in the model. A related but distinct issue is that of collinearity.
 As the number of features in the model increases, the probability that some subset of features will be collinear with one-another increases,
 which can complicate model-fitting, as $\beta$ becomes unidentifiable. This is especially important when a binary, hierarchical feature set like the Gene Ontology.To avoid this issue, 
-we employ a multi-stage model fitting procedure. In the first step, all single-feature-plus-intercept
-models are fit, and a $p$-value is obtained for each model byt comparing to the intercept-only model via the likelihood ratio test.  
+we employ a multi-stage model fitting procedure. 
+In the first step, all single-feature-plus-intercept models are fit, and a $p$-value is obtained for each model byt comparing to the intercept-only model via the likelihood ratio test.  
 
 From this set of single-feature models, all of the nonsignificant (i.e features with Benjamini-Hochberg adjusted $p$-values greater than 0.05) univariate features for each cancer type
 were removed from the analysis.  
 
 # In the case of KICH, no features were significant after multiple testing correction (minimum $q$ value: 0.104 correspodning to GO:0071456, "cellular response to hypoxia"), and in the case of CHOL,
 # only one feature was significant after multiple testing correction (GO:0008285 " negative regulation of cell population proliferation", $q$ value: 0.00909). 
-
+*** Joint Model
 
 Significant features for each cancer type were then combined in a joint model and fit by maximizing the marginalized likelihood, penalized with an elastic-net penalty.  
 
@@ -70,35 +67,42 @@ One limitation of LM-BFGS, is that the function that is being optimized must be 
 $$f(\boldsymbol{\theta})=p(\boldsymbol{\theta} | \textbf{x}) + C \Vert \boldsymbol{\theta} \Vert_1$$ are not differentiable when any of the elements of the parameter vector $\boldsybmol{\theta}$ are 0.  The Orthant-wise limited-memory quasi-Newton method is a variant of LM-BFGS which is designed precisely for 
 fitting $l_1$-regularized, sparsity inducing models. 
 
+*** Regularization by (relaxed) elastic-net
 
-*** Regularization by elastic-net
-
-Our fitting procedure consists of minimizing the objective function corresponding to the negative of the penalized log-likelihood:
+Our multivariate fitting procedure consists of two steps.  The first emphasizes feature selection, and the second emphasizes shrinkage.  In the first step, we minimize the objective function corresponding to the negative of the elastic-net penalized log-likelihood:
 $$ -\mathcal{L}(\textbf{x}|\boldsymbol{\beta},\textbf{A}) + \lambda\left( \frac{1-\alpha}{2} \sum_{j=2}^F\beta_j^2 + \alpha \sum_{j=2}^F|\beta_j| \right) $$
 
-Where $\mathcal{L}(\textbf{x}|\boldsymbol{\beta},\textbf{A}) = \sum_{g=1}^{G}[\log\left(\pi(\boldsymbol{\beta},\textbf{a}_g)B_g+(1-\pi(\boldsymbol{\beta},\textbf{a}_g))\right)]$ .
+Where $\mathcal{L}(\textbf{x}|\boldsymbol{\beta},\textbf{A}) = \sum_{g=1}^{G}[\log\left(\pi(\boldsymbol{\beta},\textbf{a}_g)B_g+(1-\pi(\boldsymbol{\beta},\textbf{a}_g))\right)]$.
 
-The overall level of sparsity in the model is controlled by the parameter $\lambda$, while the proportion of $L_1$ vs $L_2$ penalty is determined by $\alpha$.  As a default, the value of $\alpha$ is fixed at 0.85, and $\lambda$ 
-takes on 75 values of  between zero, and $\lambda_{\text{max}}$, on a log scale.  $\lambda_{\text{max}}$ is defined as the smallest value of $\lambda$ for which the objective function is minimized when all coefficients but the intercept are 0 (the intercept is not subject to the elastic net penalty).
-The final value of $\lambda$ was arrived at from 10-fold cross-validation.  
+The overall level of sparsity in the model is controlled by the parameter $\lambda$, while the proportion of $l_1$ vs $l_2$ penalty is determined by $\alpha$.  As a default, the value of $\alpha$ is fixed at 0.85, and $\lambda$ 
+takes on 100 values starting at zero, and ending at $\lambda_{\text{max}}$, on a log scale.  $\lambda_{\text{max}}$ is defined as the smallest value of $\lambda$ for which the objective function is minimized, and all coefficients 
+but the intercept are 0 (the intercept term is not subject to the elastic net penalty). The optimal value of $\lambda$ is chosen using 10-fold cross-validation.  
 
-**** 
+In the second step, features with $\beta_f=0$ are removed from the analysis, and cross-validation over 100 values of $\lambda$ occurs again, this time with $\alpha = 0$, meaning there is no $l1$ penalty.  The motivation for this two-stage
+procedure comes from the "relaxed" lasso cite:hastie17_exten_compar_best_subset_selec, wherein the lasso is used for feature selection, and the model is refit without a lasso penalty.
 
+*** Removal of highly enriched features
+
+    A subset of features were remvoed after the univariate feature-selection stage as they exhibited enrichment estimates in excess of credulity. Features which corresponded to posterior probabilities in excess of 0.3 were 
+recorded and excluded from consideration for inclusion in the joint model (they were however included when calculating the FDR-adjusted p-values for the univariate tests).  
+
+*** Comparison with Fisher's Exact test
+
+In the case of a single binary feature, one can apply a Bayes Factor cutoff to obtain a contingency table and assess the enrichment of the feature using Fisher's Exact test.
+ We compared FGEM with Fisher's exact test, using an FDR cutoff of 0.1, and compared the $p$-values to those obtained from the single-feature, FGEM the likelihood ratio test $p$-values.
 
 ** Validation against intOGen
 
 IntOGen is a database of cancer driver genes cite:gonzalez-perez13_intog_mutat_ident_cancer_driver.  It is populated by an ensemble method that incorporates seven different methods for identifying cancer driver genes.  
 It weights each of the 7 methods according to their ability to predict membership in the The Catalogue of Somatic Mutations in Cancer (COSMIC) Cancer Gene Census (CGC) cite:COSMIC.
-To validate the FGEM models, 
-
-** Validation against 
+To validate the FGEM models, we compared the posterior under the functional model to the functional posterior under the uniform model.  In every cancer type, validated cancer genes had a higher functional posterior than 
+uniform posterior, while genes that were not previously identified as cancer genes had on average lower functional posterior compared to uniform (see table). 
 
 ** Data 
 
+# *** Prognostic 
 
-*** Prognostic 
-
-The Human Pathology Atlas is a dataset of 900,000 patient survival profiles across 17 types of cancersurvival data cite:uhlen17_pathol_atlas_human_cancer_trans
+# The Human Pathology Atlas is a dataset of 900,000 patient survival profiles across 17 types of cancersurvival data cite:uhlen17_pathol_atlas_human_cancer_trans
 
 *** Gene-Level Summary Statistics
 
@@ -112,67 +116,74 @@ posterior probability that each gene (in each cancer type) was a causal gene was
 The "Biological Process" Gene Ontology cite:GO  was downloaded from the Bioconductor package ~GO.db~ cite:godb. Of the 10,930 possible biological process gene ontology terms, the 2,198 terms that 
 include 10 or more genes were analyzed, so as to reduce the multiple testing burden.  
 
-**** Molecular Signatures Database
+# **** Molecular Signatures Database
 
-The Molecular Signatures Database (MSigDB) cite:msigdb is among the most popular collections of annotated gene sets. Originally
-deveoped for the method Gene Set Enrichment Analysis (GSEA) cite:Subramanian_2005, it contains over 25000 gene sets across 
-8 major collections.  
+# The Molecular Signatures Database (MSigDB) cite:msigdb is among the most popular collections of annotated gene sets. Originally
+# deveoped for the method Gene Set Enrichment Analysis (GSEA) cite:Subramanian_2005, it contains over 25000 gene sets across 
+# 8 major collections.  
 
-These collections are :
-1) Hallmark (H) gene sets represent "well-defined biological states or processses and display coherent expression"
-2) Positional (C1) gene sets correspond to each of the human chromosomes and cytogenic bands that contain at least one gene. 
-3) Curated (C2) gene sets are manually curated gene sets from various databases and biomedical publications.  C2 includes gene sets 
-from: CGP cite:CGP , BIOCARTA cite:BIOCARTA, KEGG cite:KEGG, PID, cite:PID and REACTOME cite:REACTOME.  
-4) Regulatory gene sets  (C3)
-5) Computational gene sets (C4)
-6) GO gene sets (C5)
-7) oncogenic gene sets (C6)
-8) immunologic gene sets (C7)
+# These collections are :
+# 1) Hallmark (H) gene sets represent "well-defined biological states or processses and display coherent expression"
+# 2) Positional (C1) gene sets correspond to each of the human chromosomes and cytogenic bands that contain at least one gene. 
+# 3) Curated (C2) gene sets are manually curated gene sets from various databases and biomedical publications.  C2 includes gene sets 
+# from: CGP cite:CGP , BIOCARTA cite:BIOCARTA, KEGG cite:KEGG, PID, cite:PID and REACTOME cite:REACTOME.  
+# 4) Regulatory gene sets  (C3)
+# 5) Computational gene sets (C4)
+# 6) GO gene sets (C5)
+# 7) oncogenic gene sets (C6)
+# 8) immunologic gene sets (C7)
 
 
 ** Software
 
-Our method is distributed as a freely available R package [[https://github.com/CreRecombinase/FGEM][FGEM]] cite:R .FGEM relies on the ~SQUAREM~ package to accelerate EM convergence  cite:squarem   
-and the hot-path functions are implemented as C++ functions using the ~RcppArmadillo~ cite:RcppArmadillo package.  
+Our method is distributed as a freely available R package [[https://github.com/CreRecombinase/FGEM][FGEM]] cite:Rlang .FGEM relies on the ~SQUAREM~ package to accelerate EM convergence  cite:squarem   
+and the hot-path functions are implemented as C++ functions using the ~RcppEigen~ cite:RcppEigen package.  
 
 
 * Results
 
+# #+BEGIN_SRC R :results graphics :file fisher_vs_fgem.png
+#   suppressMessages(library(tidyverse))
+#   suppressMessages(library(ggsci))
+#   single_df <-     qs::qread("../data/single_df.qs")
+#   gp <- ggplot(single_df,aes(x=pval_fisher_0_01,y=pval_fgem))+geom_point()+scale_x_log10()+scale_y_log10()+xlab("p-value(Fisher)")+ylab("p-value(FGEM)")+facet_wrap(~cancer)+geom_abline(slope=1)
+#   ggsave("fisher_vs_fgem.png",gp,dpi=320,width=13.33,height=7.5)
+# #+END_SRC
 
-** COSMIC validation
+#+RESULTS:
 
-The cross-entropy of the FGEM model for each cancer type was compared to the cross-entropy of the intercept-only
-FGEM model using the COSMIC census genes as ground truth.  For each of the 20 cancer types FGEM had lower cross-entropy 
-(higher likelihood ratio)
+[[./fisher_vs_fgem.png]]
+
+** FGEM identifies biologically relevant gene-level annotations
+
+** FGEM integrates multiple gene-level annotations to reprioritize genes
+
+[[./fgem_posterior_plot.png]]
+
+[[./fgem_enrichment_plot.png]]
 
 
-| cancer | cross entropy functional | cross entropy uniform | cross entropy ratio |
-|--------+--------------------------+-----------------------+---------------------|
-| BLCA   |        -95662.4678891365 |      -85246.945544574 |   -10415.5223445625 |
-| BRCA   |        -118449.351908682 |     -90864.7631741114 |   -27584.5887345709 |
-| CESC   |        -147468.020375775 |     -79847.4862860612 |   -67620.5340897143 |
-| CHOL   |        -54147.2464991959 |     -50321.7386081126 |   -3825.50789108334 |
-| ESCA   |         -118908.27548448 |     -84631.9895615394 |   -34276.2859229405 |
-| GBM    |        -92362.5624198571 |     -73787.0866635762 |   -18575.4757562809 |
-| HNSC   |        -141820.887516856 |      -97862.081096597 |    -43958.806420259 |
-| KICH   |        -109133.000058618 |     -96625.4414397593 |   -12507.5586188592 |
-| KIRC   |        -101543.318511605 |     -80891.7016637173 |   -20651.6168478874 |
-| KIRP   |        -95512.8357907782 |     -84980.3471977415 |   -10532.4885930367 |
-| LIHC   |        -110051.739122586 |     -91896.1246808558 |   -18155.6144417298 |
-| LUAD   |        -177084.209088335 |       -115584.2079699 |   -61500.0011184357 |
-| LUSC   |        -157500.378816593 |     -106769.242183055 |   -50731.1366335384 |
-| PAAD   |        -318932.227641074 |     -66508.8323704442 |    -252423.39527063 |
-| PRAD   |        -891940.514321957 |     -76779.4406090754 |   -815161.073712881 |
-| SARC   |        -636965.982410518 |     -81431.9753511472 |   -555534.007059371 |
-| SKCM   |        -133127.342562248 |     -121032.432355748 |   -12094.9102065007 |
-| TGCT   |        -760084.365698844 |     -105591.835808511 |   -654492.529890333 |
-| UCEC   |        -111681.722486175 |     -86440.4633034317 |   -25241.2591827432 |
-| UCS    |        -99619.9782423041 |     -81147.3017795327 |   -18472.6764627714 |
+
+** 
+
+** Highly enriched single features
+
+As stated in the Methods section, Features which corresponded to posterior probabilities in excess of 0.3 were excluded from consideration for inclusion in the joint model.  One consequence of FGEM's latent variable approach
+is that it is possible to encounter a scenario analogous to the "separation" problem in logistic regression.  In logistic regression, if one (or several) predictors predict an output perfectly, the likelihood for that 
+feature is not maximized at a finite parameter value. Because there is high overlap in the Gene Ontology feature-set, little information is lost by excluding these problematic features.
 
 
 * Discussion
 
+** Consequences of the latent variable approach
 
+The latent variable $z_i$ in the FGEM model is by definition unobserved, 
+One of the most salient features of FGEM as compared to Fisher's Exact test is that FGEM does not binarize data into significant vs insignificant.  For a particular gene set in a particular dataset,
+the enrichment of Fisher's exact test is determined by the cardinality of the entries in the 2 by 2 contingency table.  In the case of Bayes factors, genes for which the evidence is /in favor/ of the null
+ hypothesis is treated identically to genes for which the evidence is /in favor/ of the alternative hypothesis, but slightly below the significance cutoff.  
+
+# Another noteworthy comparison is to rank-based tests such as Gene Set Enrichment Analysis cite:Subramanian_2005.  Unlike Fisher's exact test, the relative evidence of genes in a geneset (specifically their rank) is compared
+# to the background.  
 
 
 

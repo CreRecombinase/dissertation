@@ -1,0 +1,9 @@
+#+TITLE: Home
+
+- [[file:fgem_paper.org][Functional Enrichment by Expectation Maximization]]
+- [[file:fgem.org][Functional Enrichment by Expectation Maximization Project]]
+- [[file:defense.org][defense]]
+- [[file:fgem_pyro.org][fgem_pyro]]
+- [[file:timeline.org][Graduation Game Plan]]
+- [[file:sitemap.org][Sitemap for project dissertation-org]]
+- [[file:theindex.org][Index]]

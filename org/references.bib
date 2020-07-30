@@ -54,6 +54,33 @@
   publisher    = {Elsevier BV}
 }
 
+  @Manual{Rlang,
+    title = {R: A Language and Environment for Statistical Computing},
+    author = {{R Core Team}},
+    organization = {R Foundation for Statistical Computing},
+    address = {Vienna, Austria},
+    year = {2020},
+    url = {https://www.R-project.org/},
+  }
+
+
+
+@Article{LMBFGS,
+  author       = {Byrd, Richard H. and Lu, Peihuang and Nocedal, Jorge
+                  and Zhu, Ciyou},
+  title        = {A Limited Memory Algorithm for Bound Constrained
+                  Optimization},
+  year         = 1995,
+  volume       = 16,
+  number       = 5,
+  month        = {Sep},
+  pages        = {1190–1208},
+  issn         = {1095-7197},
+  doi          = {10.1137/0916069},
+  url          = {http://dx.doi.org/10.1137/0916069},
+  journal      = {SIAM Journal on Scientific Computing},
+  publisher    = {Society for Industrial & Applied Mathematics (SIAM)}
+}
 
 
 
@@ -216,16 +243,17 @@
     doi = {10.18637/jss.v092.i07},
   }
 
-@Article{RcppArmadillo,
-    title = {RcppArmadillo: Accelerating R with high-performance C++ linear algebra},
-    author = {Dirk Eddelbuettel and Conrad Sanderson},
-    journal = {Computational	Statistics and Data Analysis},
-    year = {2014},
-    volume = {71},
-    month = {March},
-    pages = {1054--1063},
-    url = {http://dx.doi.org/10.1016/j.csda.2013.02.005},
+  @Article{RcppEigen,
+    title = {Fast and Elegant Numerical Linear Algebra Using the {RcppEigen} Package},
+    author = {Douglas Bates and Dirk Eddelbuettel},
+    journal = {Journal of Statistical Software},
+    year = {2013},
+    volume = {52},
+    number = {5},
+    pages = {1--24},
+    url = {http://www.jstatsoft.org/v52/i05/},
   }
+
 
 @Manual{R,
     title = {R: A Language and Environment for Statistical Computing},
@@ -332,3 +360,58 @@
   DATE_ADDED =   {Thu May 21 11:15:19 2020},
 }
 
+@article{core99_error,
+  author =       {core, arXiv api},
+  title =        {Error},
+  journal =      {CoRR},
+  year =         1999,
+  url =
+                  {http://arxiv.org/api/errors#incorrect_id_format_for_https://arxiv.org/abs/1707.08692},
+  abstract =     {incorrect id format for
+                  https://arxiv.org/abs/1707.08692},
+  archivePrefix ={arXiv},
+  eprint =       {https://arxiv.org/abs/1707.08692},
+  primaryClass = {nil},
+}
+
+@article{hastie17_exten_compar_best_subset_selec,
+  author =       {Hastie, Trevor and Tibshirani, Robert and
+                  Tibshirani, Ryan J.},
+  title =        {Extended Comparisons of Best Subset Selection,
+                  Forward Stepwise Selection, and the Lasso},
+  journal =      {CoRR},
+  year =         2017,
+  url =          {http://arxiv.org/abs/1707.08692v2},
+  abstract =     {In exciting new work, Bertsimas et al. (2016) showed
+                  that the classical best subset selection problem in
+                  regression modeling can be formulated as a mixed
+                  integer optimization (MIO) problem. Using recent
+                  advances in MIO algorithms, they demonstrated that
+                  best subset selection can now be solved at much
+                  larger problem sizes that what was thought possible
+                  in the statistics community. They presented
+                  empirical comparisons of best subset selection with
+                  other popular variable selection procedures, in
+                  particular, the lasso and forward stepwise
+                  selection. Surprisingly (to us), their simulations
+                  suggested that best subset selection consistently
+                  outperformed both methods in terms of prediction
+                  accuracy. Here we present an expanded set of
+                  simulations to shed more light on these comparisons.
+                  The summary is roughly as follows: (a) neither best
+                  subset selection nor the lasso uniformly dominate
+                  the other, with best subset selection generally
+                  performing better in high signal-to-noise (SNR)
+                  ratio regimes, and the lasso better in low SNR
+                  regimes; (b) best subset selection and forward
+                  stepwise perform quite similarly throughout; (c) the
+                  relaxed lasso (actually, a simplified version of the
+                  original relaxed estimator defined in Meinshausen,
+                  2007) is the overall winner, performing just about
+                  as well as the lasso in low SNR scenarios, and as
+                  well as best subset selection in high SNR
+                  scenarios.},
+  archivePrefix ={arXiv},
+  eprint =       {1707.08692},
+  primaryClass = {stat.ME},
+}

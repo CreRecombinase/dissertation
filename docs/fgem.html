@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2020-05-20 Wed 12:28 -->
+<!-- 2020-07-30 Thu 11:26 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Functional Enrichment by Expectation Maximization Project</title>
@@ -226,6 +226,28 @@ for the JavaScript code in this tag.
  }
 /*]]>*///-->
 </script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
 <body>
 <div id="content">
@@ -234,16 +256,48 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
+<li><a href="#org82c9f9c"><span class="todo TODO">TODO</span> find immune genes</a></li>
 <li><a href="#org054bbb5"><span class="todo TODO">TODO</span> FGEM Project <code>[0%]</code></a>
 <ul>
 <li><a href="#orga6c2f62"><span class="todo TODO">TODO</span> Write Paper <code>[0%]</code></a></li>
-<li><a href="#orgaaa11c6"><span class="todo TODO">TODO</span> Analyses <code>[66%]</code></a></li>
+<li><a href="#orgaaa11c6"><span class="todo TODO">TODO</span> Analyses <code>[53%]</code></a></li>
+</ul>
+</li>
+<li><a href="#org628ddd9">Analysis</a></li>
+<li><a href="#org7ae18b7"><span class="todo TODO">TODO</span> Display items <code>[33%]</code></a>
+<ul>
+<li><a href="#orgd9f9ef1"><span class="todo TODO">TODO</span> overall workflow</a></li>
+<li><a href="#org50b795b"><span class="done DONE">DONE</span> Univariate Enrichment features</a></li>
+<li><a href="#org23db01a"><span class="todo TODO">TODO</span> Posterior figures <code>[50%]</code></a></li>
+<li><a href="#orgd528e7f">Genes</a></li>
+<li><a href="#orgb6b81f5">Which cancer types are we going to look at ?</a></li>
+<li><a href="#orgb5db8fb">COSMIC census</a></li>
+<li><a href="#orga962dfe">cross-validation</a></li>
+<li><a href="#orgb79c3ee">IntOGen validation</a></li>
+<li><a href="#orgfd2863e">The case of GBM</a></li>
+<li><a href="#orgdfc34c1">IntOGen validation</a></li>
+<li><a href="#org3ccbfaa"><span class="todo TODO">TODO</span> Code <code>[66%]</code></a></li>
+</ul>
+</li>
+<li><a href="#org392c63b">Extras</a>
+<ul>
+<li><a href="#orgd8520f9">Trying GLM family function</a></li>
+<li><a href="#org0b1890b">FGEM analyses</a></li>
+<li><a href="#org592b59f">Cancer and ExAC</a></li>
+</ul>
+</li>
+<li><a href="#org1206012">Trying Stan</a>
+<ul>
+<li><a href="#orgf41693e">The Finnish Horseshoe</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
 
+<div id="outline-container-org82c9f9c" class="outline-2">
+<h2 id="org82c9f9c"><span class="todo TODO">TODO</span> find immune genes</h2>
+</div>
 <div id="outline-container-org054bbb5" class="outline-2">
 <h2 id="org054bbb5"><span class="todo TODO">TODO</span> FGEM Project <code>[0%]</code></h2>
 <div class="outline-text-2" id="text-org054bbb5">
@@ -253,6 +307,22 @@ for the JavaScript code in this tag.
 <div class="outline-text-3" id="text-orga6c2f62">
 <ul class="org-ul">
 <li>Target submission to Bioinformatics</li>
+</ul>
+</div>
+<div id="outline-container-org9e3728a" class="outline-4">
+<h4 id="org9e3728a"><span class="todo TODO">TODO</span> figures</h4>
+<div class="outline-text-4" id="text-org9e3728a">
+</div>
+<ul class="org-ul">
+<li><a id="org1a2dda0"></a><span class="todo TODO">TODO</span> figure for workflow<br></li>
+<li><a id="org61accb2"></a><span class="todo TODO">TODO</span> figure for validation<br></li>
+<li><a id="org61ad383"></a><span class="todo TODO">TODO</span> figure for specific genes<br></li>
+<li><a id="org6eb24b1"></a><span class="done DONE">DONE</span> table of full results<br>
+<ul class="org-ul">
+<li><a id="org2e4cbbc"></a><span class="done DONE">DONE</span> each feature and beta, univariate p value and beta<br></li>
+<li><a id="org000e3ca"></a><span class="done DONE">DONE</span> each gene BF functional and uniform prior (and pathways) and evidence of the gene<br></li>
+</ul>
+</li>
 </ul>
 </div>
 <div id="outline-container-org67ff873" class="outline-4">
@@ -275,56 +345,2850 @@ for the JavaScript code in this tag.
 </div>
 </div>
 <div id="outline-container-orgaaa11c6" class="outline-3">
-<h3 id="orgaaa11c6"><span class="todo TODO">TODO</span> Analyses <code>[66%]</code></h3>
+<h3 id="orgaaa11c6"><span class="todo TODO">TODO</span> Analyses <code>[53%]</code></h3>
 <div class="outline-text-3" id="text-orgaaa11c6">
 </div>
 <div id="outline-container-orgc20e030" class="outline-4">
 <h4 id="orgc20e030"><span class="done DONE">DONE</span> Run FGEM on driverMAPS TCGA</h4>
 </div>
-
-<div id="outline-container-org33a2e1e" class="outline-4">
-<h4 id="org33a2e1e"><span class="done DONE">DONE</span> use multiple testing correction in forward selection</h4>
-<div class="outline-text-4" id="text-org33a2e1e">
-</div>
-<ul class="org-ul">
-<li><a id="orga751345"></a><span class="todo TODO">TODO</span> fisher's exact test<br>
-<ul class="org-ul">
-<li><a id="org26bcc50"></a>1 at a time followed by joint analysis<br></li>
-</ul>
-</li>
-<li><a id="org7b64768"></a><span class="todo TODO">TODO</span> posterior for genes with and without prior<br></li>
-<li><a id="org5d7a284"></a><span class="todo TODO">TODO</span> Yuwen's annotation data<br></li>
-<li><a id="orgb353677"></a><span class="todo TODO">TODO</span> CancerMAPS Bayes Factors from driverMAPS<br>
-<ul class="org-ul">
-<li><a id="org3db21e1"></a>Get list of genes from siming<br></li>
-<li><a id="orgea81057"></a>What gene sets to use for Siming:<br>
-<div class="outline-text-6" id="text-orgea81057">
-<ul class="org-ul">
-<li>screen single feature models and use significant ones in a joint model</li>
-</ul>
-</div>
-</li>
-</ul>
-</li>
-</ul>
-</div>
 <div id="outline-container-org66be9d4" class="outline-4">
 <h4 id="org66be9d4"><span class="todo TODO">TODO</span> make plots</h4>
-<div class="outline-text-4" id="text-org66be9d4">
+</div>
+<div id="outline-container-orgc744723" class="outline-4">
+<h4 id="orgc744723"><span class="done DONE">DONE</span> compare to univariate results</h4>
+</div>
+<div id="outline-container-org277e635" class="outline-4">
+<h4 id="org277e635"><span class="done DONE">DONE</span> plot of fisher exact test</h4>
+</div>
+<div id="outline-container-org83431d0" class="outline-4">
+<h4 id="org83431d0"><span class="todo TODO">TODO</span> check against siming's results</h4>
+</div>
+<div id="outline-container-org2a327ea" class="outline-4">
+<h4 id="org2a327ea"><span class="todo TODO">TODO</span> find (top) innate immune response</h4>
+</div>
+<div id="outline-container-org7f0e26e" class="outline-4">
+<h4 id="org7f0e26e"><span class="done DONE">DONE</span> do cross validation of FGEM</h4>
+</div>
+<div id="outline-container-org49cd5e1" class="outline-4">
+<h4 id="org49cd5e1"><span class="done DONE">DONE</span> show performance as a function of lambda</h4>
+</div>
+<div id="outline-container-org215dd23" class="outline-4">
+<h4 id="org215dd23"><span class="todo TODO">TODO</span> double check with Siming</h4>
+<div class="outline-text-4" id="text-org215dd23">
 </div>
 <ul class="org-ul">
-<li><a id="org5af62e6"></a>Multivariate enrichment<br>
-<div class="outline-text-5" id="text-org5af62e6">
+<li><a id="org5af62e6"></a>Multivariate enrichment<br></li>
+</ul>
+</div>
+<div id="outline-container-org2ca763e" class="outline-4">
+<h4 id="org2ca763e"><span class="done DONE">DONE</span> number of (significant) genes per cancer</h4>
+</div>
+<div id="outline-container-org6fec02a" class="outline-4">
+<h4 id="org6fec02a"><span class="done DONE">DONE</span> find out what the outliers are</h4>
+</div>
+<div id="outline-container-org3f4ea16" class="outline-4">
+<h4 id="org3f4ea16"><span class="todo TODO">TODO</span> filter to 20 genes for gene ontology</h4>
+</div>
+<div id="outline-container-org18917d3" class="outline-4">
+<h4 id="org18917d3"><span class="todo TODO">TODO</span> choose a cancer to present</h4>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org628ddd9" class="outline-2">
+<h2 id="org628ddd9">Analysis</h2>
+<div class="outline-text-2" id="text-org628ddd9">
+</div>
+<div id="outline-container-orgd34fa2c" class="outline-4">
+<h4 id="orgd34fa2c">HNSC</h4>
+</div>
+<div id="outline-container-org1232ac6" class="outline-4">
+<h4 id="org1232ac6">UCEC</h4>
+</div>
+<div id="outline-container-orgb419e55" class="outline-4">
+<h4 id="orgb419e55">BRCA</h4>
+</div>
+</div>
+
+<div id="outline-container-org7ae18b7" class="outline-2">
+<h2 id="org7ae18b7"><span class="todo TODO">TODO</span> Display items <code>[33%]</code></h2>
+<div class="outline-text-2" id="text-org7ae18b7">
+</div>
+<div id="outline-container-orgd9f9ef1" class="outline-3">
+<h3 id="orgd9f9ef1"><span class="todo TODO">TODO</span> overall workflow</h3>
+<div class="outline-text-3" id="text-orgd9f9ef1">
+</div>
+<div id="outline-container-org9e02987" class="outline-4">
+<h4 id="org9e02987">Input/output</h4>
+</div>
+<div id="outline-container-org9906686" class="outline-4">
+<h4 id="org9906686">univariate test</h4>
+</div>
+<div id="outline-container-org3f66231" class="outline-4">
+<h4 id="org3f66231">feature selection</h4>
+</div>
+<div id="outline-container-orgb6cac07" class="outline-4">
+<h4 id="orgb6cac07">enrichment and posterior</h4>
+</div>
+</div>
+<div id="outline-container-org50b795b" class="outline-3">
+<h3 id="org50b795b"><span class="done DONE">DONE</span> Univariate Enrichment features</h3>
+<div class="outline-text-3" id="text-org50b795b">
+</div>
+<div id="outline-container-orgd3643aa" class="outline-4">
+<h4 id="orgd3643aa">biplot</h4>
+</div>
+<div id="outline-container-org16b54fd" class="outline-4">
+<h4 id="org16b54fd">FET results side by side with FGEM</h4>
+<div class="outline-text-4" id="text-org16b54fd">
+</div>
+<ul class="org-ul">
+<li><a id="org22a427d"></a>for discrepant result show how fgem did better<br></li>
+<li><a id="orgae5733a"></a>highlight pathways where we show difference<br></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org23db01a" class="outline-3">
+<h3 id="org23db01a"><span class="todo TODO">TODO</span> Posterior figures <code>[50%]</code></h3>
+<div class="outline-text-3" id="text-org23db01a">
+</div>
+<div id="outline-container-org37284cb" class="outline-4">
+<h4 id="org37284cb"><span class="done DONE">DONE</span> UCEC and BRCA</h4>
+</div>
+<div id="outline-container-orge3c98ad" class="outline-4">
+<h4 id="orge3c98ad"><span class="todo TODO">TODO</span> get rid of low functional posterior labels</h4>
+</div>
+</div>
+<div id="outline-container-orgd528e7f" class="outline-3">
+<h3 id="orgd528e7f">Genes</h3>
+<div class="outline-text-3" id="text-orgd528e7f">
+</div>
+<div id="outline-container-orgf0fd76f" class="outline-4">
+<h4 id="orgf0fd76f">Heatmap</h4>
+</div>
+<div id="outline-container-orga248148" class="outline-4">
+<h4 id="orga248148">BRCA and UCEC</h4>
+</div>
+<div id="outline-container-orgbaa65ef" class="outline-4">
+<h4 id="orgbaa65ef">new genes that aren't characterized in this cancer type</h4>
+</div>
+<div id="outline-container-orgf347d6c" class="outline-4">
+<h4 id="orgf347d6c">new genes that aren't characterized in any cancer type</h4>
+</div>
+</div>
+
+<div id="outline-container-orgb6b81f5" class="outline-3">
+<h3 id="orgb6b81f5">Which cancer types are we going to look at ?</h3>
+<div class="outline-text-3" id="text-orgb6b81f5">
+<p>
+Some cancer types have weird bayes factors, so we're going to ignore those. That leaves us with these:
+</p>
+
+<table id="orgcbfc827">
+
+
+<colgroup>
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">cancer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">BLCA</td>
+</tr>
+
+<tr>
+<td class="org-left">BRCA</td>
+</tr>
+
+<tr>
+<td class="org-left">CESC</td>
+</tr>
+
+<tr>
+<td class="org-left">ESCA</td>
+</tr>
+
+<tr>
+<td class="org-left">GBM</td>
+</tr>
+
+<tr>
+<td class="org-left">HNSC</td>
+</tr>
+
+<tr>
+<td class="org-left">KIRC</td>
+</tr>
+
+<tr>
+<td class="org-left">KIRP</td>
+</tr>
+
+<tr>
+<td class="org-left">LIHC</td>
+</tr>
+
+<tr>
+<td class="org-left">LUAD</td>
+</tr>
+
+<tr>
+<td class="org-left">LUSC</td>
+</tr>
+
+<tr>
+<td class="org-left">PAAD</td>
+</tr>
+
+<tr>
+<td class="org-left">PRAD</td>
+</tr>
+
+<tr>
+<td class="org-left">SARC</td>
+</tr>
+
+<tr>
+<td class="org-left">SKCM</td>
+</tr>
+
+<tr>
+<td class="org-left">TGCT</td>
+</tr>
+
+<tr>
+<td class="org-left">UCEC</td>
+</tr>
+
+<tr>
+<td class="org-left">UCS</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<ul class="org-ul">
+<li><a id="org3168402"></a>Looking at the data<br>
+<div class="outline-text-5" id="text-org3168402">
+<p>
+We'll start by reading the data, pulling out the info we'll use, and saving it back in a nicer format.  We'll
+also remove the olfactory receptor genes and siming's blacklisted genes
+</p>
+<div class="org-src-container">
+<pre class="src src-R">
+<span style="color: #C04040;">library</span>(tidyverse)
+<span style="color: #C04040;">library</span>(fgem)
+<span style="color: #C04040;">library</span>(qs)
+
+data_f <span style="color: #C04040;">&lt;-</span> fs::dir_ls(<span style="color: #FFABAB;">"data/driverMAPS_results_20TumorTypes"</span>,glob=<span style="color: #FFABAB;">"*txt"</span>)
+cancer_t <span style="color: #C04040;">&lt;-</span> str_replace(data_f, <span style="color: #FFABAB;">".+/([A-Z]+)_BayesFactorFDR.txt"</span>, <span style="color: #FFABAB;">"\\1"</span>)
+blacklist_url <span style="color: #C04040;">&lt;-</span> <span style="color: #FFABAB;">"https://szhao06.bitbucket.io/driverMAPS-documentation/data/Blacklist_combined.txt"</span>
+blacklist_df <span style="color: #C04040;">&lt;-</span> read_tsv(blacklist_url,col_names=c(<span style="color: #FFABAB;">"cancer"</span>,<span style="color: #FFABAB;">"Gene"</span>))
+go_df <span style="color: #C04040;">&lt;-</span> select(BPGOdf, Gene, feature_name = feature)
+
+olfactory_df <span style="color: #C04040;">&lt;-</span> filter(go_df,feature_name==<span style="color: #FFABAB;">"GO:0050911"</span>) <span style="color: #C04040;">%&gt;%</span>
+  select(Gene) <span style="color: #C04040;">%&gt;%</span>
+  mutate(ina=<span style="color: #99D6FF;">NA</span>) <span style="color: #C04040;">%&gt;%</span> 
+  inner_join(tibble(cancer=cancer_t,ina=<span style="color: #99D6FF;">NA</span>)) <span style="color: #C04040;">%&gt;%</span> select(-ina)
+blacklist_df <span style="color: #C04040;">&lt;-</span> bind_rows(olfactory_df,go_df) <span style="color: #C04040;">%&gt;%</span> distinct()
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">vc <span style="color: #C04040;">&lt;-</span> readr::cols(
+               Gene = col_character(),
+               No_nonsyn = col_skip(),
+               functypecode8 = col_skip(),
+               mycons = col_skip(),
+               sift = col_skip(),
+               phylop100 = col_skip(),
+               MA = col_skip(),
+               No_unique_mutation = col_skip(),
+               TSG_BF = col_double(),
+               OG_BF = col_double(),
+               Expected_syn = col_skip(),
+               No_syn = col_skip(),
+               BF = col_double(),
+               predtag = col_skip(),
+               Posterior = col_skip(),
+               FDR = col_double()
+             )
+
+cancer_df <span style="color: #C04040;">&lt;-</span> map2_df(data_f,
+                     cancer_t,
+                     ~vroom::vroom(.x,
+                                   col_names = names(vc$cols),
+                                   col_types = vc,
+                                   skip = 1L) <span style="color: #C04040;">%&gt;%</span> mutate(cancer = .y))
+good_cancer_df <span style="color: #C04040;">&lt;-</span> anti_join(cancer_df,blacklist_df)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">
+saveRDS(good_cancer_df,<span style="color: #FFABAB;">"data/cleanest_driverMAPS_results_20TumorTypes.RDS"</span>)
+qs::qsave(good_cancer_df,<span style="color: #FFABAB;">"data/cleanest_driverMAPS_results_20TumorTypes.qs"</span>)
+
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="orgadf1024"></a>Check for negative intercept<br>
+<div class="outline-text-5" id="text-orgadf1024">
+<p>
+We want to make sure that the intercept is negative.  We'll focus on cancers where that's the case
+</p>
+
+<div class="org-src-container">
+<pre class="src src-R">
+  <span style="color: #C04040;">library</span>(fgem)
+  <span style="color: #C04040;">library</span>(dplyr)
+
+  cancer_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/cleanest_driverMAPS_results_20TumorTypes.qs"</span>)  
+  cancer_null <span style="color: #C04040;">&lt;-</span>  group_by(cancer_df,cancer) <span style="color: #C04040;">%&gt;%</span> 
+  summarise(null_lik=fgem:::fgem_null_lik(BF, log_BF = <span style="color: #99D6FF;">TRUE</span>),
+            Intercept=fgem:::fgem_null(BF, log_BF = <span style="color: #99D6FF;">TRUE</span>))
+
+filter(cancer_null,Intercept&lt;0) <span style="color: #C04040;">%&gt;%</span> pull(cancer)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">
+saveRDS(cancer_df,<span style="color: #FFABAB;">"data/driverMAPS_results_20TumorTypes.RDS"</span>)
+qs::qsave(cancer_df,<span style="color: #FFABAB;">"data/driverMAPS_results_20TumorTypes.qs"</span>)
+</pre>
+</div>
+
+
+<div class="org-src-container">
+<pre class="src src-R">head(cancer_df)
+</pre>
+</div>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Gene</th>
+<th scope="col" class="org-right">TSG<sub>BF</sub></th>
+<th scope="col" class="org-right">OG<sub>BF</sub></th>
+<th scope="col" class="org-right">BF</th>
+<th scope="col" class="org-right">FDR</th>
+<th scope="col" class="org-left">cancer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">PIK3CA</td>
+<td class="org-right">-1.77971729131923</td>
+<td class="org-right">322.833185837287</td>
+<td class="org-right">322.140038656727</td>
+<td class="org-right">0</td>
+<td class="org-left">BLCA</td>
+</tr>
+
+<tr>
+<td class="org-left">FGFR3</td>
+<td class="org-right">28.0895429320585</td>
+<td class="org-right">246.567548311336</td>
+<td class="org-right">245.874401130776</td>
+<td class="org-right">0</td>
+<td class="org-left">BLCA</td>
+</tr>
+
+<tr>
+<td class="org-left">TP53</td>
+<td class="org-right">191.788256479794</td>
+<td class="org-right">70.7692247503828</td>
+<td class="org-right">191.095109299234</td>
+<td class="org-right">0</td>
+<td class="org-left">BLCA</td>
+</tr>
+
+<tr>
+<td class="org-left">ERBB2</td>
+<td class="org-right">2.30809843606858</td>
+<td class="org-right">111.697583835288</td>
+<td class="org-right">111.004436654728</td>
+<td class="org-right">0</td>
+<td class="org-left">BLCA</td>
+</tr>
+
+<tr>
+<td class="org-left">ERCC2</td>
+<td class="org-right">14.6298592310469</td>
+<td class="org-right">80.657307268368</td>
+<td class="org-right">79.9641600878081</td>
+<td class="org-right">0</td>
+<td class="org-left">BLCA</td>
+</tr>
+
+<tr>
+<td class="org-left">ARID1A</td>
+<td class="org-right">71.9813145469098</td>
+<td class="org-right">-11.8163792581274</td>
+<td class="org-right">71.2881673663499</td>
+<td class="org-right">0</td>
+<td class="org-left">BLCA</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>
+driverMAPS reports the \(\text{BF}\)'s as \(log(\text{BF})\).  I haven't figured out a way to work with these values without 
+exponentiating them and some of them are really big(small).  I'm going to have to "clamp" them between the minimum and maximum representable values
+(using double precision floating point).  
+</p>
+</div>
+</li>
+
+<li><a id="orgdcc4085"></a>GO terms<br>
+<div class="outline-text-5" id="text-orgdcc4085">
+<p>
+I'm going to pull the GO annotations from the <code>GO.db</code> package.
+</p>
+
+
+
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">library</span>(tidyverse)
+<span style="color: #C04040;">library</span>(fgem)
+<span style="color: #C04040;">library</span>(GO.db)
+<span style="color: #C04040;">library</span>(qs)
+cancerf <span style="color: #C04040;">&lt;-</span> c(<span style="color: #FFABAB;">"BLCA"</span>, <span style="color: #FFABAB;">"BRCA"</span>, <span style="color: #FFABAB;">"CESC"</span>, <span style="color: #FFABAB;">"ESCA"</span>, <span style="color: #FFABAB;">"GBM"</span>, <span style="color: #FFABAB;">"HNSC"</span>, <span style="color: #FFABAB;">"KICH"</span>, 
+                 <span style="color: #FFABAB;">"KIRC"</span>, <span style="color: #FFABAB;">"KIRP"</span>, <span style="color: #FFABAB;">"LIHC"</span>, <span style="color: #FFABAB;">"LUAD"</span>, <span style="color: #FFABAB;">"LUSC"</span>, <span style="color: #FFABAB;">"PAAD"</span>, <span style="color: #FFABAB;">"PRAD"</span>, <span style="color: #FFABAB;">"SARC"</span>, 
+                 <span style="color: #FFABAB;">"SKCM"</span>, <span style="color: #FFABAB;">"UCEC"</span>, <span style="color: #FFABAB;">"UCS"</span>)
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">
+cancer_df <span style="color: #C04040;">&lt;-</span> qread(<span style="color: #FFABAB;">"data/cleanest_driverMAPS_results_20TumorTypes.qs"</span>)
+tbp <span style="color: #C04040;">&lt;-</span> topGO::annFUN.org(<span style="color: #FFABAB;">"BP"</span>,feasibleGenes=unique(cancer_df$Gene),mapping=<span style="color: #FFABAB;">"org.Hs.eg.db"</span>,ID=<span style="color: #FFABAB;">"symbol"</span>)
+tbp_df <span style="color: #C04040;">&lt;-</span> imap_dfr(tbp,<span style="color: #C8FF03;">function</span>(Genes,GO)tibble(Gene=Genes,feature_name=GO))
+qs::qsave(tbp_df,<span style="color: #FFABAB;">"data/GO_df.qs"</span>)
+
+</pre>
+</div>
+
+
+<div class="org-src-container">
+<pre class="src src-R">term_list <span style="color: #C04040;">&lt;-</span> as.list(GOTERM)    
+fn_df <span style="color: #C04040;">&lt;-</span> distinct(tbp_df,feature_name) <span style="color: #C04040;">%&gt;%</span> 
+  pull(feature_name) <span style="color: #C04040;">%&gt;%</span> map_dfr(<span style="color: #C8FF03;">function</span>(x){
+    tx <span style="color: #C04040;">&lt;-</span> term_list[[x]]
+    tibble(feature_name=x,
+           Term=Term(tx),
+           Definition=Definition(tx),
+           Synonyms=list(Synonym(tx)))
+  })
+qs::qsave(fn_df,<span style="color: #FFABAB;">"data/GO_Definitions.qs"</span>)
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="orgf372ec1"></a>Fitting  Fisher's Exact test<br>
+<div class="outline-text-5" id="text-orgf372ec1">
+<div class="org-src-container">
+<pre class="src src-R">  <span style="color: #C04040;">library</span>(tidyverse)
+  <span style="color: #C04040;">library</span>(fgem)
+  <span style="color: #C04040;">library</span>(progressr)
+  <span style="color: #C04040;">library</span>(furrr)
+  <span style="color: #C04040;">library</span>(qs)
+  plan(multisession)
+
+  cancer_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/cleanest_driverMAPS_results_20TumorTypes.qs"</span>) 
+  BPGOdf <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/GO_df.qs"</span>)
+  min_cancer_df <span style="color: #C04040;">&lt;-</span> cancer_df <span style="color: #C04040;">%&gt;%</span>
+  select(Gene, FDR, cancer)
+
+  go_df <span style="color: #C04040;">&lt;-</span> mutate(BPGOdf,Gene=as.character(Gene)) <span style="color: #C04040;">%&gt;%</span>
+  semi_join(distinct(cancer_df,Gene))
+
+  go_df <span style="color: #C04040;">&lt;-</span> group_by(go_df,feature_name) <span style="color: #C04040;">%&gt;%</span>
+    summarise(n_gt=n()) <span style="color: #C04040;">%&gt;%</span>
+    filter(n_gt&gt;=10) <span style="color: #C04040;">%&gt;%</span>
+    select(feature_name) <span style="color: #C04040;">%&gt;%</span>
+    inner_join(go_df)
+
+  go_dfl <span style="color: #C04040;">&lt;-</span> nest(go_df,data=Gene) <span style="color: #C04040;">%&gt;%</span> mutate(isa=<span style="color: #99D6FF;">NA</span>)
+  cancer_dfl <span style="color: #C04040;">&lt;-</span> nest(min_cancer_df,fdr_data=c(Gene,FDR)) <span style="color: #C04040;">%&gt;%</span> mutate(isa=<span style="color: #99D6FF;">NA</span>)
+
+  fisher_inp <span style="color: #C04040;">&lt;-</span> inner_join(go_dfl,cancer_dfl,by=<span style="color: #FFABAB;">"isa"</span>) <span style="color: #C04040;">%&gt;%</span> select(-isa) <span style="color: #C04040;">%&gt;%</span> mutate(ix=1:n())  <span style="color: #C04040;">%&gt;%</span> filter(cancer!=<span style="color: #FFABAB;">"CHOL"</span>)
+  with_progress({
+    p <span style="color: #C04040;">&lt;-</span> progressor(along = fisher_inp$ix)
+    fisher_df <span style="color: #C04040;">&lt;-</span> future_pmap_dfr(fisher_inp,<span style="color: #C8FF03;">function</span>(cancer,feature_name,fdr_data,data,ix){
+      p(sprintf(<span style="color: #FFABAB;">"x=%g"</span>,ix))
+
+
+      sig_gene <span style="color: #C04040;">&lt;-</span> fdr_data$FDR&lt;0.2
+      sig_feat <span style="color: #C04040;">&lt;-</span> fdr_data$Gene <span style="color: #C04040;">%in%</span> data$Gene
+ret_2 <span style="color: #C04040;">&lt;-</span> dplyr::mutate(broom::tidy(fisher.test(sig_gene,sig_feat)),feature_name=feature_name,cancer=cancer,cutoff=0.2)
+
+      sig_gene <span style="color: #C04040;">&lt;-</span> fdr_data$FDR&lt;0.1
+
+ret_1 <span style="color: #C04040;">&lt;-</span> dplyr::mutate(broom::tidy(fisher.test(sig_gene,sig_feat)),feature_name=feature_name,cancer=cancer,cutoff=0.1)
+      sig_gene <span style="color: #C04040;">&lt;-</span> fdr_data$FDR&lt;0.05
+ret_05 <span style="color: #C04040;">&lt;-</span> dplyr::mutate(broom::tidy(fisher.test(sig_gene,sig_feat)),feature_name=feature_name,cancer=cancer,cutoff=0.05)
+      sig_gene <span style="color: #C04040;">&lt;-</span> fdr_data$FDR&lt;0.01
+ret_01 <span style="color: #C04040;">&lt;-</span> dplyr::mutate(broom::tidy(fisher.test(sig_gene,sig_feat)),feature_name=feature_name,cancer=cancer,cutoff=0.01)
+<span style="color: #C8FF03;">return</span>(bind_rows(ret_2,ret_1,ret_05,ret_01))
+})
+  })
+
+  qs::qsave(fisher_df,<span style="color: #FFABAB;">"data/cleanest_single_fisher_cutoffs.qs"</span>)
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="org3aa3677"></a>Fitting univariate models<br>
+<div class="outline-text-5" id="text-org3aa3677">
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">library</span>(tidyverse)
+<span style="color: #C04040;">library</span>(fgem)
+<span style="color: #C04040;">library</span>(progressr)
+<span style="color: #C04040;">library</span>(stringr)
+cancer_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/cleanest_driverMAPS_results_20TumorTypes.qs"</span>)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">library</span>(future.batchtools)
+ plan(list(
+        tweak(batchtools_torque,
+              template  = <span style="color: #FFABAB;">"/home/t.cri.nknoblauch/torque_batchtools.tmpl"</span>,
+              resources = list(ncpus=10,mem=29000L,walltime=3600L*3)),multiprocess))
+  <span style="color: #5D6A70;">#  </span><span style="color: #5D6A70;">plan(list(</span>
+  <span style="color: #5D6A70;">#    </span><span style="color: #5D6A70;">tweak(batchtools_slurm,</span>
+  <span style="color: #5D6A70;">#          </span><span style="color: #5D6A70;">template  = "/home/nwknoblauch/slurm_batchtools.tmpl",</span>
+  <span style="color: #5D6A70;">#          </span><span style="color: #5D6A70;">resources = list(ncpus=8,mem=19000L,walltime=3600L)),multiprocess))</span>
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">
+<span style="color: #C04040;">library</span>(fgem)
+<span style="color: #C04040;">library</span>(progressr)
+<span style="color: #C04040;">library</span>(furrr)
+<span style="color: #C04040;">library</span>(qs)
+cancerf <span style="color: #C04040;">&lt;-</span> dplyr::pull(cancerlist,cancer)
+plan(list(multisession))
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">BPGOdf <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/GO_df.qs"</span>)
+nidf <span style="color: #C04040;">&lt;-</span>   nest(cancer_df,cdf=-cancer) <span style="color: #C04040;">%&gt;%</span> mutate(ix=1:n()) <span style="color: #C04040;">%&gt;%</span> 
+filter(cancer <span style="color: #C04040;">%in%</span> cancerf)
+go_df <span style="color: #C04040;">&lt;-</span> mutate(BPGOdf,Gene=as.character(Gene)) <span style="color: #C04040;">%&gt;%</span>
+  semi_join(distinct(cancer_df,Gene))
+
+go_df <span style="color: #C04040;">&lt;-</span> group_by(go_df,feature_name) <span style="color: #C04040;">%&gt;%</span>
+  summarise(n_gt=n()) <span style="color: #C04040;">%&gt;%</span>
+  filter(n_gt&gt;=10) <span style="color: #C04040;">%&gt;%</span>
+  select(feature_name) <span style="color: #C04040;">%&gt;%</span>
+  inner_join(go_df)
+go_df <span style="color: #C04040;">&lt;-</span> mutate(go_df,value=1.0)
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">    fs::dir_create(<span style="color: #FFABAB;">"data/fgem_cm_results/"</span>)
+    fs::dir_create(<span style="color: #FFABAB;">"data/fgem_cm_results_OG/"</span>)
+    fs::dir_create(<span style="color: #FFABAB;">"data/fgem_cm_results_TSG/"</span>)
+
+
+
+<span style="color: #FFE203;">marg_fun</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(cancer,cdf,ix){
+
+
+      X <span style="color: #C04040;">&lt;-</span> fgem::trip2sparseMatrix(rowname_vals = as.character(go_df$Gene),
+                                   colname_vals = go_df$feature_name,
+                                   values = go_df$value,
+                                   total_rownames = cdf$Gene,
+                                   total_colnames = unique(go_df$feature_name),
+                                   add_intercept = <span style="color: #99D6FF;">FALSE</span>)
+
+
+
+      fgmr_a <span style="color: #C04040;">&lt;-</span> dplyr::mutate(fgem:::fgem_marginal(X,cdf$BF,log_BF=<span style="color: #99D6FF;">TRUE</span>,parallel=<span style="color: #99D6FF;">FALSE</span>,grad=<span style="color: #99D6FF;">TRUE</span>,hess=<span style="color: #99D6FF;">TRUE</span>),cancer=cancer,cat=<span style="color: #FFABAB;">"overall"</span>)
+      qs::qsave(fgmr_a,fs::path(<span style="color: #FFABAB;">"data/fgem_m_results/"</span>,cancer,ext=<span style="color: #FFABAB;">"qs"</span>))
+      p(sprintf(<span style="color: #FFABAB;">"x=%g"</span>,ix))
+      <span style="color: #C8FF03;">return</span>(fgmr_a)
+      <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">fgmr_og &lt;- dplyr::mutate(fgem:::fgem_marginal(X,cdf$OG_BF,log_BF=TRUE,parallel=FALSE,grad=TRUE,hess=TRUE),cancer=cancer,cat="OG")</span>
+      <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">qs::qsave(fgmr_og,fs::path("data/fgem_m_results_OG/",cancer,ext="qs"))</span>
+
+      <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">fgmr_tsg &lt;- dplyr::mutate(fgem:::fgem_marginal(X,cdf$TSG_BF,log_BF=TRUE,parallel=FALSE,grad=TRUE,hess=TRUE),cancer=cancer,cat="TSG")</span>
+      <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">qs::qsave(fgmr_tsg,fs::path("data/fgem_m_results_TSG/",cancer,ext="qs"))</span>
+<span style="color: #5D6A70;">#      </span><span style="color: #5D6A70;">return(dplyr::bind_rows(fgmr_a,fgmr_og,fgmr_tsg))</span>
+      }
+  with_progress({
+    p <span style="color: #C04040;">&lt;-</span> progressor(along = seq_len(nrow(nidf)))
+    nidf <span style="color: #C04040;">%&gt;%</span> furrr::future_pmap_dfr(marg_fun) <span style="color: #C04040;">%&gt;%</span> 
+    qs::qsave(<span style="color: #FFABAB;">"data/alt_newest_fgem_marginal_results.qs"</span>)
+  })
+
+
+</pre>
+</div>
+</div>
+</li>
+
+
+<li><a id="org017eddb"></a>Analyzing univariate models<br>
+<ul class="org-ul">
+<li><a id="orgc9d82e8"></a>GO<br>
+<div class="outline-text-6" id="text-orgc9d82e8">
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">library</span>(fgem)
+<span style="color: #C04040;">library</span>(dplyr)
+<span style="color: #C04040;">library</span>(tidyr)
+<span style="color: #C04040;">library</span>(purrr)
+<span style="color: #C04040;">library</span>(Matrix)
+<span style="color: #C04040;">library</span>(ggplot2)
+cancer_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/cleanest_driverMAPS_results_20TumorTypes.qs"</span>)   <span style="color: #C04040;">%&gt;%</span> semi_join(cancerlist)
+cancer_null <span style="color: #C04040;">&lt;-</span>  group_by(cancer_df,cancer) <span style="color: #C04040;">%&gt;%</span> summarise(null_lik=fgem:::fgem_null_lik(BF,log_BF=<span style="color: #99D6FF;">TRUE</span>),Intercept=fgem:::fgem_null(BF,log_BF=<span style="color: #99D6FF;">TRUE</span>))
+</pre>
+</div>
+
+
+<div class="org-src-container">
+<pre class="src src-R">fgem_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/alt_newest_fgem_marginal_results.qs"</span>) <span style="color: #C04040;">%&gt;%</span>
+  group_by(cancer) <span style="color: #C04040;">%&gt;%</span>
+  mutate(qval = p.adjust(dplyr::if_else(convergence == 0, pval, 1), method = <span style="color: #FFABAB;">"fdr"</span>)) <span style="color: #C04040;">%&gt;%</span>
+  ungroup() <span style="color: #C04040;">%&gt;%</span>
+  mutate(hess_det=map_dbl(Beta,~det(.x$hessian)))
+
+
+sig_feat_df <span style="color: #C04040;">&lt;-</span> filter(fgem_df, qval &lt; 0.2)
+sig_feat_df <span style="color: #C04040;">&lt;-</span> mutate(sig_feat_df,
+                      term = map_chr(Beta,~.x$feature_name[2]),
+                      Beta = map(Beta, ~mutate(.x, fisher = solve(hessian)))) <span style="color: #C04040;">%&gt;%</span>
+  unnest(Beta)  <span style="color: #C04040;">%&gt;%</span>
+  select(Beta, feature_name, fisher, hess_det, term, pval, qval, cancer) 
+
+
+curv_df <span style="color: #C04040;">&lt;-</span> sig_feat_df <span style="color: #C04040;">%&gt;%</span>
+  group_by(term,cancer) <span style="color: #C04040;">%&gt;%</span>
+  summarise(sd_intercept = fisher[1,1],
+            sd_beta = fisher[2,2],
+            Intercept = Beta[1],
+            Beta = Beta[2],
+            hess_det = hess_det[1],
+            pval = pval[1],
+            qval = qval[1]) <span style="color: #C04040;">%&gt;%</span>
+  mutate(l_beta = qnorm(0.01, mean = Beta, sd = sqrt(sd_beta)),
+         h_beta = qnorm(0.99, mean = Beta, sd = sqrt(sd_beta))) <span style="color: #C04040;">%&gt;%</span>
+  ungroup()
+
+nsig_df <span style="color: #C04040;">&lt;-</span> filter(curv_df, sign(l_beta)==sign(Beta)) <span style="color: #C04040;">%&gt;%</span>
+  mutate(gene_prior = plogis(Beta + Intercept)) <span style="color: #C04040;">%&gt;%</span>
+  arrange(desc(gene_prior))
+
+
+  GO_def <span style="color: #C04040;">&lt;-</span> readRDS(<span style="color: #FFABAB;">"data/GO_Definitions.RDS"</span>) <span style="color: #C04040;">%&gt;%</span> select(feature_name,Term)
+high_prior_features <span style="color: #C04040;">&lt;-</span> filter(nsig_df,gene_prior&gt;0.4) <span style="color: #C04040;">%&gt;%</span> arrange(Beta) <span style="color: #C04040;">%&gt;%</span> rename(feature_name=term)
+
+qs::qsave(high_prior_features,<span style="color: #FFABAB;">"data/high_prior_features.qs"</span>)
+
+
+low_prior_sig_features <span style="color: #C04040;">&lt;-</span> filter(nsig_df,gene_prior&lt;=0.4) 
+notsig_df <span style="color: #C04040;">&lt;-</span> filter(curv_df, l_beta &lt; 0) <span style="color: #C04040;">%&gt;%</span>
+  arrange(desc(Beta))
+
+</pre>
+</div>
+
+
+
+<div class="org-src-container">
+<pre class="src src-R">
+ody <span style="color: #C04040;">&lt;-</span> fs::path(<span style="color: #FFABAB;">"data/new_conservative_y_models"</span>)
+fs::dir_create(ody)
+odx <span style="color: #C04040;">&lt;-</span> fs::path(<span style="color: #FFABAB;">"data/new_conservative_x_models"</span>)
+
+go_df <span style="color: #C04040;">&lt;-</span> select(BPGOdf, Gene, feature_name = feature) <span style="color: #C04040;">%&gt;%</span> 
+  mutate(Gene=as.character(Gene))
+genelist_go <span style="color: #C04040;">&lt;-</span> nest(go_df, gene_l = Gene) <span style="color: #C04040;">%&gt;%</span> 
+  mutate(gene_l = map(gene_l, <span style="color: #FFABAB;">"Gene"</span>))  <span style="color: #C04040;">%&gt;%</span>
+  inner_join(select(low_prior_sig_features, feature_name= term, cancer))
+cancer_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/cleanest_driverMAPS_results_20TumorTypes.qs"</span>) <span style="color: #C04040;">%&gt;%</span>
+  select(Gene, BF, cancer)
+
+cancer_genes <span style="color: #C04040;">&lt;-</span> cancer_df <span style="color: #C04040;">%&gt;%</span> select(Gene,cancer) <span style="color: #C04040;">%&gt;%</span>
+  nest(cancer_genes=Gene) <span style="color: #C04040;">%&gt;%</span> mutate(cancer_genes=map(cancer_genes,<span style="color: #FFABAB;">"Gene"</span>))
+
+go_list_dfl <span style="color: #C04040;">&lt;-</span> genelist_go <span style="color: #C04040;">%&gt;%</span> 
+  inner_join(cancer_genes,by=<span style="color: #FFABAB;">"cancer"</span>) <span style="color: #C04040;">%&gt;%</span>
+  mutate(gene_l = map2(gene_l, cancer_genes, ~factor(.x[.x <span style="color: #C04040;">%in%</span> .y], levels = .y)),
+                       n_genes = lengths(gene_l)) <span style="color: #C04040;">%&gt;%</span>
+  select(-cancer_genes)
+
+x_mats <span style="color: #C04040;">&lt;-</span> split(go_list_dfl,go_list_dfl$cancer) <span style="color: #C04040;">%&gt;%</span> purrr::map(<span style="color: #C8FF03;">function</span>(x){
+  tdf <span style="color: #C04040;">&lt;-</span> unnest(x,gene_l)
+  trip2sparseMatrix(as.character(tdf$gene_l),tdf$feature_name,total_rownames=levels(tdf$gene_l),add_intercept=<span style="color: #99D6FF;">FALSE</span>)
+})
+x_mats <span style="color: #C04040;">&lt;-</span> x_mats[order(map_int(x_mats,NCOL))]
+yl <span style="color: #C04040;">&lt;-</span> split(cancer_df,cancer_df$cancer)
+yl <span style="color: #C04040;">&lt;-</span> yl[names(x_mats)]
+
+
+fs::dir_create(odx)
+iwalk(x_mats,<span style="color: #C8FF03;">function</span>(x,y){
+qs::qsave(x,fs::path(odx,y,ext=<span style="color: #FFABAB;">"qs"</span>))
+})
+iwalk(yl,<span style="color: #C8FF03;">function</span>(x,y){
+qs::qsave(x,fs::path(ody,y,ext=<span style="color: #FFABAB;">"qs"</span>))
+})
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">rsync::rsynccli(odx,<span style="color: #FFABAB;">"gardner2:xm/data"</span>)
+rsync::rsynccli(ody,<span style="color: #FFABAB;">"gardner2:xm/data"</span>)
+</pre>
+</div>
+
+<table>
+
+
+<colgroup>
+<col  class="org-right">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-right">x</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-right">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</li>
+
+
+
+
+
+<li><a id="org79ea5e3"></a>GO Only<br></li>
+</ul>
+</li>
+
+
+<li><a id="org84ef8c4"></a>Comparing univariate models to Fisher's Exact results<br>
+<div class="outline-text-5" id="text-org84ef8c4">
+<div class="org-src-container">
+<pre class="src src-R">
+<span style="color: #C04040;">library</span>(dplyr)
+<span style="color: #C04040;">library</span>(purrr)
+<span style="color: #C04040;">library</span>(fgem)
+<span style="color: #C04040;">library</span>(ggplot2)
+<span style="color: #C04040;">library</span>(tidyr)
+
+cancer_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/cleanest_driverMAPS_results_20TumorTypes.qs"</span>)
+bp_name <span style="color: #C04040;">&lt;-</span> readRDS(<span style="color: #FFABAB;">"data/GO_Definitions.RDS"</span>) 
+cancer_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/cleanest_driverMAPS_results_20TumorTypes.qs"</span>)   <span style="color: #C04040;">%&gt;%</span> semi_join(cancerlist)
+cancer_null <span style="color: #C04040;">&lt;-</span>  group_by(cancer_df,cancer) <span style="color: #C04040;">%&gt;%</span> summarise(null_lik=fgem:::fgem_null_lik(BF,log_BF=<span style="color: #99D6FF;">TRUE</span>),Intercept=fgem:::fgem_null(BF,log_BF=<span style="color: #99D6FF;">TRUE</span>))
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">
+fgem_results <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/alt_newest_fgem_marginal_results.qs"</span>) <span style="color: #C04040;">%&gt;%</span>
+  group_by(cancer) <span style="color: #C04040;">%&gt;%</span>
+  mutate(qval = p.adjust(dplyr::if_else(convergence == 0, pval, 1), method = <span style="color: #FFABAB;">"fdr"</span>)) <span style="color: #C04040;">%&gt;%</span>
+  select(Beta,pval,qval,cancer)
+  <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">ungroup() %&gt;%</span>
+  <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">mutate(hess_det=map_dbl(Beta,~det(.x$hessian)))</span>
+
+
+
+  <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">fgem_results &lt;- map_df(fs::dir_ls("data/fgem_m_results"), qs::qread) %&gt;%</span>
+
+
+  <span style="color: #5D6A70;">##     </span><span style="color: #5D6A70;">inner_join(select(cancer_null,-Intercept)) %&gt;%</span>
+  <span style="color: #5D6A70;">##     </span><span style="color: #5D6A70;">mutate(pval=stats::pchisq(-2 * (null_lik - (lik)), df=1, lower.tail=F)) %&gt;%</span>
+  <span style="color: #5D6A70;">##     </span><span style="color: #5D6A70;">group_by(cancer) %&gt;%</span>
+  <span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">mutate(qval = p.adjust(dplyr::if_else(convergence == 0, pval, 1), method = "fdr")) %&gt;%</span>
+  <span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">select(Beta,pval,qval,cancer)</span>
+
+
+  fgem_results_df <span style="color: #C04040;">&lt;-</span> fgem_results <span style="color: #C04040;">%&gt;%</span>
+    mutate(Beta=map(Beta,~dplyr::select(.x,Beta,feature_name))) <span style="color: #C04040;">%&gt;%</span>
+    ungroup() <span style="color: #C04040;">%&gt;%</span> 
+    mutate(tid = 1:n()) <span style="color: #C04040;">%&gt;%</span>
+    unnest(Beta) <span style="color: #C04040;">%&gt;%</span>
+    group_by(tid) <span style="color: #C04040;">%&gt;%</span>
+    mutate(trait=feature_name[feature_name!=<span style="color: #FFABAB;">"Intercept"</span>]) <span style="color: #C04040;">%&gt;%</span>
+    ungroup() <span style="color: #C04040;">%&gt;%</span> 
+    mutate(feature_name = dplyr::if_else(feature_name == <span style="color: #FFABAB;">"Intercept"</span>, <span style="color: #FFABAB;">"Intercept"</span>, <span style="color: #FFABAB;">"estimate_fgem"</span>)) <span style="color: #C04040;">%&gt;%</span>
+    spread(key = <span style="color: #FFABAB;">"feature_name"</span>, value = <span style="color: #FFABAB;">"Beta"</span>) <span style="color: #C04040;">%&gt;%</span>
+    select(feature_name=trait,pval_fgem = pval, qval_fgem = qval,cancer,estimate_fgem,Intercept)
+
+
+  fisher_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/cleanest_single_fisher_cutoffs.qs"</span>) <span style="color: #C04040;">%&gt;%</span>
+      dplyr::select(cancer,
+                    feature_name,
+                    pval = p.value,cutoff) <span style="color: #C04040;">%&gt;%</span>
+    mutate(cutoff=paste0(<span style="color: #FFABAB;">"pval_fisher_"</span>,stringr::str_replace(cutoff,<span style="color: #FFABAB;">"\\."</span>,<span style="color: #FFABAB;">"_"</span>)))<span style="color: #C04040;">%&gt;%</span> spread(key=<span style="color: #FFABAB;">"cutoff"</span>,value=<span style="color: #FFABAB;">"pval"</span>)
+
+  single_df <span style="color: #C04040;">&lt;-</span> inner_join(fisher_df, fgem_results_df, by = c(<span style="color: #FFABAB;">"cancer"</span>, <span style="color: #FFABAB;">"feature_name"</span>))
+  qs::qsave(single_df,<span style="color: #FFABAB;">"data/single_df.qs"</span>)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">library</span>(forcats)
+<span style="color: #C04040;">library</span>(ggsci)
+<span style="color: #C04040;">library</span>(tidyverse)
+
+go_df <span style="color: #C04040;">&lt;-</span> select(BPGOdf, Gene, feature_name = feature) <span style="color: #C04040;">%&gt;%</span> 
+  mutate(Gene=as.character(Gene))
+
+intogen_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/intogen_df.qs"</span>) <span style="color: #C04040;">%&gt;%</span>
+  unnest(intogen_l) <span style="color: #C04040;">%&gt;%</span> mutate(is_intogen=<span style="color: #99D6FF;">TRUE</span>)
+
+single_df <span style="color: #C04040;">&lt;-</span>     qs::qread(<span style="color: #FFABAB;">"data/single_df.qs"</span>)
+GO_def <span style="color: #C04040;">&lt;-</span> readRDS(<span style="color: #FFABAB;">"data/GO_Definitions.RDS"</span>) <span style="color: #C04040;">%&gt;%</span>
+      select(feature_name,description=Term)
+sdf <span style="color: #C04040;">&lt;-</span> select(single_df,
+              -qval_fgem,
+              -estimate_fgem,
+              -Intercept) <span style="color: #C04040;">%&gt;%</span>
+  gather(key = <span style="color: #FFABAB;">"method"</span>,
+         value = <span style="color: #FFABAB;">"pval"</span>,
+         -cancer,
+         -feature_name) <span style="color: #C04040;">%&gt;%</span>
+  mutate(method = stringr::str_remove(method, <span style="color: #FFABAB;">"pval_"</span>),
+         is_fisher = dplyr::if_else(stringr::str_starts(method, <span style="color: #FFABAB;">"fisher"</span>),
+                                    <span style="color: #FFABAB;">"fisher"</span>,
+                                    <span style="color: #FFABAB;">"fgem"</span>)) <span style="color: #C04040;">%&gt;%</span>
+  group_by(cancer, method) <span style="color: #C04040;">%&gt;%</span>
+  mutate(qval = p.adjust(pval, method = <span style="color: #FFABAB;">"fdr"</span>)) <span style="color: #C04040;">%&gt;%</span>
+  ungroup() <span style="color: #C04040;">%&gt;%</span>
+  filter((is_fisher == <span style="color: #FFABAB;">"fisher"</span> &amp; (method == <span style="color: #FFABAB;">"fisher_0_1"</span>)) | is_fisher == <span style="color: #FFABAB;">"fgem"</span>)
+
+
+weird_fishers <span style="color: #C04040;">&lt;-</span> select(single_df,cancer,feature_name,fisher=pval_fisher_0_05,fgem=qval_fgem) <span style="color: #C04040;">%&gt;%</span> group_by(cancer) <span style="color: #C04040;">%&gt;%</span> mutate(fisher=p.adjust(fisher,method=<span style="color: #FFABAB;">"fdr"</span>)) <span style="color: #C04040;">%&gt;%</span> ungroup() <span style="color: #C04040;">%&gt;%</span> filter(fisher&lt;0.05) <span style="color: #C04040;">%&gt;%</span> arrange(desc(fgem)) <span style="color: #C04040;">%&gt;%</span> head() <span style="color: #C04040;">%&gt;%</span> inner_join(GO_def)
+
+weird_fgem <span style="color: #C04040;">&lt;-</span> select(single_df,cancer,feature_name,fisher=pval_fisher_0_05,fgem=qval_fgem) <span style="color: #C04040;">%&gt;%</span>
+  group_by(cancer) <span style="color: #C04040;">%&gt;%</span>
+  mutate(fisher=p.adjust(fisher,method=<span style="color: #FFABAB;">"fdr"</span>)) <span style="color: #C04040;">%&gt;%</span>
+  ungroup() <span style="color: #C04040;">%&gt;%</span>
+  filter(fgem&lt;0.05) <span style="color: #C04040;">%&gt;%</span>
+  arrange(desc(fisher)) <span style="color: #C04040;">%&gt;%</span>
+  inner_join(GO_def)
+
+wf_fisher <span style="color: #C04040;">&lt;-</span> slice(weird_fishers,2)
+wf_fgem <span style="color: #C04040;">&lt;-</span> filter(weird_fgem, fisher&lt;1) <span style="color: #C04040;">%&gt;%</span>
+  slice(2)
+gsea_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/gsea.qs"</span>)
+single_gsea_df <span style="color: #C04040;">&lt;-</span> inner_join(gsea_df, single_df)
+
+gene_sets <span style="color: #C04040;">&lt;-</span> split(go_df$Gene,go_df$feature_name)
+
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">tcancer &lt;- filter(cancer_df,cancer==cancer[1])</span>
+
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">library(furrr)</span>
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">library(progressr)</span>
+
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">interruptor = function(FUN,args, time.limit, ALTFUN){</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">results &lt;- NULL</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">results &lt;- evalWithTimeout({FUN(args)},timeout=time.limit,onTimeout="silent")</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">if(is.null(results)){</span>
+<span style="color: #5D6A70;">##     </span><span style="color: #5D6A70;">results &lt;- ALTFUN(args)</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">}</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">return(results)</span>
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">}</span>
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">plan(multiprocess)</span>
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">sub_fun &lt;- function(cancer,data){</span>
+<span style="color: #5D6A70;">##     </span><span style="color: #5D6A70;">cancer_rank &lt;- set_names(data$BF,data$Gene)</span>
+<span style="color: #5D6A70;">##     </span><span style="color: #5D6A70;">fgr &lt;- fgsea::fgsea(gene_sets,cancer_rank,nproc=1)</span>
+<span style="color: #5D6A70;">##     </span><span style="color: #5D6A70;">progress(amount=1)</span>
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">as_tibble(fgr) %&gt;% select(feature_name=pathway,pval_gsea=pval,qval_gsea=padj,gsea_estimate=ES) %&gt;% mutate(cancer=cancer)</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">}</span>
+
+<span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">cdfl &lt;- nest(cancer_df,data=-cancer)</span>
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">with_progress({</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">progress &lt;- progressor(steps=nrow(cdfl))</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">fgr_f  &lt;- pmap(cdfl,function(cancer,data){</span>
+<span style="color: #5D6A70;">##     </span><span style="color: #5D6A70;">future(sub_fun(cancer,data))</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">})</span>
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">})</span>
+
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">fgr_f &lt;- fgr_f[map_lgl(fgr_f,resolved)]</span>
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">fgr_df &lt;- map_df(fgr_f,value)</span>
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">qs::qsave(fgr_df,"data/gsea.qs")</span>
+
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">cdfl_l &lt;- pmap(cdfl, function(cancer, data) {</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">set_names(data$BF, data$Gene)</span>
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">})</span>
+
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">cdfl_l &lt;- set_names(cdfl_l,cdfl$cancer)</span>
+
+<span style="color: #FFE203;">generate_dist_plot</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(wf,nc=1){
+  plotdf <span style="color: #C04040;">&lt;-</span> left_join(
+    semi_join(cancer_df, wf),
+    (left_join(wf, go_df))) <span style="color: #C04040;">%&gt;%</span>
+    arrange(BF) <span style="color: #C04040;">%&gt;%</span>
+    mutate(feature = if_else(is.na(feature_name), <span style="color: #FFABAB;">"Background"</span>, feature_name),
+           is_sig_gene = if_else(FDR&lt;0.05, <span style="color: #FFABAB;">"FDR&lt;0.05"</span>, <span style="color: #FFABAB;">"FDR&gt;=0.05"</span>),
+           idx = 1:n(),
+           category = factor(interaction(feature,is_sig_gene)),
+           sig_cat=gl(nc,ceiling(n()/nc),n())) <span style="color: #C04040;">%&gt;%</span>
+    mutate(is_sig_gene = fct_reorder(factor(is_sig_gene),BF),
+           category = fct_reorder2(category,feature!=<span style="color: #FFABAB;">"Background"</span>,-BF),
+           feature=factor(feature))
+  isp_df <span style="color: #C04040;">&lt;-</span> filter(plotdf, feature != <span style="color: #FFABAB;">"Background"</span>) <span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">%&gt;% mutate(sh=124)</span>
+
+  plt <span style="color: #C04040;">&lt;-</span> plotdf <span style="color: #C04040;">%&gt;%</span>
+    ggplot(aes(x=idx, y=BF, col=category, size=feature)) + geom_point() +
+    xlab(<span style="color: #FFABAB;">"Index"</span>) +
+    ylab(<span style="color: #FFABAB;">"LBF"</span>) +
+    ggtitle(glue::glue_data(wf,<span style="color: #FFABAB;">"{cancer} {feature_name}: {description}"</span>),
+            glue::glue_data(wf,<span style="color: #FFABAB;">"fisher q-value: {fisher}\nFGEM q-value: {fgem}"</span>)) +
+    scale_size_manual(values=c(1,2)) +
+    geom_point(data=isp_df,aes(x=idx,y=BF),shape=124,size=9)+scale_color_uchicago()
+  <span style="color: #C8FF03;">if</span>(nc&gt;1)
+    plt <span style="color: #C04040;">&lt;-</span> plt+facet_wrap(~sig_cat,scales=<span style="color: #FFABAB;">"free"</span>,nrow=1)
+  <span style="color: #C8FF03;">return</span>(plt)
+}
+
+swfg <span style="color: #C04040;">&lt;-</span> semi_join(single_df,wf_fgem) <span style="color: #C04040;">%&gt;%</span> as.data.frame()
+new_prior <span style="color: #C04040;">&lt;-</span> rep(stats::plogis(swfg$Intercept+swfg$estimate_fgem,log.p=<span style="color: #99D6FF;">TRUE</span>),nrow(plotdf))
+
+trng <span style="color: #C04040;">&lt;-</span> range(plotdf$BF)
+rangesq <span style="color: #C04040;">&lt;-</span> seq(trng[1],trng[2],length.out=nrow(plotdf))
+all_with_model <span style="color: #C04040;">&lt;-</span> mutate(plotdf,
+                         post_feature = c(fgem::BF2posterior(BF, Gene, new_prior, log_BF = <span style="color: #99D6FF;">TRUE</span>)),
+                         post_nf = c(fgem::BF2posterior(BF, Gene, fgem:::predict_uniform_prior(BF, log_BF = <span style="color: #99D6FF;">TRUE</span>), log_BF = <span style="color: #99D6FF;">TRUE</span>))) <span style="color: #C04040;">%&gt;%</span>
+  select(Gene, BF, functional=post_feature,uniform=post_nf,idx,is_sig_gene,feature) <span style="color: #C04040;">%&gt;%</span>
+  gather(<span style="color: #FFABAB;">"model"</span>,<span style="color: #FFABAB;">"posterior"</span>,functional,uniform)
+awm <span style="color: #C04040;">&lt;-</span> filter(all_with_model,feature!=<span style="color: #FFABAB;">"Background"</span>)
+ggplot(all_with_model,aes(x=idx,y=posterior,col=model))+geom_point()+geom_point(data=awm,aes(x=idx,y=posterior,col=model),shape=124,size=9)
+
+plot_fisher <span style="color: #C04040;">&lt;-</span> generate_dist_plot(wf_fisher,3)
+plot_fgem <span style="color: #C04040;">&lt;-</span> generate_dist_plot(wf_fgem,5)
+
+
+sdf_sig <span style="color: #C04040;">&lt;-</span> group_by(sdf, cancer, feature_name, method) <span style="color: #C04040;">%&gt;%</span>
+  summarise(sig = all(qval &lt; 0.05)) <span style="color: #C04040;">%&gt;%</span>
+  spread(key = method, value = sig) <span style="color: #C04040;">%&gt;%</span>
+  ungroup() <span style="color: #C04040;">%&gt;%</span>
+  rename(fisher = fisher_0_1) <span style="color: #C04040;">%&gt;%</span>
+  filter(fgem | fisher) <span style="color: #C04040;">%&gt;%</span>
+  inner_join(GO_def)
+
+sdf_b  <span style="color: #C04040;">&lt;-</span> select(sdf, -is_fisher, -qval)
+sdfc <span style="color: #C04040;">&lt;-</span>  sdf <span style="color: #C04040;">%&gt;%</span>
+  summarise(proportion_significant=mean(qval&lt;0.05)) <span style="color: #C04040;">%&gt;%</span>
+  ungroup()
+
+
+group_by(sdf_sig,feature_name,method) <span style="color: #C04040;">%&gt;%</span>
+  summarise(p_shared=mean(sig),n=n()) <span style="color: #C04040;">%&gt;%</span>
+  arrange(desc(p_shared)) <span style="color: #C04040;">%&gt;%</span>
+  group_by(method) <span style="color: #C04040;">%&gt;%</span>
+  summarise(p_share=sum(p_shared&gt;0),n=n())
+  ggplot(aes(x=method,y=p_shared,fill=method)) + geom_boxplot()+scale_y_log10()
+
+cancer_it <span style="color: #C04040;">&lt;-</span> left_join(cancer_df,intogen_df) <span style="color: #C04040;">%&gt;%</span>
+  replace_na(list(is_TCGA=<span style="color: #99D6FF;">FALSE</span>,is_intogen=<span style="color: #99D6FF;">FALSE</span>))
+sovdf <span style="color: #C04040;">&lt;-</span> inner_join(filter(sdf_sig,sig),go_df) <span style="color: #C04040;">%&gt;%</span> inner_join(cancer_it)
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">fgem_not_fisher &lt;- filter(sdf_sig,fgem,!fisher) %&gt;%</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">inner_join(go_df) %&gt;%</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">left_join(cancer_it)</span>
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">fisher_not_fgem &lt;- filter(sdf_sig,!fgem,fisher) %&gt;% inner_join(go_df) %&gt;% left_join(cancer_it)</span>
+sovdf <span style="color: #C04040;">&lt;-</span> group_by(ovdf,cancer,feature_name) <span style="color: #C04040;">%&gt;%</span> filter(sum(sig)&lt;2) <span style="color: #C04040;">%&gt;%</span> ungroup() 
+
+group_by(sovdf,cancer,feature_name,method) <span style="color: #C04040;">%&gt;%</span>
+  summarise(p_intogen=mean(is_intogen),
+            p_tcga=mean(is_TCGA),
+            p_external=mean((is_intogen &amp; !is_TCGA)),
+            mean_LBF=mean(BF)) <span style="color: #C04040;">%&gt;%</span> mutate(cancer = fct_reorder(cancer, -mean_LBF)) <span style="color: #C04040;">%&gt;%</span> 
+  ggplot(aes(x=cancer,y=mean_LBF,index=method,fill=method)) + geom_boxplot()+scale_fill_uchicago() 
+
+fgem_not_fisher_v <span style="color: #C04040;">&lt;-</span> group_by(sdf_sig,
+                              cancer,
+                              feature_name) <span style="color: #C04040;">%&gt;%</span>
+
+  ungroup() <span style="color: #C04040;">%&gt;%</span>
+  mutate(class=<span style="color: #FFABAB;">"fgem_not_fisher"</span>)
+
+fisher_not_fgem_v <span style="color: #C04040;">&lt;-</span> group_by(fisher_not_fgem,
+                              cancer,
+                              feature_name) <span style="color: #C04040;">%&gt;%</span>
+  summarise(p_intogen=mean(is_intogen),
+            p_tcga=mean(is_TCGA),
+            p_external=mean((is_intogen &amp; !is_TCGA)),
+            mean_LBF=mean(BF)) <span style="color: #C04040;">%&gt;%</span>
+  ungroup()  <span style="color: #C04040;">%&gt;%</span>
+  mutate(class=<span style="color: #FFABAB;">"fisher_not_fgem"</span>)
+
+ovdf <span style="color: #C04040;">&lt;-</span> bind_rows(fgem_not_fisher_v,fisher_not_fgem_v) <span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">%&gt;% group_by(cancer,feature_name,</span>
+group_by(ovdf,class) <span style="color: #C04040;">%&gt;%</span>
+  summarise(pt_intogen=mean(p_intogen&gt;0),
+            pt_tcga=mean(p_tcga&gt;0),
+            pt_external=mean(p_external&gt;0),
+            tot_feat=n()) <span style="color: #C04040;">%&gt;%</span>
+  ungroup() 
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">fisher_fgem_dat <span style="color: #C04040;">&lt;-</span> select(single_df,cancer,feature_name,contains(<span style="color: #FFABAB;">"pval"</span>)) <span style="color: #C04040;">%&gt;%</span> 
+  gather(key=<span style="color: #FFABAB;">"method"</span>,value=<span style="color: #FFABAB;">"pval"</span>,contains(<span style="color: #FFABAB;">"pval"</span>))  <span style="color: #C04040;">%&gt;%</span> distinct()  <span style="color: #C04040;">%&gt;%</span>  group_by(cancer,method) <span style="color: #C04040;">%&gt;%</span>
+  mutate(qval=p.adjust(pval,method=<span style="color: #FFABAB;">"fdr"</span>)) <span style="color: #C04040;">%&gt;%</span> summarise(n_sig=sum(qval&lt;0.01))  <span style="color: #C04040;">%&gt;%</span> group_by(cancer) <span style="color: #C04040;">%&gt;%</span>
+  filter(all(n_sig&gt;0)) <span style="color: #C04040;">%&gt;%</span>
+  ungroup() <span style="color: #C04040;">%&gt;%</span> mutate(is_fgem=stringr::str_detect(method,<span style="color: #FFABAB;">"fgem"</span>),method=stringr::str_remove(method,<span style="color: #FFABAB;">"pval_"</span>))
+fisher_plt <span style="color: #C04040;">&lt;-</span>  fisher_fgem_dat<span style="color: #C04040;">%&gt;%</span>
+  ggplot(aes(x=cancer,y=n_sig,fill=method))+geom_bar(stat=<span style="color: #FFABAB;">"identity"</span>,position=<span style="color: #FFABAB;">"dodge"</span>)+ggtitle(<span style="color: #FFABAB;">"Number of significant (qval&lt;0.01) features"</span>,<span style="color: #FFABAB;">"Fisher at various FDR thresholds"</span>) 
+ggsave(<span style="color: #FFABAB;">"org/fgem_fisher.png"</span>,plot=fisher_plt)
+
+wgdf <span style="color: #C04040;">&lt;-</span> select(single_df,cancer,feature_name,fisher=pval_fisher,fgem=pval_fgem) <span style="color: #C04040;">%&gt;%</span> 
+  gather(key=<span style="color: #FFABAB;">"method"</span>,value=<span style="color: #FFABAB;">"pval"</span>,fisher,fgem)  <span style="color: #C04040;">%&gt;%</span> distinct() <span style="color: #C04040;">%&gt;%</span> group_by(cancer,method) <span style="color: #C04040;">%&gt;%</span>
+  mutate(qval=p.adjust(pval,method=<span style="color: #FFABAB;">"fdr"</span>)) <span style="color: #C04040;">%&gt;%</span> filter(cancer==<span style="color: #FFABAB;">"LIHC"</span>) <span style="color: #C04040;">%&gt;%</span>
+  ungroup() <span style="color: #C04040;">%&gt;%</span> select(-pval) <span style="color: #C04040;">%&gt;%</span> 
+  spread(method,qval) <span style="color: #C04040;">%&gt;%</span>
+  filter(fisher&lt;0.01,fgem&gt;=0.01)
+
+
+filter(bp_name,feature_name== <span style="color: #FFABAB;">"GO:0000122"</span>) <span style="color: #C04040;">%&gt;%</span> unnest(Synonyms)
+
+
+BPGOdf <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/GO_df.qs"</span>)
+min_cancer_df <span style="color: #C04040;">&lt;-</span> cancer_df <span style="color: #C04040;">%&gt;%</span>
+  select(Gene, BF, cancer) <span style="color: #C04040;">%&gt;%</span>
+  mutate(BF = exp(BF))
+
+  go_df <span style="color: #C04040;">&lt;-</span> mutate(BPGOdf,Gene=as.character(Gene)) <span style="color: #C04040;">%&gt;%</span>
+    semi_join(distinct(cancer_df,Gene))
+
+  go_df <span style="color: #C04040;">&lt;-</span> group_by(go_df,feature_name) <span style="color: #C04040;">%&gt;%</span>
+    summarise(n_gt=n()) <span style="color: #C04040;">%&gt;%</span>
+    filter(n_gt&gt;=10) <span style="color: #C04040;">%&gt;%</span>
+    select(feature_name) <span style="color: #C04040;">%&gt;%</span>
+    inner_join(go_df)
+go_df <span style="color: #C04040;">&lt;-</span> mutate(go_df,value=1.0)
+
+wcdf <span style="color: #C04040;">&lt;-</span> filter(cancer_df,cancer==<span style="color: #FFABAB;">"LIHC"</span>)
+
+ixdf <span style="color: #C04040;">&lt;-</span> semi_join(go_df, wgdf)
+
+cX <span style="color: #C04040;">&lt;-</span> fgem::trip2sparseMatrix(rowname_vals = as.character(ixdf$Gene),
+                                   colname_vals = ixdf$feature_name,
+                                   values = ixdf$value,
+                                   total_rownames = wcdf$Gene,
+                                   total_colnames = unique(ixdf$feature_name),
+                              add_intercept = <span style="color: #99D6FF;">FALSE</span>)
+BF <span style="color: #C04040;">&lt;-</span> wcdf$BF
+fgmr <span style="color: #C04040;">&lt;-</span> fgem_marginal(cX,BF,log_BF=<span style="color: #99D6FF;">TRUE</span>)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">ggplot(single_df,aes(x=pval_fisher,y=pval_fgem))+geom_point()+geom_abline(slope=1)+facet_wrap(~cancer)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">ggs <span style="color: #C04040;">&lt;-</span> filter(single_df,1-pval_fisher&gt;.Machine$double.eps) <span style="color: #C04040;">%&gt;%</span> ggplot(aes(x=pval_fisher,y=pval_fgem))+geom_point()+facet_wrap(~cancer,scales=<span style="color: #FFABAB;">"free"</span>)+scale_x_log10()+scale_y_log10()+geom_smooth(method=<span style="color: #FFABAB;">"lm"</span>)+geom_abline(slope=1)+ggtitle(<span style="color: #FFABAB;">"Fisher's Exact Test vs FGEM p-values"</span>)
+ggsave(<span style="color: #FFABAB;">"org/fisher_fgem.png"</span>,plot=ggs)
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="org870bcd5"></a>Fitting Multivariate models<br>
+<ul class="org-ul">
+<li><a id="org450514e"></a>GO only<br>
+<div class="outline-text-6" id="text-org450514e">
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">library</span>(dplyr)
+<span style="color: #C04040;">library</span>(purrr)
+<span style="color: #C04040;">library</span>(fgem)
+<span style="color: #C04040;">library</span>(tidyr)
+<span style="color: #C04040;">library</span>(dplyr)
+<span style="color: #C04040;">library</span>(progressr)
+<span style="color: #C04040;">library</span>(future.apply)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">library</span>(future.batchtools)
+plan(list(
+  tweak(batchtools_torque,
+        template  = <span style="color: #FFABAB;">"/home/t.cri.nknoblauch/torque_batchtools.tmpl"</span>,
+        resources = list(ncpus=10,mem=29000L,walltime=3600L*3)),multiprocess))
+</pre>
+</div>
+
+
+
+<div class="org-src-container">
+<pre class="src src-R">
+<span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">plan(multisession)</span>
+plan(list(tweak(multisession,workers=4),multicore))
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">out_d <span style="color: #C04040;">&lt;-</span> fs::path(<span style="color: #FFABAB;">"data/new_cv_gobp_models_conservative_relaxed/"</span>)
+fs::dir_create(out_d)
+fs::dir_delete(out_d)
+fs::dir_create(out_d)
+
+ody <span style="color: #C04040;">&lt;-</span> fs::path(<span style="color: #FFABAB;">"data/new_conservative_y_models"</span>)
+odx <span style="color: #C04040;">&lt;-</span> fs::path(<span style="color: #FFABAB;">"data/new_conservative_x_models"</span>)
+ct <span style="color: #C04040;">&lt;-</span> fs::path_ext_remove(fs::path_file(fs::dir_ls(odx)))
+opf <span style="color: #C04040;">&lt;-</span> purrr::map_chr(ct,~fs::path(out_d,.x, ext=<span style="color: #FFABAB;">"qs"</span>))
+ct <span style="color: #C04040;">&lt;-</span> ct[!file.exists(opf)]
+iseq <span style="color: #C04040;">&lt;-</span> seq_along(ct)
+
+<span style="color: #FFE203;">sub_fun</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(tf, cancerf, od){
+  cancer <span style="color: #C04040;">&lt;-</span> cancerf[tf]
+  <span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">p(sprintf("i=%g", tf))</span>
+  op <span style="color: #C04040;">&lt;-</span> fs::path(od,cancer, ext=<span style="color: #FFABAB;">"qs"</span>)
+  <span style="color: #C8FF03;">if</span>(!file.exists(op)){
+    ym <span style="color: #C04040;">&lt;-</span> qs::qread(fs::path(ody, cancer, ext = <span style="color: #FFABAB;">"qs"</span>))
+    X <span style="color: #C04040;">&lt;-</span> qs::qread(fs::path(odx, cancer, ext = <span style="color: #FFABAB;">"qs"</span>))
+<span style="color: #5D6A70;">#    </span><span style="color: #5D6A70;">with_progress({</span>
+    cv_df <span style="color: #C04040;">&lt;-</span> dplyr::mutate(fgem:::cv_relax_fgem(X, ym$BF, alpha=0.95, stratify_BF = <span style="color: #99D6FF;">FALSE</span>, grad=<span style="color: #99D6FF;">TRUE</span>, hess=<span style="color: #99D6FF;">TRUE</span>, log_BF = <span style="color: #99D6FF;">TRUE</span>), cancer = cancer)
+                                        <span style="color: #5D6A70;">#   </span><span style="color: #5D6A70;">})</span>
+    <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">with_progress({</span>
+    <span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">ccv_df &lt;- dplyr::mutate(cv_fgem(X,ym,alpha=0.8,stratify_BF=FALSE),cancer=cancer)</span>
+    <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">})                                      </span>
+    qs::qsave(cv_df, op)
+    <span style="color: #C8FF03;">return</span>(cv_df)
+  }<span style="color: #C8FF03;">else</span>{
+    <span style="color: #C8FF03;">return</span>(qs::qread(op))
+  }
+}
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">
+with_progress({
+  p <span style="color: #C04040;">&lt;-</span> progressor(along = iseq)  
+  ret_df <span style="color: #C04040;">&lt;-</span> future.apply::future_lapply(iseq,sub_fun,cancerf=ct,od=out_d)
+})
+ret_df <span style="color: #C04040;">&lt;-</span> dplyr::bind_rows(ret_df)
+
+</pre>
+</div>
 </div>
 </li>
 </ul>
+</li>
+
+
+<li><a id="org5fc73b3"></a>Plotting multivariate models<br></li>
+</ul>
+</div>
+
+
+<div id="outline-container-orgb5db8fb" class="outline-3">
+<h3 id="orgb5db8fb">COSMIC census</h3>
+<div class="outline-text-3" id="text-orgb5db8fb">
+<p>
+From <a href="https://cancer.sanger.ac.uk/census">Cosmic:</a>
+</p>
+<blockquote>
+<p>
+The Cancer Gene Census (CGC) is an ongoing effort to catalogue those genes which contain mutations that have been causally implicated in cancer and explain how dysfunction of these genes drives cancer. The content, the structure, and the curation process of the Cancer Gene Census was described and published in Nature Reviews Cancer.
+</p>
+
+<p>
+The census is not static, instead it is updated when new evidence comes to light. In particular we are grateful to Felix Mitelman and his colleagues in providing information on more genes involved in uncommon translocations in leukaemias and lymphomas. Currently, more than 1% of all human genes are implicated via mutation in cancer. Of these, approximately 90% contain somatic mutations in cancer, 20% bear germline mutations that predispose an individual to cancer and 10% show both somatic and germline mutations.
+Census tiers
+</p>
+
+<p>
+Genes in the Cancer Gene Census are divided into two groups, or tiers.
+Tier 1
+</p>
+
+<p>
+To be classified into Tier 1, a gene must possess a documented activity relevant to cancer, along with evidence of mutations in cancer which change the activity of the gene product in a way that promotes oncogenic transformation. We also consider the existence of somatic mutation patterns across cancer samples gathered in COSMIC. For instance, tumour suppressor genes often show a broad range of inactivating mutations and dominant oncogenes usually demonstrate well defined hotspots of missense mutations. Genes involved in oncogenic fusions are included in Tier 1 when changes to their function caused by the fusion drives oncogenic transformation, or in cases when they provide regulatory elements to their partners (e.g. active promoter or dimerisation domain).
+Tier 2
+</p>
+
+<p>
+A new section of the Census, which consists of genes with strong indications of a role in cancer but with less extensive available evidence. These are generally more recent targets, where the body of evidence supporting their role is still emerging.
+Hallmarks
+</p>
+
+<p>
+New overviews of cancer gene function focused on hallmarks of cancer pull together manually curated information on the function of proteins coded by cancer genes and summarise the data in simple graphical form. They present a condensed overview of most relevant facts with quick access to the literature source, and define whether a gene has a stimulating or suppressive effect via individual cancer hallmarks. Genes with the hallmark descriptions available are marked with the hallmark icon, that when clicked, opens the hallmark page. Hallmark descriptions will be expanded to encompass more genes and updated on regular basis. 
+</p>
+</blockquote>
+
+<div class="org-src-container">
+<pre class="src src-R">  <span style="color: #C04040;">library</span>(broom)
+  ccols <span style="color: #C04040;">&lt;-</span> cols(
+    Gene = col_character(),
+    Name = col_skip(),
+    <span style="color: #EDEDE1; background-color: #272C2E;">`Entrez GeneId`</span> = col_skip(),
+    <span style="color: #EDEDE1; background-color: #272C2E;">`Genome Location`</span> = col_skip(),
+    Tier = col_integer(),
+    Hallmark = col_character(),
+    <span style="color: #EDEDE1; background-color: #272C2E;">`Chr Band`</span> = col_skip(),
+    Somatic = col_factor(levels=<span style="color: #FFABAB;">"yes"</span>),
+    Germline = col_factor(levels=<span style="color: #FFABAB;">"yes"</span>),
+    SomaticTypes = col_character(),
+    GermlineTypes = col_character(),
+    <span style="color: #EDEDE1; background-color: #272C2E;">`Cancer Syndrome`</span> = col_skip(),
+    <span style="color: #EDEDE1; background-color: #272C2E;">`Tissue Type`</span> = col_skip(),
+    <span style="color: #EDEDE1; background-color: #272C2E;">`Molecular Genetics`</span> = col_skip(),
+    <span style="color: #EDEDE1; background-color: #272C2E;">`Role in Cancer`</span> = col_skip(),
+    <span style="color: #EDEDE1; background-color: #272C2E;">`Mutation Types`</span> = col_skip(),
+    <span style="color: #EDEDE1; background-color: #272C2E;">`Translocation Partner`</span> = col_skip(),
+    <span style="color: #EDEDE1; background-color: #272C2E;">`Other Germline Mut`</span> = col_skip(),
+    <span style="color: #EDEDE1; background-color: #272C2E;">`Other Syndrome`</span> = col_skip(),
+    Synonyms = col_skip()
+  )
+  cancer_census <span style="color: #C04040;">&lt;-</span> readr::read_csv(<span style="color: #FFABAB;">"data/cancer_gene_census.csv"</span>,col_names=names(ccols$cols),col_types=ccols,skip=1L) <span style="color: #C04040;">%&gt;%</span> 
+  mutate(is_census=<span style="color: #99D6FF;">TRUE</span>)
+
+  GO_def <span style="color: #C04040;">&lt;-</span> readRDS(<span style="color: #FFABAB;">"data/GO_Definitions.RDS"</span>) <span style="color: #C04040;">%&gt;%</span> select(feature_name,Term)
+  GO_def <span style="color: #C04040;">&lt;-</span> bind_rows(GO_def,tibble(feature_name=<span style="color: #FFABAB;">"Intercept"</span>,Term=<span style="color: #FFABAB;">""</span>)) <span style="color: #C04040;">%&gt;%</span> distinct()
+  out_d <span style="color: #C04040;">&lt;-</span> fs::path(<span style="color: #FFABAB;">"data/fdr_models/"</span>)
+
+  all_results <span style="color: #C04040;">&lt;-</span> map_df(fs::dir_ls(out_d),qs::qread) <span style="color: #C04040;">%&gt;%</span>
+      select(-term)
+
+  all_results_df <span style="color: #C04040;">&lt;-</span> all_results  <span style="color: #C04040;">%&gt;%</span>
+      unnest(data)  <span style="color: #C04040;">%&gt;%</span>
+      inner_join(GO_def) <span style="color: #C04040;">%&gt;%</span>
+      mutate(label=paste0(feature_name,<span style="color: #FFABAB;">":\n"</span>,Term))
+
+
+
+
+  <span style="color: #FFE203;">gen_go_mat</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(datadl,cancer,cancer_list){
+    xm <span style="color: #C04040;">&lt;-</span> qs::qread(fs::path(<span style="color: #FFABAB;">"data/x_models/"</span>,cancer,ext=<span style="color: #FFABAB;">"qs"</span>))
+    stopifnot(all(datadl$feature_name <span style="color: #C04040;">%in%</span> colnames(xm)))
+    x <span style="color: #C04040;">&lt;-</span> xm[,datadl$feature_name,drop=<span style="color: #99D6FF;">FALSE</span>]
+    cancer_vec <span style="color: #C04040;">&lt;-</span> rownames(xm) <span style="color: #C04040;">%in%</span> cancer_list
+    odf <span style="color: #C04040;">&lt;-</span> as_tibble(x) <span style="color: #C04040;">%&gt;%</span> mutate(cl=as.integer(cancer_vec))
+    broom::tidy(glm(cl~.+0,data=odf,family=binomial())) <span style="color: #C04040;">%&gt;%</span>
+      rename(feature_name=term)
+  }
+
+
+logit_df <span style="color: #C04040;">&lt;-</span> map2_dfr(all_results$data,all_results$cancer,gen_go_mat,cancer_list=cancer_census$Gene) <span style="color: #C04040;">%&gt;%</span>
+    select(cancer,feature_name,pval_fisher=p.value)
+
+  fisher_df <span style="color: #C04040;">&lt;-</span> map2_dfr(all_results$data,all_results$cancer,gen_go_mat,cancer_list=cancer_census$Gene) <span style="color: #C04040;">%&gt;%</span>
+    select(cancer,feature_name,pval_fisher=p.value)
+  univ_assoc <span style="color: #C04040;">&lt;-</span> readRDS(<span style="color: #FFABAB;">"data/fgem_data.RDS"</span>)  <span style="color: #C04040;">%&gt;%</span> select(cancer,feature_name=trait,pval_logit=pval) <span style="color: #C04040;">%&gt;%</span> 
+    inner_join(select(fisher_df,cancer,feature_name,pval_fisher=p.value)) 
+
+
+  filter(all_results_df,feature_name!=<span style="color: #FFABAB;">"Intercept"</span>)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">library</span>(fgem)
+<span style="color: #C04040;">library</span>(tidyverse)
+
+<span style="color: #FFE203;">log_pbinom</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(lp,x){
+    sum(x*lp+(1-x)*log(expm1(-lp)))
+  }
+
+<span style="color: #FFE203;">prior_post_plot</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(datadl,cancer,log=<span style="color: #99D6FF;">TRUE</span>,cancer_list){
+  ym <span style="color: #C04040;">&lt;-</span> qs::qread(fs::path(<span style="color: #FFABAB;">"data/y_models/"</span>,cancer,ext=<span style="color: #FFABAB;">"qs"</span>))
+  xm <span style="color: #C04040;">&lt;-</span> qs::qread(fs::path(<span style="color: #FFABAB;">"data/x_models/"</span>,cancer,ext=<span style="color: #FFABAB;">"qs"</span>))
+  stopifnot(all(datadl$feature_name <span style="color: #C04040;">%in%</span> colnames(xm)))
+  x <span style="color: #C04040;">&lt;-</span> xm[,datadl$feature_name,drop=<span style="color: #99D6FF;">FALSE</span>]
+  unifp <span style="color: #C04040;">&lt;-</span> fgem:::gen_u(fgem:::fgem_null(ym),x[,<span style="color: #FFABAB;">"Intercept"</span>,drop=<span style="color: #99D6FF;">FALSE</span>],ym,log=log)
+                                        <span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">unifp &lt;- fgem:::prior_mean(BF,log=log)</span>
+  cancer_vec <span style="color: #C04040;">&lt;-</span> rownames(x) <span style="color: #C04040;">%in%</span> cancer_list
+  fp <span style="color: #C04040;">&lt;-</span> fgem:::gen_u(datadl$Beta,x,ym,log=log)
+  tibble(cancer=cancer, cross_entropy_functional = -log_pbinom(fp,cancer_vec),
+         cross_entropy_uniform = -log_pbinom(unifp,cancer_vec),
+         cross_entropy_ratio=cross_entropy_functional-cross_entropy_uniform)
+}
+
+
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orga962dfe" class="outline-3">
+<h3 id="orga962dfe">cross-validation</h3>
+<div class="outline-text-3" id="text-orga962dfe">
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">library</span>(tidyverse)
+<span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">rsync::rsynccli("gardner2:xm/data/new_cv_gobp_models_conservative_relaxed", "data")</span>
+</pre>
+</div>
+
+<table>
+
+
+<colgroup>
+<col  class="org-right">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-right">x</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-right">0</td>
+</tr>
+</tbody>
+</table>
+
+
+
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">library</span>(tidyverse)
+<span style="color: #C04040;">library</span>(fgem)
+  file_n <span style="color: #C04040;">&lt;-</span> fs::dir_ls(<span style="color: #FFABAB;">"data/new_cv_gobp_models_conservative_relaxed/"</span>)
+  safe_r <span style="color: #C04040;">&lt;-</span> safely(qs::qread)
+  fit_l <span style="color: #C04040;">&lt;-</span> map(file_n,safe_r) 
+  fit_df <span style="color: #C04040;">&lt;-</span> map(fit_l,<span style="color: #FFABAB;">"result"</span>) <span style="color: #C04040;">%&gt;%</span> compact() <span style="color: #C04040;">%&gt;%</span> bind_rows() <span style="color: #C04040;">%&gt;%</span> group_by(cancer)
+
+  fit_df <span style="color: #C04040;">&lt;-</span> map_df(file_n, qs::qread) <span style="color: #C04040;">%&gt;%</span>
+    group_by(cancer)
+
+    sfit_df <span style="color: #C04040;">&lt;-</span> fgem:::summarise_cv_lik(fit_df)
+    sfit_df <span style="color: #C04040;">&lt;-</span> filter(sfit_df,l2==0) <span style="color: #C04040;">%&gt;%</span> 
+  transmute(cancer=cancer,cv_sum0=cv_sum,l0mean0=l0_mean,l1mean0=l1_mean,l2mean0=l2_mean) <span style="color: #C04040;">%&gt;%</span> inner_join(sfit_df)
+  sfit_df <span style="color: #C04040;">&lt;-</span> sfit_df <span style="color: #C04040;">%&gt;%</span> mutate(is_max_cv=cv_sum==max(cv_sum),max_l2=l2[is_max_cv])
+
+  GO_def <span style="color: #C04040;">&lt;-</span> readRDS(<span style="color: #FFABAB;">"data/GO_Definitions.RDS"</span>) <span style="color: #C04040;">%&gt;%</span>
+      select(feature_name, description=Term)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">
+
+filter(sfit_df,l2&gt;0) <span style="color: #C04040;">%&gt;%</span> 
+ggplot(aes(x=l2_mean,y=cv_sum)) +
+  geom_point(aes(col=is_max_cv)) +
+  facet_wrap(~cancer, scales = <span style="color: #FFABAB;">"free"</span>) +
+  scale_x_log10()
+
+filter(sfit_df) <span style="color: #C04040;">%&gt;%</span>
+  ggplot(aes(x=l2,y=cv_sum)) +
+  geom_point(aes(col=is_max_cv)) +
+  facet_wrap(~cancer, scales = <span style="color: #FFABAB;">"free"</span>) +
+  geom_hline(aes(yintercept=cv_sum0)) +
+  scale_x_log10()
+
+unnest(sfit_df,Beta) <span style="color: #C04040;">%&gt;%</span>
+  group_by(cancer, l2, is_max_cv) <span style="color: #C04040;">%&gt;%</span>
+  filter(feature_name!=<span style="color: #FFABAB;">"Intercept"</span>) <span style="color: #C04040;">%&gt;%</span>
+  summarise(max_abs_Beta=max(abs(Beta))) <span style="color: #C04040;">%&gt;%</span> filter(l2&gt;0) <span style="color: #C04040;">%&gt;%</span> 
+  ggplot(aes(x=l2,y=max_abs_Beta))+geom_point(aes(col=is_max_cv))+facet_wrap(~cancer,scales=<span style="color: #FFABAB;">"free"</span>)+scale_x_log10()
+
+unnest(sfit_df,Beta) <span style="color: #C04040;">%&gt;%</span>
+  filter(feature_name!=<span style="color: #FFABAB;">"Intercept"</span>)  <span style="color: #C04040;">%&gt;%</span>
+  filter(l2&gt;0 | is_max_cv) <span style="color: #C04040;">%&gt;%</span>
+  ggplot(aes(x=l2,y=Beta,col=feature_name))+geom_line()+scale_x_log10()+facet_wrap(~cancer,scales=<span style="color: #FFABAB;">"free"</span>)+theme(legend.position = <span style="color: #FFABAB;">"none"</span>)+geom_vline(aes(xintercept=max_l2))
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">
+sfit_df <span style="color: #C04040;">%&gt;%</span> 
+  mutate(is_max_cv=cv_sum == max(cv_sum)) <span style="color: #C04040;">%&gt;%</span>
+  filter(is_max_cv) <span style="color: #C04040;">%&gt;%</span>
+  unnest(Beta)  <span style="color: #C04040;">%&gt;%</span>
+  filter(Beta != 0) <span style="color: #C04040;">%&gt;%</span>
+  filter(feature_name != <span style="color: #FFABAB;">"Intercept"</span>) <span style="color: #C04040;">%&gt;%</span> 
+  filter(abs(Beta) == max(abs(Beta)))  <span style="color: #C04040;">%&gt;%</span>
+  arrange(desc(abs(Beta)))  <span style="color: #C04040;">%&gt;%</span>
+  inner_join(GO_def) <span style="color: #C04040;">%&gt;%</span>
+  select(-is_max_cv) <span style="color: #C04040;">%&gt;%</span>
+  as.data.frame()
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-org3b550bb" class="outline-4">
+<h4 id="org3b550bb">Subsetting the best models</h4>
+<div class="outline-text-4" id="text-org3b550bb">
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">library</span>(tidyverse)
+<span style="color: #C04040;">library</span>(fgem)
+<span style="color: #C04040;">library</span>(ggrepel)
+<span style="color: #C04040;">library</span>(patchwork)
+ocancer_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/cleanest_driverMAPS_results_20TumorTypes.qs"</span>)
+tcancer_df <span style="color: #C04040;">&lt;-</span> ocancer_df <span style="color: #C04040;">%&gt;%</span>   select(Gene,cancer,BF) <span style="color: #C04040;">%&gt;%</span> filter(cancer==cancer[1])
+fgnf <span style="color: #C04040;">&lt;-</span> fgem:::fgem_null_fit(tcancer_df$BF,log_BF=<span style="color: #99D6FF;">TRUE</span>)
+tpr <span style="color: #C04040;">&lt;-</span> fgem:::predict_fgem(fgnf,fgem:::empty_x(tcancer_df$BF,tcancer_df$Gene),log=<span style="color: #99D6FF;">TRUE</span>)
+xb <span style="color: #C04040;">&lt;-</span> stats::qlogis(tpr,log.p=<span style="color: #99D6FF;">TRUE</span>)
+tbf <span style="color: #C04040;">&lt;-</span> fgem:::log_BF2_logpost(tcancer_df$BF,xb)
+cancer_df <span style="color: #C04040;">&lt;-</span>  ocancer_df <span style="color: #C04040;">%&gt;%</span>
+  select(Gene,cancer,BF) <span style="color: #C04040;">%&gt;%</span> 
+  group_by(cancer) <span style="color: #C04040;">%&gt;%</span>
+  mutate(uniform_posterior = c(BF2posterior(BF,Gene,prior=fgem:::predict_uniform_prior(BF,Gene,log_BF=<span style="color: #99D6FF;">TRUE</span>),log_BF=<span style="color: #99D6FF;">TRUE</span>)))
+
+all_genes <span style="color: #C04040;">&lt;-</span> unique(cancer_df$Gene)
+
+cancer_dfl  <span style="color: #C04040;">&lt;-</span>  group_nest(cancer_df,.key=<span style="color: #FFABAB;">"data"</span>)
+
+
+
+go_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/GO_df.qs"</span>)
+long_df <span style="color: #C04040;">&lt;-</span> bind_rows(go_df)
+blong_df <span style="color: #C04040;">&lt;-</span> bind_rows(
+                      long_df,
+                      tibble(Gene=all_genes,feature_name=<span style="color: #FFABAB;">"Intercept"</span>))
+all_def <span style="color: #C04040;">&lt;-</span> bind_rows(mutate(GO_def,category=<span style="color: #FFABAB;">"GO"</span>,sub_category=<span style="color: #FFABAB;">"BP"</span>))
+xMS <span style="color: #C04040;">&lt;-</span> fgem:::df2sparse(long_df,total_rownames=all_genes)
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orgb79c3ee" class="outline-3">
+<h3 id="orgb79c3ee">IntOGen validation</h3>
+<div class="outline-text-3" id="text-orgb79c3ee">
+<p>
+An alternative source of validation is cite: (<a href="#citeproc_bib_item_2">Gonzalez-Perez et al. 2013</a>)
+</p>
+
+
+<div class="org-src-container">
+<pre class="src src-R">
+  comp_df <span style="color: #C04040;">&lt;-</span> read_tsv(<span style="color: #FFABAB;">"data/2020-02-02_IntOGen-Drivers-20200213/Compendium_Cancer_Genes.tsv"</span>) 
+  cohort_df <span style="color: #C04040;">&lt;-</span> read_tsv(<span style="color: #FFABAB;">"data/2020-02-02_IntOGen-Cohorts-20200213/cohorts.tsv"</span>) <span style="color: #C04040;">%&gt;%</span> mutate(is_TCGA=SOURCE==<span style="color: #FFABAB;">"TCGA"</span>)
+
+  is_tcga <span style="color: #C04040;">&lt;-</span> select(cohort_df,cohort=COHORT,is_TCGA) <span style="color: #C04040;">%&gt;%</span> distinct()
+
+  cohort_tcga <span style="color: #C04040;">&lt;-</span> filter(cohort_df,is_TCGA) <span style="color: #C04040;">%&gt;%</span>
+    rename(cohort=COHORT) <span style="color: #C04040;">%&gt;%</span>
+    mutate(cancer=str_remove(cohort,<span style="color: #FFABAB;">"TCGA_W.S_"</span>)) <span style="color: #C04040;">%&gt;%</span>
+    select(intogen_cancer=CANCER_TYPE,cancer)
+  <span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">cohort_notcga &lt;- filter(cohort_df,SOURCE!="TCGA") %&gt;% rename(cohort=COHORT)</span>
+
+  sub_comp_df <span style="color: #C04040;">&lt;-</span> select(comp_df,Gene=SYMBOL,cohort=COHORT,intogen_cancer=CANCER_TYPE,qval_cons=QVALUE_COMBINATION) <span style="color: #C04040;">%&gt;%</span>
+    inner_join(is_tcga) <span style="color: #C04040;">%&gt;%</span> 
+    left_join(cohort_tcga) <span style="color: #C04040;">%&gt;%</span>
+    mutate(cancer=if_else(is.na(cancer),intogen_cancer,cancer)) <span style="color: #C04040;">%&gt;%</span>
+    select(-intogen_cancer)  <span style="color: #C04040;">%&gt;%</span>
+    distinct(cancer,Gene,is_TCGA)
+
+
+  intogen_l <span style="color: #C04040;">&lt;-</span> nest(sub_comp_df,intogen_l=-cancer)
+qs::qsave(intogen_l,<span style="color: #FFABAB;">"data/intogen_df.qs"</span>)
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">
+<span style="color: #FFE203;">assign_intogen</span> <span style="color: #C04040;">&lt;-</span>  <span style="color: #C8FF03;">function</span>(data,cancer,include_tcga=<span style="color: #99D6FF;">TRUE</span>){
+  <span style="color: #C8FF03;">if</span>(<span style="color: #FFABAB;">"intogen_gene"</span> <span style="color: #C04040;">%in%</span> colnames(data)){
+    <span style="color: #C8FF03;">return</span>(data)
+    }
+      <span style="color: #C8FF03;">if</span>(!include_tcga){
+        scdf <span style="color: #C04040;">&lt;-</span> filter(sub_comp_df,!is_TCGA)
+      }<span style="color: #C8FF03;">else</span>{
+        scdf  <span style="color: #C04040;">&lt;-</span> sub_comp_df
+      }
+      intogen_l <span style="color: #C04040;">&lt;-</span> mutate(scdf,intogen_gene = if_else(cancer == {{cancer}},
+                                                             if_else(is_TCGA, 2L, 1L),
+                                                             if_else(is_TCGA, 4L, 3L))) <span style="color: #C04040;">%&gt;%</span>
+          group_by(Gene) <span style="color: #C04040;">%&gt;%</span>
+          summarise(intogen_gene=min(intogen_gene), .groups = <span style="color: #FFABAB;">"drop"</span>)
+        rdf <span style="color: #C04040;">&lt;-</span> left_join(data, intogen_l, by=<span style="color: #FFABAB;">"Gene"</span>) <span style="color: #C04040;">%&gt;%</span>
+          replace_na(list(intogen_gene = 5L))  <span style="color: #C04040;">%&gt;%</span>
+          group_by(Gene) <span style="color: #C04040;">%&gt;%</span>
+          filter(intogen_gene==min(intogen_gene)) <span style="color: #C04040;">%&gt;%</span>
+          slice(1) <span style="color: #C04040;">%&gt;%</span> 
+          ungroup()
+<span style="color: #C8FF03;">return</span>(rdf)
+    }
+
+    kt <span style="color: #C04040;">&lt;-</span> c(<span style="color: #FFABAB;">"Known Type-Specific Cancer Gene (Non-TCGA)"</span>,
+            <span style="color: #FFABAB;">"Known Type-Specific Cancer Gene (TCGA)"</span>,
+            <span style="color: #FFABAB;">"Known Cancer Gene (Non-TCGA)"</span>,
+            <span style="color: #FFABAB;">"Known Cancer Gene (TCGA)"</span>,
+            <span style="color: #FFABAB;">"Unknown Cancer Gene"</span>)
+
+    skt <span style="color: #C04040;">&lt;-</span> c(<span style="color: #FFABAB;">"Type-Specific(Non-TCGA)"</span>,
+            <span style="color: #FFABAB;">"Type-Specific(TCGA)"</span>,
+            <span style="color: #FFABAB;">"Generic(Non-TCGA)"</span>,
+            <span style="color: #FFABAB;">"Generic(TCGA)"</span>,
+            <span style="color: #FFABAB;">"Unknown"</span>)
+igdf <span style="color: #C04040;">&lt;-</span> tibble(intogen_gene=1:5,
+               IntogenClass=skt) <span style="color: #C04040;">%&gt;%</span> mutate(
+                                       TypeSpecific=str_detect(IntogenClass,<span style="color: #FFABAB;">"Type-Specific"</span>),
+                                       isCancer=intogen_gene&lt;5,
+                                       is_non_tcga=intogen_gene <span style="color: #C04040;">%in%</span> c(1L,3L))
+
+
+    <span style="color: #FFE203;">group_mapn</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(.x,.f,...){
+      gv <span style="color: #C04040;">&lt;-</span> group_vars(.x)
+      .x <span style="color: #C04040;">&lt;-</span> ungroup(.x)
+      split(.x,.x[[gv]]) <span style="color: #C04040;">%&gt;%</span> map(.f=.f,...=...)
+    }
+
+  cancer_dfl <span style="color: #C04040;">&lt;-</span> nest(cancer_df,data=-cancer) <span style="color: #C04040;">%&gt;%</span> mutate(data=map2(data,cancer,assign_intogen,include_tcga=<span style="color: #99D6FF;">TRUE</span>))
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-org3f5b869" class="outline-4">
+<h4 id="org3f5b869">Predictions from the best models</h4>
+<div class="outline-text-4" id="text-org3f5b869">
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #FFE203;">add_pred</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(beta_df,cancer_df,log=<span style="color: #99D6FF;">FALSE</span>){
+  ret_df <span style="color: #C04040;">&lt;-</span> mutate(cancer_df, functional_prior = c(fgem:::predict_long_df(beta_df, xMS[cancer_df$Gene,],log=log)),
+                   functional_posterior=c(fgem:::BF2posterior(BF, Gene, functional_prior,log_BF=log)))
+}
+
+<span style="color: #FFE203;">log_pbinom</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(lp,x){
+  lp <span style="color: #C04040;">&lt;-</span>   pmin(lp,-.Machine$double.eps)
+  sum(x*lp+(1-x)*log(expm1(-lp)))
+}
+
+
+
+</pre>
+</div>
+
+
+
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">library</span>(firatheme)
+  <span style="color: #FFE203;">plot_post</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(data,log=<span style="color: #99D6FF;">TRUE</span>){
+
+    pdata <span style="color: #C04040;">&lt;-</span>   filter(data
+                     ) <span style="color: #C04040;">%&gt;%</span> arrange(desc(functional_posterior-uniform_posterior)) <span style="color: #C04040;">%&gt;%</span>
+      mutate(idn=1:n(),
+             <span style="color: #EDEDE1; background-color: #272C2E;">`intOGen Validation Status`</span>=factor(kt[intogen_gene],levels=kt))
+
+    <span style="color: #C8FF03;">if</span>(!log){
+      pdata <span style="color: #C04040;">&lt;-</span> mutate(pdata,functional_posterior=exp(functional_posterior),
+                      uniform_posterior=exp(uniform_posterior))
+      fpc <span style="color: #C04040;">&lt;-</span> 1e-05
+      fp <span style="color: #C04040;">&lt;-</span> 0.99
+      sfp <span style="color: #C04040;">&lt;-</span> 0.9
+    }<span style="color: #C8FF03;">else</span>{
+      fpc <span style="color: #C04040;">&lt;-</span> log(1e-05)
+      fp <span style="color: #C04040;">&lt;-</span> log(0.99)
+      sfp <span style="color: #C04040;">&lt;-</span> log(0.9)
+    }
+
+    top_diff <span style="color: #C04040;">&lt;-</span> filter(pdata,
+                       functional_posterior&gt;fpc) <span style="color: #C04040;">%&gt;%</span> slice(1:25)
+    top_g <span style="color: #C04040;">&lt;-</span> filter(pdata, idn&gt;=15, functional_posterior &gt; fp | uniform_posterior &gt; fp) <span style="color: #C04040;">%&gt;%</span>
+      group_by(<span style="color: #EDEDE1; background-color: #272C2E;">`intOGen Validation Status`</span>) <span style="color: #C04040;">%&gt;%</span> arrange(desc(pmax(functional_posterior,uniform_posterior))) <span style="color: #C04040;">%&gt;%</span> slice(1:15) <span style="color: #C04040;">%&gt;%</span> ungroup()
+    ttg <span style="color: #C04040;">&lt;-</span> filter(pdata,intogen_gene==5,functional_posterior &gt; sfp)
+    top_g <span style="color: #C04040;">&lt;-</span> bind_rows(top_g,ttg) <span style="color: #C04040;">%&gt;%</span> distinct()
+
+    rp <span style="color: #C04040;">&lt;-</span> pdata <span style="color: #C04040;">%&gt;%</span>
+      ggplot(aes(x=uniform_posterior,
+                    y=functional_posterior,
+                    col = <span style="color: #EDEDE1; background-color: #272C2E;">`intOGen Validation Status`</span>,
+                    label=Gene)) + 
+       geom_point() +
+      geom_label_repel(data=top_diff,max.overlaps=10) +
+      geom_label_repel(data=top_g,max.overlaps=10) +
+      geom_abline(slope=1)
+
+
+    <span style="color: #C8FF03;">return</span>(rp)
+  }
+
+
+  <span style="color: #FFE203;">plot_beta</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(Beta, cancer){
+    k <span style="color: #C04040;">&lt;-</span> 22
+    tBeta <span style="color: #C04040;">&lt;-</span> filter(Beta, feature_name != <span style="color: #FFABAB;">"Intercept"</span>, Beta != 0)
+    nr <span style="color: #C04040;">&lt;-</span> ceiling(nrow(tBeta)/k)
+    BR <span style="color: #C04040;">&lt;-</span> range(tBeta$Beta)
+    l <span style="color: #C04040;">&lt;-</span> nrow(tBeta)
+    Beta_p <span style="color: #C04040;">&lt;-</span> tBeta <span style="color: #C04040;">%&gt;%</span> arrange(abs(Beta)) <span style="color: #C04040;">%&gt;%</span>
+      mutate(label=str_wrap(paste0(feature_name,<span style="color: #FFABAB;">":\n"</span>,description),width=50),
+             label=factor(label,levels=label),Beta_ct=gl(n=nr,k=k,length=l),
+             feature_name=factor(feature_name,levels=feature_name),
+             idx=1:n())
+    ggplot(tail(Beta_p, k),
+           aes(y = label, x = Beta)) +
+      geom_point() +
+      ggtitle(cancer)
+  }
+
+
+<span style="color: #FFE203;">plt_fun</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(Beta, data, cancer, l0_mean,...){
+  l0n <span style="color: #C04040;">&lt;-</span> l0_mean
+  pta <span style="color: #C04040;">&lt;-</span> proc.time()
+  out_png_e <span style="color: #C04040;">&lt;-</span> fs::path(paste0(<span style="color: #FFABAB;">"org/conservative_"</span>,<span style="color: #FFABAB;">"gobp"</span>,<span style="color: #FFABAB;">"_enrichment"</span>))
+  fs::dir_create(out_png_e)
+  out_png_p <span style="color: #C04040;">&lt;-</span> fs::path(paste0(<span style="color: #FFABAB;">"org/conservative_"</span>,<span style="color: #FFABAB;">"gobp"</span>,<span style="color: #FFABAB;">"_posterior"</span>))
+  fs::dir_create(out_png_p)
+  lout_png_p <span style="color: #C04040;">&lt;-</span> fs::path(out_png_p,paste0(cancer,<span style="color: #FFABAB;">"_log"</span>),ext=<span style="color: #FFABAB;">"png"</span>)
+  out_png_p <span style="color: #C04040;">&lt;-</span> fs::path(out_png_p,cancer,ext=<span style="color: #FFABAB;">"png"</span>)
+
+  out_png_e <span style="color: #C04040;">&lt;-</span> fs::path(out_png_e,cancer,ext=<span style="color: #FFABAB;">"png"</span>)
+
+  pa <span style="color: #C04040;">&lt;-</span> plot_beta(Beta,cancer) + theme_fira() + plot_annotation(title=cancer,subtitle=paste0(<span style="color: #FFABAB;">"L0: "</span>,as.integer(l0n)))
+  ggsave(out_png_e,pa,dpi=320,width=13.33,height=7.5)
+
+  pb <span style="color: #C04040;">&lt;-</span> plot_post(data,log=<span style="color: #99D6FF;">FALSE</span>) + theme_fira()+ plot_annotation(title=cancer,subtitle=paste0(<span style="color: #FFABAB;">"L0: "</span>,as.integer(l0n)))
+  ggsave(out_png_p,pb,dpi=320,width=13.33,height=7.5)
+  lpb <span style="color: #C04040;">&lt;-</span> plot_post(data,log=<span style="color: #99D6FF;">TRUE</span>) + theme_fira()+ plot_annotation(title=cancer,subtitle=paste0(<span style="color: #FFABAB;">"L0: "</span>,as.integer(l0n)))
+  ggsave(lout_png_p,lpb,dpi=320,width=13.33,height=7.5)
+  <span style="color: #C8FF03;">return</span>(proc.time()-pta)
+}
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">bf <span style="color: #C04040;">&lt;-</span> filter(sfit_df,is_max_cv) <span style="color: #C04040;">%&gt;%</span> 
+  inner_join(cancer_dfl) <span style="color: #C04040;">%&gt;%</span>
+  mutate(data=map2(Beta, data,add_pred,log=<span style="color: #99D6FF;">TRUE</span>),
+         Beta=map(Beta,inner_join,y=all_def,by=<span style="color: #FFABAB;">"feature_name"</span>)) <span style="color: #C04040;">%&gt;%</span> 
+  dplyr::mutate(data = map2(data, cancer, assign_intogen, include_tcga = <span style="color: #99D6FF;">TRUE</span>))
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">library</span>(furrr)
+plan(multisession)
+future_pmap(bf,plt_fun)
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">cancer_null <span style="color: #C04040;">&lt;-</span>  group_by(cancer_df,cancer) <span style="color: #C04040;">%&gt;%</span> summarise(null_lik=fgem:::fgem_null_lik(BF,log_BF=<span style="color: #99D6FF;">TRUE</span>),Intercept=fgem:::fgem_null(BF,log_BF=<span style="color: #99D6FF;">TRUE</span>))
+
+feat_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/single_df.qs"</span>) <span style="color: #C04040;">%&gt;%</span> select(feature_name,
+                                                     cancer,
+                                                     univariate_p = pval_fgem,
+                                                     fisher_p = pval_fisher_0_1,
+                                                     univariate_q = qval_fgem)
+
+bfdf <span style="color: #C04040;">&lt;-</span> select(feat_df,cancer,feature_name,contains(<span style="color: #FFABAB;">"fisher"</span>)) <span style="color: #C04040;">%&gt;%</span> gather(key=<span style="color: #FFABAB;">"cutoff"</span>,value=<span style="color: #FFABAB;">"pval"</span>,-cancer,-feature_name)
+
+group_by(bfdf,cancer,cutoff) <span style="color: #C04040;">%&gt;%</span> mutate(pa=p.adjust(pval,<span style="color: #FFABAB;">"fdr"</span>)) <span style="color: #C04040;">%&gt;%</span> group_by(cutoff) <span style="color: #C04040;">%&gt;%</span> summarise(n_sig=mean(pa&lt;0.05)) <span style="color: #C04040;">%&gt;%</span> arrange(desc(n_sig))
+
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">feat_df &lt;- map_df(fs::dir_ls("data/fgem_m_results"), qs::qread) %&gt;%</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">inner_join(select(cancer_null,-Intercept)) %&gt;%</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">mutate(pval=stats::pchisq(-2 * (null_lik - (lik)), df=1, lower.tail=F)) %&gt;%</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">group_by(cancer) %&gt;%</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">mutate(qval = p.adjust(dplyr::if_else(convergence == 0, pval, 1), method = "fdr")) %&gt;%</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">unnest(Beta) %&gt;%</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">filter(feature_name != "Intercept") %&gt;%</span>
+<span style="color: #5D6A70;">##   </span>
+
+</pre>
+</div>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">cutoff</th>
+<th scope="col" class="org-right">n<sub>sig</sub></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">fisher<sub>p</sub></td>
+<td class="org-right">0.0125872956132648</td>
+</tr>
+</tbody>
+</table>
+
+<div class="org-src-container">
+<pre class="src src-R">head(feature_odf)
+</pre>
+</div>
+
+
+<div class="org-src-container">
+<pre class="src src-R">
+  post_df <span style="color: #C04040;">&lt;-</span> unnest(select(bf,cancer,data),data) <span style="color: #C04040;">%&gt;%</span>
+    mutate(functional_posterior=exp(functional_posterior),
+           uniform_posterior=exp(uniform_posterior),
+           post_ratio=functional_posterior/uniform_posterior,
+           post_diff=functional_posterior-uniform_posterior,
+           rank_diff=rank(functional_posterior)-rank(uniform_posterior)) <span style="color: #C04040;">%&gt;%</span> inner_join(igdf)
+  pda <span style="color: #C04040;">&lt;-</span> post_df <span style="color: #C04040;">%&gt;%</span> group_by(cancer) <span style="color: #C04040;">%&gt;%</span> summarise(ave_diff_overall=mean(functional_posterior-uniform_posterior))
+  ggplot(post_df,aes(x=cancer,y=rank_diff,col=cancer,fill=cancer))+
+    facet_wrap(~IntogenClass,scales=<span style="color: #FFABAB;">"free_y"</span>)+geom_violin()
+  filter(post_df,is_non_tcga | !isCancer) <span style="color: #C04040;">%&gt;%</span> mutate(is_ooc=IntogenClass==<span style="color: #FFABAB;">"Type-Specific(Non-TCGA)"</span>) <span style="color: #C04040;">%&gt;%</span> 
+    mutate(rank_unif = rank(uniform_posterior),
+           rank_func = rank(functional_posterior),
+           rank_diff = rank_func-rank_unif) <span style="color: #C04040;">%&gt;%</span>
+    group_by(cancer,is_ooc) <span style="color: #C04040;">%&gt;%</span> 
+    summarise(ave_diff=mean()) <span style="color: #C04040;">%&gt;%</span>
+    spread(key=<span style="color: #FFABAB;">"is_ooc"</span>,value=<span style="color: #FFABAB;">"ave_diff"</span>) <span style="color: #C04040;">%&gt;%</span> arrange(desc(<span style="color: #EDEDE1; background-color: #272C2E;">`TRUE`</span>-<span style="color: #EDEDE1; background-color: #272C2E;">`FALSE`</span>)) 
+    spread(key=<span style="color: #FFABAB;">"intogen_gene"</span>,value=<span style="color: #FFABAB;">"ave_diff"</span>) <span style="color: #C04040;">%&gt;%</span>
+    write_tsv(<span style="color: #FFABAB;">"data/posterior_diff.tsv"</span>)
+
+  huge_bf <span style="color: #C04040;">&lt;-</span> unnest(select(bf,-data),Beta) <span style="color: #C04040;">%&gt;%</span>
+    filter(Beta != 0) <span style="color: #C04040;">%&gt;%</span> 
+    inner_join(blong_df) <span style="color: #C04040;">%&gt;%</span>
+    inner_join(unnest(select(filter(bf), -Beta), data)) <span style="color: #C04040;">%&gt;%</span>
+    mutate(intogen_gene=kt[intogen_gene])
+
+feature_odf <span style="color: #C04040;">&lt;-</span> unnest(select(bf, -data), Beta)  <span style="color: #C04040;">%&gt;%</span>
+  filter(Beta != 0) <span style="color: #C04040;">%&gt;%</span>
+    select(cancer, feature_name, Beta, category, sub_category, description) <span style="color: #C04040;">%&gt;%</span>
+    inner_join(feat_df) <span style="color: #C04040;">%&gt;%</span>
+    arrange(cancer, desc(abs(Beta)))
+BPGOdf <span style="color: #C04040;">&lt;-</span> select(BPGOdf,Gene,feature_name=feature)
+
+
+feature_odf <span style="color: #C04040;">&lt;-</span> inner_join(select(feature_odf, cancer, feature_name), BPGOdf) <span style="color: #C04040;">%&gt;%</span> 
+  inner_join(cancer_df) <span style="color: #C04040;">%&gt;%</span>
+  mutate(uniform_posterior = exp(uniform_posterior)) <span style="color: #C04040;">%&gt;%</span>
+  group_by(cancer, feature_name) <span style="color: #C04040;">%&gt;%</span>
+  summarise(num_genes = n_distinct(Gene),
+            n_sig = sum(uniform_posterior &gt; 0.9)) <span style="color: #C04040;">%&gt;%</span>
+  inner_join(feature_odf)
+
+feature_odf <span style="color: #C04040;">%&gt;%</span>
+  write_tsv(<span style="color: #FFABAB;">"data/all_conservative_features.tsv"</span>)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">filter(huge_bf, Beta != 0) <span style="color: #C04040;">%&gt;%</span>
+  filter(Beta &lt; 0)
+
+w_bf <span style="color: #C04040;">&lt;-</span> distinct(huge_bf,Gene,cancer,BF,functional_prior,functional_posterior,uniform_posterior,intogen_gene) <span style="color: #C04040;">%&gt;%</span>
+  mutate(uniform_posterior=exp(uniform_posterior),
+         functional_posterior=exp(functional_posterior),
+         functional_prior=exp(functional_prior)) <span style="color: #C04040;">%&gt;%</span>                                                             
+  inner_join(
+    filter(huge_bf,Beta!=0) <span style="color: #C04040;">%&gt;%</span> 
+    group_by(cancer, Gene,intogen_gene) <span style="color: #C04040;">%&gt;%</span>
+    summarise(features=paste0(feature_name,collapse=<span style="color: #FFABAB;">";"</span>))) <span style="color: #C04040;">%&gt;%</span>
+  arrange(cancer,desc(functional_posterior)) <span style="color: #C04040;">%&gt;%</span> 
+  write_tsv(<span style="color: #FFABAB;">"data/all_conservative_genes.tsv"</span>)
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orgfd2863e" class="outline-3">
+<h3 id="orgfd2863e">The case of GBM</h3>
+<div class="outline-text-3" id="text-orgfd2863e">
+<p>
+GBM has a feature with a very high value of \(\beta\).  Let's take a closer look
+</p>
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">library</span>(tidyverse)
+<span style="color: #C04040;">library</span>(fgem)
+ogbm_cv_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/cv_elasticnet_models/GBM.qs"</span>)
+<span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">filter(ogbm_cv_df,lambda&gt;0,l1n&gt;1) %&gt;%</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">ggplot(aes(x=lambda,y=cv_lik)) +</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">geom_point() +</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">facet_wrap(~cv_i, scales = "free_y") +</span>
+<span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">scale_x_log10()</span>
+gbm_cv_df <span style="color: #C04040;">&lt;-</span> fgem:::summarise_cv_lik(ogbm_cv_df)
+cancer <span style="color: #C04040;">&lt;-</span> <span style="color: #FFABAB;">"GBM"</span>
+ocancer_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/cleanest_driverMAPS_results_20TumorTypes.qs"</span>)  <span style="color: #C04040;">%&gt;%</span> filter(cancer=={{cancer}})
+all_genes <span style="color: #C04040;">&lt;-</span> unique(ocancer_df$Gene)
+go_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/GO_df.qs"</span>)
+long_df <span style="color: #C04040;">&lt;-</span> go_df
+blong_df <span style="color: #C04040;">&lt;-</span> bind_rows(
+  long_df,
+  tibble(Gene=all_genes,feature_name=<span style="color: #FFABAB;">"Intercept"</span>))
+  GO_def <span style="color: #C04040;">&lt;-</span> readRDS(<span style="color: #FFABAB;">"data/GO_Definitions.RDS"</span>) <span style="color: #C04040;">%&gt;%</span>
+    select(feature_name,description=Term)
+
+
+  all_def <span style="color: #C04040;">&lt;-</span> bind_rows(mutate(GO_def,category=<span style="color: #FFABAB;">"GO"</span>,sub_category=<span style="color: #FFABAB;">"BP"</span>)
+                       )
+xGO <span style="color: #C04040;">&lt;-</span> fgem:::df2sparse(long_df,total_rownames=all_genes)
+xGO <span style="color: #C04040;">&lt;-</span> xGO[ocancer_df$Gene,]
+ym <span style="color: #C04040;">&lt;-</span> ocancer_df$BF
+
+nX <span style="color: #C04040;">&lt;-</span> nrow(xGO)
+</pre>
+</div>
+
+<pre class="example">
+20038
+
+</pre>
+
+<div class="org-src-container">
+<pre class="src src-R">
+  <span style="color: #FFE203;">grad_relaxf</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(Bdf,l2){
+    bf <span style="color: #C04040;">&lt;-</span> Bdf$feature_name[Bdf$feature_name!=<span style="color: #FFABAB;">"Intercept"</span>]
+    ix <span style="color: #C04040;">&lt;-</span> xGO[,bf]
+    pr <span style="color: #C04040;">&lt;-</span> l2*length(ym)
+
+    progressr::with_progress({
+      cv_rfit <span style="color: #C04040;">&lt;-</span> cv_fgem(ix,ym,log_BF=<span style="color: #99D6FF;">TRUE</span>,stratify_BF=<span style="color: #99D6FF;">FALSE</span>,alpha=0)
+    })
+
+
+    rrfitt <span style="color: #C04040;">&lt;-</span> fgem:::fgem_elasticnet(ix,ym,log_BF=<span style="color: #99D6FF;">TRUE</span>,alpha=0,lambda=0,verbose=<span style="color: #99D6FF;">TRUE</span>)
+    rfs <span style="color: #C04040;">&lt;-</span> fgem:::summarise_cv_lik(cv_rfit)
+
+    tgr <span style="color: #C04040;">&lt;-</span> fgem:::fgem_grad.dgCMatrix(rrfitt$Beta,ix,ym,prec=0,log_BF=<span style="color: #99D6FF;">TRUE</span>)
+    gr <span style="color: #C04040;">&lt;-</span> fgem:::fgem_grad.dgCMatrix(Bdf$Beta,ix,ym,prec=l2*nX,log_BF=<span style="color: #99D6FF;">TRUE</span>)
+    mutate(Bdf,grad=gr)
+  }
+
+  tight_Beta <span style="color: #C04040;">&lt;-</span> filter(gbm_cv_df,cv_sum==max(cv_sum)) <span style="color: #C04040;">%&gt;%</span> unnest(Beta) <span style="color: #C04040;">%&gt;%</span> filter(Beta!=0) <span style="color: #C04040;">%&gt;%</span> arrange(desc(abs(Beta)))
+
+
+    <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">fisher_df &lt;- qs::qread("data/cleanest_single_fisher_cutoffs.qs") %&gt;%</span>
+    <span style="color: #5D6A70;">##     </span><span style="color: #5D6A70;">dplyr::select(cancer,</span>
+    <span style="color: #5D6A70;">##                   </span><span style="color: #5D6A70;">feature_name,</span>
+    <span style="color: #5D6A70;">##                   </span><span style="color: #5D6A70;">pval = p.value,cutoff) %&gt;%</span>
+    <span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">mutate(cutoff=paste0("pval_fisher_",stringr::str_replace(cutoff,"\\.","_")))%&gt;% spread(key="cutoff",value="pval")</span>
+
+med_BF <span style="color: #C04040;">&lt;-</span> apply(xGO,2,<span style="color: #C8FF03;">function</span>(x){
+  median(eym[x==1])
+})
+mean_BF <span style="color: #C04040;">&lt;-</span> apply(xGO,2,<span style="color: #C8FF03;">function</span>(x){
+  mean(eym[x==1])
+})
+min_BF <span style="color: #C04040;">&lt;-</span> apply(xGO,2,<span style="color: #C8FF03;">function</span>(x){
+  min(eym[x==1])
+})
+
+max_BF <span style="color: #C04040;">&lt;-</span> apply(xGO,2,<span style="color: #C8FF03;">function</span>(x){
+  max(eym[x==1])
+})
+
+perc_p <span style="color: #C04040;">&lt;-</span> apply(xGO,2,<span style="color: #C8FF03;">function</span>(x){
+  mean(ym[x==1]&gt;0)
+})
+
+
+
+med_lBF <span style="color: #C04040;">&lt;-</span> apply(xGO,2,<span style="color: #C8FF03;">function</span>(x){
+  median(ym[x==1])
+})
+mean_lBF <span style="color: #C04040;">&lt;-</span> apply(xGO,2,<span style="color: #C8FF03;">function</span>(x){
+  mean(ym[x==1])
+})
+
+
+mean_plBF <span style="color: #C04040;">&lt;-</span> apply(xGO,2,<span style="color: #C8FF03;">function</span>(x){
+  ty <span style="color: #C04040;">&lt;-</span> ym[x==1]
+  mean(ty[ty&gt;0])
+})
+mean_nlBF <span style="color: #C04040;">&lt;-</span> apply(xGO,2,<span style="color: #C8FF03;">function</span>(x){
+  ty <span style="color: #C04040;">&lt;-</span> ym[x==1]
+  mean(ty[ty&lt;0])
+})
+
+
+mean_pBF <span style="color: #C04040;">&lt;-</span> apply(xGO,2,<span style="color: #C8FF03;">function</span>(x){
+  ty <span style="color: #C04040;">&lt;-</span> eym[x==1]
+  mean(ty[ty&gt;1])
+})
+mean_nBF <span style="color: #C04040;">&lt;-</span> apply(xGO,2,<span style="color: #C8FF03;">function</span>(x){
+  ty <span style="color: #C04040;">&lt;-</span> eym[x==1]
+  mean(ty[ty&lt;1])
+})
+
+
+
+min_lBF <span style="color: #C04040;">&lt;-</span> apply(xGO,2,<span style="color: #C8FF03;">function</span>(x){
+  min(ym[x==1])
+})
+
+max_lBF <span style="color: #C04040;">&lt;-</span> apply(xGO,2,<span style="color: #C8FF03;">function</span>(x){
+  max(ym[x==1])
+})
+
+
+x_df <span style="color: #C04040;">&lt;-</span> tibble(feature_name=names(med_BF),
+               med_BF,
+               mean_BF,
+               min_BF,
+               max_BF,
+               med_lBF,
+               mean_lBF,
+               min_lBF,
+               max_lBF,
+               perc_p,
+               mean_plBF,
+               mean_nlBF,
+               mean_pBF,
+               mean_nBF,
+               sum_X=apply(xGO,2,sum)
+               ) <span style="color: #C04040;">%&gt;%</span> inner_join(select(fgem_results, feature_name, estimate_fgem, Intercept, pval_fgem, qval_fgem, lik), by = <span style="color: #FFABAB;">"feature_name"</span>) <span style="color: #C04040;">%&gt;%</span>
+  arrange(desc(estimate_fgem))
+
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">
+
+
+fgem_results <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/alt_new_fgem_marginal_results.qs"</span>) <span style="color: #C04040;">%&gt;%</span>
+  mutate(trait = map_chr(Beta, ~.x$feature_name[2])) <span style="color: #C04040;">%&gt;%</span>
+  unnest(Beta) <span style="color: #C04040;">%&gt;%</span> 
+  mutate(feature_name = dplyr::if_else(feature_name == <span style="color: #FFABAB;">"Intercept"</span>, <span style="color: #FFABAB;">"Intercept"</span>, <span style="color: #FFABAB;">"estimate_fgem"</span>)) <span style="color: #C04040;">%&gt;%</span>
+  spread(key = <span style="color: #FFABAB;">"feature_name"</span>, value = <span style="color: #FFABAB;">"Beta"</span>) <span style="color: #C04040;">%&gt;%</span>
+  rename(feature_name=trait, pval_fgem = pval, qval_fgem = qval) <span style="color: #C04040;">%&gt;%</span>
+  filter(cancer==<span style="color: #FFABAB;">"GBM"</span>)
+
+ bad_feat <span style="color: #C04040;">&lt;-</span> filter(fgem_results,estimate_fgem&gt;10) <span style="color: #C04040;">%&gt;%</span> pull(feature_name)
+ tX <span style="color: #C04040;">&lt;-</span> as.matrix(xGO[ocancer_df$Gene,bad_feat,drop=<span style="color: #99D6FF;">FALSE</span>])
+
+<span style="color: #FFE203;">tpfun</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(B,x,b){
+  xb <span style="color: #C04040;">&lt;-</span> b[1] +  x<span style="color: #C04040;">%*%</span>b[-1]
+  exp
+  B + (1 - B)/(1 + exp()
+}
+
+
+marr <span style="color: #C04040;">&lt;-</span> fgem:::fgem_marginal(tX,ym,log_BF=<span style="color: #99D6FF;">TRUE</span>,max_iter=150,grad=<span style="color: #99D6FF;">TRUE</span>,hess=<span style="color: #99D6FF;">TRUE</span>)
+
+marr_h <span style="color: #C04040;">&lt;-</span> map(marr$Beta,~.x$hessian)
+dets <span style="color: #C04040;">&lt;-</span> map_dbl(marr_h,det)
+
+mardf <span style="color: #C04040;">&lt;-</span> marr <span style="color: #C04040;">%&gt;%</span>
+  mutate(trait = map_chr(Beta, ~.x$feature_name[2])) <span style="color: #C04040;">%&gt;%</span>
+  mutate(det= map_dbl(Beta,~det(.x$hessian))) <span style="color: #C04040;">%&gt;%</span> 
+  unnest(Beta) <span style="color: #C04040;">%&gt;%</span> select(-hessian) <span style="color: #C04040;">%&gt;%</span> 
+  mutate(feature_name = dplyr::if_else(feature_name == <span style="color: #FFABAB;">"Intercept"</span>, <span style="color: #FFABAB;">"Intercept"</span>, <span style="color: #FFABAB;">"fgem"</span>)) <span style="color: #C04040;">%&gt;%</span>
+  pivot_wider(names_from = <span style="color: #FFABAB;">"feature_name"</span>, values_from = c(<span style="color: #FFABAB;">"Beta"</span>,<span style="color: #FFABAB;">"gradient"</span>)) <span style="color: #C04040;">%&gt;%</span>
+  rename(feature_name=trait) <span style="color: #C04040;">%&gt;%</span>
+  select(feature_name,lik,Beta=Beta_fgem,Intercept=Beta_Intercept,grad_fgem=gradient_fgem,grad_int=gradient_Intercept,time,pval,sum_X,l2n,sum_X,det) <span style="color: #C04040;">%&gt;%</span> arrange(feature_name)
+
+ univr <span style="color: #C04040;">&lt;-</span> unnest(rrfitt,Beta)
+ tpI <span style="color: #C04040;">&lt;-</span> rnorm(3500,mean=univr$Beta[1],sd=0)
+ tpB <span style="color: #C04040;">&lt;-</span> rnorm(3500,mean=univr$Beta[2],sd=1)
+
+ eym <span style="color: #C04040;">&lt;-</span> exp(ym)
+ lik <span style="color: #C04040;">&lt;-</span> map2_dbl(tpI,tpB,<span style="color: #C8FF03;">function</span>(x,y){
+   fgem:::fgem_lik_stan(c(x,y),tX,exp(ym),log_BF=<span style="color: #99D6FF;">FALSE</span>)
+ })
+ prior_mat <span style="color: #C04040;">&lt;-</span> mapply(<span style="color: #C8FF03;">function</span>(x,y){
+   stats::plogis(c(y*tX)+x)
+ },tpI,tpB)
+
+ lik_mat <span style="color: #C04040;">&lt;-</span> apply(prior_mat,2,<span style="color: #C8FF03;">function</span>(x){
+   log(x*eym+(1-x))
+ })
+
+ rownames(lik_mat) <span style="color: #C04040;">&lt;-</span> rownames(tX)
+ names(eym) <span style="color: #C04040;">&lt;-</span> rownames(tX)
+ lik_df <span style="color: #C04040;">&lt;-</span> as_tibble(lik_mat,rownames=<span style="color: #FFABAB;">"Gene"</span>) <span style="color: #C04040;">%&gt;%</span>
+   gather(key=<span style="color: #FFABAB;">"Beta"</span>,value=<span style="color: #FFABAB;">"Lik"</span>,-Gene) <span style="color: #C04040;">%&gt;%</span>
+   mutate(Beta=tpB[as.integer(stringr::str_remove(Beta,<span style="color: #FFABAB;">"V"</span>))],
+          )
+ lik_df <span style="color: #C04040;">&lt;-</span> mutate(lik_df,BF=eym[Gene])
+ lik_df <span style="color: #C04040;">&lt;-</span> mutate(lik_df,has_feat=tX[Gene,1]==1)
+ hc <span style="color: #C04040;">&lt;-</span> topo.colors(20, alpha = 1, rev = <span style="color: #99D6FF;">FALSE</span>)
+ hl_df <span style="color: #C04040;">&lt;-</span> filter(lik_df,has_feat)  <span style="color: #C04040;">%&gt;%</span> group_by(Gene) <span style="color: #C04040;">%&gt;%</span> mutate(grad=(Lik-lead(Lik))/(Beta-lead(Beta))) <span style="color: #C04040;">%&gt;%</span> ungroup() <span style="color: #C04040;">%&gt;%</span>
+   mutate(BF_bin=hc[as.integer(cut_interval(log10(BF), n=20))])
+          grad_bin=hc[as.integer(cut_number(grad, n=20))])
+ with(hl_df,plot3d(Beta,log10(BF),lik,col=grad_bin))
+
+ feat_df <span style="color: #C04040;">&lt;-</span> distinct(lik_df,Gene,BF,has_feat)
+ group_by(lik_df,has_feat,Beta) <span style="color: #C04040;">%&gt;%</span> summarise(Lik=sum(Lik)) <span style="color: #C04040;">%&gt;%</span> ggplot(aes(x=Beta,y=Lik,col=has_feat))+geom_point()+facet_wrap(~has_feat,scales=<span style="color: #FFABAB;">"free_y"</span>)+ggtitle(<span style="color: #FFABAB;">"Likelihood with varying Beta"</span>,<span style="color: #FFABAB;">"With or without feature"</span>)
+ filter(lik_df,has_feat)  <span style="color: #C04040;">%&gt;%</span>
+   mutate(pos_BF=BF&gt;1) <span style="color: #C04040;">%&gt;%</span>
+   group_by(Beta) <span style="color: #C04040;">%&gt;%</span>
+   summarise(mean_lik=mean(Lik),min_lik=min(Lik),max_lik=max(Lik)) <span style="color: #C04040;">%&gt;%</span>
+   ggplot(aes(x=Beta,y=mean_lik))+geom_point()
+ +geom_ribbon(aes(x=Beta,ymin=min_lik,ymax=max_lik,col=pos_BF,fill=pos_BF),alpha=0.2) +
+   ggtitle(paste0(<span style="color: #FFABAB;">"Per-Gene Likelihood for "</span>,tf,<span style="color: #FFABAB;">" Genes"</span>),<span style="color: #FFABAB;">"Stratified by whether BF&gt;1"</span>)
+ ggsave(<span style="color: #FFABAB;">"~/tmp/per_gene.png"</span>)
+ diff_mat <span style="color: #C04040;">&lt;-</span> (cbind(lik_mat[,-1],0)-lik_mat)[,-ncol(lik_mat)]
+ diff_mat_g <span style="color: #C04040;">&lt;-</span> diff_mat[tX==1,]
+ diff_mat_neg <span style="color: #C04040;">&lt;-</span> diff_mat_g[wmd[,1],]
+
+ fgrad <span style="color: #C04040;">&lt;-</span> mapply(<span style="color: #C8FF03;">function</span>(x,y){
+   fgem:::fgem_grad_stan(c(x,y),tX,exp(ym),log_BF=<span style="color: #99D6FF;">FALSE</span>)
+ },x=tpI,y=tpB)
+
+ grad_df <span style="color: #C04040;">&lt;-</span> tibble(Beta=tpB,Intercept=tpI,Intercept_grad=fgrad[1,],Beta_grad=fgrad[2,],lik=lik) <span style="color: #C04040;">%&gt;%</span>
+   mutate(lik_bin=hc[as.integer(cut_number(lik, n=20))],
+          beta_grad_bin=hc[as.integer(cut_interval(Beta_grad, n=20))])
+ <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">#mutate(grad_df, Beta_bin=cut_number(Beta, n=20)) %&gt;%  ggplot(aes(x=Beta_bin,y=lik,group=Beta_bin))+geom_violin()</span>
+ <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">#ggplot(grad_df,aes(x=Intercept,y=lik))+geom_point()</span>
+
+ <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">of &lt;- optim(par=runif(2),gr=fgem:::fgem_grad_stan,fgem:::fgem_lik_stan,X=tX,BF=exp(ym),log_BF=FALSE,prec=0,neg=TRUE)</span>
+ <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">theta=0 </span>
+ <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">phi=20</span>
+ <span style="color: #5D6A70;">## </span><span style="color: #5D6A70;">ggplot(grad_df,aes(x=Beta,y=Intercept,z=lik))+theme_void()+axes_3D(theta=theta, phi=phi) +</span>
+ <span style="color: #5D6A70;">##   </span><span style="color: #5D6A70;">stat_3D(theta=theta, phi=phi)</span>
+ grad_df <span style="color: #C04040;">&lt;-</span> arrange(grad_df,Beta)
+ tgrad_df <span style="color: #C04040;">&lt;-</span> filter(grad_df,Beta&lt;20)
+ with(tgrad_df,plot3d(Beta,Intercept,lik,col=beta_grad_bin))
+
+ ggplot(tgrad_df,aes(x=Beta,y=lik,col=Beta_grad))+scale_color_gradient2(trans=<span style="color: #FFABAB;">"log"</span>)+geom_point()+ggtitle(<span style="color: #FFABAB;">"Beta vs Likelihood for GO:0050911"</span>,<span style="color: #FFABAB;">"Colored by gradient wrt Beta"</span>)+ylab(<span style="color: #FFABAB;">"Marginalized Log-Likelihood"</span>)
+ ggsave(filename=<span style="color: #FFABAB;">"~/tmp/llk.png"</span>)
+ tr <span style="color: #C04040;">&lt;-</span> mutate(gbm_cv_df,Beta=purrr::map2(Beta,group_l2,grad_f))
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">
+
+
+g
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">with_progress({
+  cv_df <span style="color: #C04040;">&lt;-</span> dplyr::mutate(cv_fgem(X,ym,alpha=0.8,stratify_BF=<span style="color: #99D6FF;">TRUE</span>),cancer=cancer)
+})
+filter(cv_df,lambda&gt;0,l1n&gt;1) <span style="color: #C04040;">%&gt;%</span>
+  ggplot(aes(x=lambda,y=cv_lik)) +
+  geom_point() +
+  facet_wrap(~cv_i,scales=<span style="color: #FFABAB;">"free_y"</span>) +
+  scale_x_log10()
+
+
+scv_df <span style="color: #C04040;">&lt;-</span> fgem:::summarise_cv_lik(cv_df)
+with_progress({
+  ccv_df <span style="color: #C04040;">&lt;-</span> dplyr::mutate(cv_fgem(X,ym,alpha=0.8,stratify_BF=<span style="color: #99D6FF;">FALSE</span>),cancer=cancer)
+})
+
+with_progress({
+  lcv_df <span style="color: #C04040;">&lt;-</span> dplyr::mutate(cv_fgem(X,log(ym),alpha=0.8,stratify_BF=<span style="color: #99D6FF;">FALSE</span>,log_BF=<span style="color: #99D6FF;">TRUE</span>),cancer=cancer)
+})
+slcv_df <span style="color: #C04040;">&lt;-</span> fgem:::summarise_cv_lik(lcv_df)
+filter(ccv_df,lambda&gt;0,l1n&gt;1) <span style="color: #C04040;">%&gt;%</span>
+  ggplot(aes(x=lambda,y=cv_lik)) +
+  geom_point() +
+  facet_wrap(~cv_i,scales=<span style="color: #FFABAB;">"free_y"</span>) +
+  scale_x_log10()
+
+sccv_df <span style="color: #C04040;">&lt;-</span> fgem:::summarise_cv_lik(ccv_df)
+sccv_df <span style="color: #C04040;">&lt;-</span> inner_join(mutate(sccv_df,ia=<span style="color: #99D6FF;">NA</span>),
+                      filter(sccv_df,cv_sum==max(cv_sum)) <span style="color: #C04040;">%&gt;%</span> transmute(ia=<span style="color: #99D6FF;">NA</span>,best_group_l1=group_l1,best_group_l2=group_l2,best_cv=cv_sum)) <span style="color: #C04040;">%&gt;%</span> select(-ia)
+
+filter(sccv_df,group_l1&gt;0) <span style="color: #C04040;">%&gt;%</span>
+  ggplot(aes(x=group_l1, y=cv_sum, col=cv_sum==max(cv_sum)))+geom_point()+scale_x_log10()+geom_vline(aes(xintercept=best_group_l1))
+
+best_gbm <span style="color: #C04040;">&lt;-</span> filter(sccv_df,cv_sum==max(cv_sum))
+
+qs::qsave(cv_df, op)
+
+
+
+</pre>
+</div>
+</div>
+</div>
+
+
+
+<div id="outline-container-orgdfc34c1" class="outline-3">
+<h3 id="orgdfc34c1">IntOGen validation</h3>
+<div class="outline-text-3" id="text-orgdfc34c1">
+<p>
+An alternative source of validation is cite: (<a href="#citeproc_bib_item_2">Gonzalez-Perez et al. 2013</a>)
+</p>
+
+<div class="org-src-container">
+<pre class="src src-R">
+comp_df <span style="color: #C04040;">&lt;-</span> read_tsv(<span style="color: #FFABAB;">"data/2020-02-02_IntOGen-Drivers-20200213/Compendium_Cancer_Genes.tsv"</span>)
+cohort_df <span style="color: #C04040;">&lt;-</span> read_tsv(<span style="color: #FFABAB;">"data/2020-02-02_IntOGen-Cohorts-20200213/cohorts.tsv"</span>)
+
+cohort_notcga <span style="color: #C04040;">&lt;-</span> filter(cohort_df,SOURCE!=<span style="color: #FFABAB;">"TCGA"</span>) <span style="color: #C04040;">%&gt;%</span> rename(cohort=COHORT)
+
+sub_comp_df <span style="color: #C04040;">&lt;-</span> select(comp_df,Gene=SYMBOL,cohort=COHORT,cancer=CANCER_TYPE,qval_cons=QVALUE_COMBINATION) <span style="color: #C04040;">%&gt;%</span>
+  semi_join(cohort_notcga)
+
+tcomp_df <span style="color: #C04040;">&lt;-</span> select(comp_df,Gene=SYMBOL,cohort=COHORT,cancer=CANCER_TYPE,qval_cons=QVALUE_COMBINATION) <span style="color: #C04040;">%&gt;%</span>
+  semi_join(cohort_notcga) <span style="color: #C04040;">%&gt;%</span> 
+  distinct(cancer,Gene) <span style="color: #C04040;">%&gt;%</span>
+  mutate(value=1L)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">  sub_comp_l <span style="color: #C04040;">&lt;-</span> nest(sub_comp_df,valid_data=c(Gene,qval_cons))
+  all_results <span style="color: #C04040;">&lt;-</span> map_df(fs::dir_ls(out_d),<span style="color: #C8FF03;">function</span>(x){
+    N <span style="color: #C04040;">&lt;-</span> length(qs::qread(fs::path(<span style="color: #FFABAB;">"data/y_models"</span>,fs::path_file(x))))
+    idf <span style="color: #C04040;">&lt;-</span> qs::qread(x) <span style="color: #C04040;">%&gt;%</span> group_by(l1) <span style="color: #C04040;">%&gt;%</span> filter(abs(l1-(lambda*N)*alpha)==min(abs(l1-(lambda*N)*alpha))) <span style="color: #C04040;">%&gt;%</span> ungroup() <span style="color: #C04040;">%&gt;%</span> 
+mutate(max_c=map_dbl(Beta,~max(.x$Beta[-1])))
+    })
+
+
+  <span style="color: #FFE203;">pred_fun</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(df,x,y,log=<span style="color: #99D6FF;">TRUE</span>){
+    tibble::tibble(Gene=rownames(x),post=fgem:::gen_u(Beta = df$Beta, x = x[, df$feature_name[-1],drop=<span style="color: #99D6FF;">FALSE</span>], B = y, log = log))
+  }
+  cancer <span style="color: #C04040;">&lt;-</span> <span style="color: #FFABAB;">"BRCA"</span>
+  ardf <span style="color: #C04040;">&lt;-</span> filter(all_results,convergence==0) <span style="color: #C04040;">%&gt;%</span> nest(tresults=-cancer)
+  <span style="color: #FFE203;">log_pbinom</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(lp,x){
+    mean((x*lp)+(1-x)*log(-expm1(lp)))
+  }
+  <span style="color: #FFE203;">post_fun</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(tresults,cancer){
+    ym <span style="color: #C04040;">&lt;-</span> qs::qread(fs::path(<span style="color: #FFABAB;">"data/y_models"</span>, cancer, ext = <span style="color: #FFABAB;">"qs"</span>))
+    xm <span style="color: #C04040;">&lt;-</span> qs::qread(fs::path(<span style="color: #FFABAB;">"data/x_models"</span>, cancer, ext = <span style="color: #FFABAB;">"qs"</span>))
+    Id <span style="color: #C04040;">&lt;-</span> matrix(0,nrow(xm),0,dimnames=list(rownames(xm),character()))
+    intr <span style="color: #C04040;">&lt;-</span> fgem_bfgs(Id,ym)
+    trdf <span style="color: #C04040;">&lt;-</span> pred_fun(intr$Beta[[1]],
+                     x = Id,
+                     y = ym,
+                     log=<span style="color: #99D6FF;">TRUE</span>) <span style="color: #C04040;">%&gt;%</span>
+      rename(uniform_post = post)
+    tresults <span style="color: #C04040;">&lt;-</span> filter(tresults) <span style="color: #C04040;">%&gt;%</span>
+      mutate(pred=map(Beta,pred_fun,x=xm,y=ym))
+    unnest(tresults,pred) <span style="color: #C04040;">%&gt;%</span>
+      select(functional_post=post,lambda,Gene) <span style="color: #C04040;">%&gt;%</span>
+      inner_join(trdf,by=<span style="color: #FFABAB;">"Gene"</span>) <span style="color: #C04040;">%&gt;%</span>
+      left_join(filter(tcomp_df,cancer=={{cancer}}),by=c(<span style="color: #FFABAB;">"Gene"</span>)) <span style="color: #C04040;">%&gt;%</span>
+      replace_na(list(value=0L,cancer=cancer))
+  }
+
+
+  post_results <span style="color: #C04040;">&lt;-</span> pmap_dfr(ardf,post_fun) 
+
+
+  cv_results <span style="color: #C04040;">&lt;-</span> post_results <span style="color: #C04040;">%&gt;%</span> group_by(lambda,cancer) <span style="color: #C04040;">%&gt;%</span>
+      summarise(lik_func=log_pbinom(functional_post,value),
+                lik_unif=log_pbinom(uniform_post,value)) <span style="color: #C04040;">%&gt;%</span> ungroup() <span style="color: #C04040;">%&gt;%</span>
+    inner_join(all_results)
+
+</pre>
+</div>
+
+<p>
+I've identified several cancer types where the FGEM model does a better job of predicting known cancer
+genes (using the IntOGen database) than the baseline <code>driverMAPS</code> model.  
+</p>
+
+
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">library</span>(ggrepel)
+<span style="color: #C04040;">library</span>(patchwork)
+sup_mod <span style="color: #C04040;">&lt;-</span> filter(cv_results, l0n&gt;1) <span style="color: #C04040;">%&gt;%</span>
+  filter(lik_func &gt; lik_unif) <span style="color: #C04040;">%&gt;%</span>
+  group_by(cancer) <span style="color: #C04040;">%&gt;%</span>
+  filter(lik_func==max(lik_func)) <span style="color: #C04040;">%&gt;%</span>
+  ungroup()
+
+any_cg <span style="color: #C04040;">&lt;-</span> group_by(post_results,cancer) <span style="color: #C04040;">%&gt;%</span>
+  summarise(has_cg=any(value==1)) <span style="color: #C04040;">%&gt;%</span> filter(has_cg)
+
+cvb <span style="color: #C04040;">&lt;-</span> semi_join(cv_results,any_cg) <span style="color: #C04040;">%&gt;%</span>
+  group_by(lambda) <span style="color: #C04040;">%&gt;%</span>
+  summarise(p_best=mean(lik_func&gt;lik_unif,na.rm=<span style="color: #99D6FF;">TRUE</span>),
+            n_best=sum(lik_func&gt;lik_unif,na.rm=<span style="color: #99D6FF;">TRUE</span>),
+            n=n()) <span style="color: #C04040;">%&gt;%</span>
+  arrange(desc(n_best),desc(p_best))
+
+any_best <span style="color: #C04040;">&lt;-</span> semi_join(cv_results,any_cg) <span style="color: #C04040;">%&gt;%</span>group_by(cancer) <span style="color: #C04040;">%&gt;%</span>
+  summarise(any_best=any(lik_func&gt;lik_unif,na.rm=T)) <span style="color: #C04040;">%&gt;%</span> filter(any_best)
+  group_by(lambda)
+
+
+bcvb <span style="color: #C04040;">&lt;-</span> filter(cvb, n_best == max(n_best,na.rm=<span style="color: #99D6FF;">TRUE</span>),
+               ) <span style="color: #C04040;">%&gt;%</span> filter(lambda==min(lambda))
+
+cbd <span style="color: #C04040;">&lt;-</span> semi_join(cv_results,any_best) <span style="color: #C04040;">%&gt;%</span> group_by(cancer) <span style="color: #C04040;">%&gt;%</span> filter(lik_func==max(lik_func,na.rm=T)) <span style="color: #C04040;">%&gt;%</span> filter(l0n&gt;1) <span style="color: #C04040;">%&gt;%</span> ungroup() 
+bcvbv <span style="color: #C04040;">&lt;-</span> bcvb$lambda
+
+cvr <span style="color: #C04040;">&lt;-</span> semi_join(cv_results,any_cg) <span style="color: #C04040;">%&gt;%</span> filter(lambda&gt;0) <span style="color: #C04040;">%&gt;%</span> nest(res=-cancer)
+
+pwalk(cvr, <span style="color: #C8FF03;">function</span>(res, cancer){
+plt_a <span style="color: #C04040;">&lt;-</span> res <span style="color: #C04040;">%&gt;%</span> ggplot(aes(x=lambda,y=l0n)) + geom_point(aes(col=lik_func&gt;lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position =<span style="color: #FFABAB;">"none"</span>)+ylab(<span style="color: #FFABAB;">"L0 Norm"</span>)
+plt_b <span style="color: #C04040;">&lt;-</span> res <span style="color: #C04040;">%&gt;%</span> ggplot(aes(x=lambda,y=l1n)) + geom_point(aes(col=lik_func&gt;lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position =<span style="color: #FFABAB;">"none"</span>)+ylab(<span style="color: #FFABAB;">"L1 Norm"</span>)
+plt_c <span style="color: #C04040;">&lt;-</span> res <span style="color: #C04040;">%&gt;%</span> ggplot(aes(x=lambda,y=l2n)) + geom_point(aes(col=lik_func&gt;lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position = <span style="color: #FFABAB;">"none"</span>)+ylab(<span style="color: #FFABAB;">"L2 Norm"</span>)
+plt_d <span style="color: #C04040;">&lt;-</span> res <span style="color: #C04040;">%&gt;%</span> ggplot(aes(x=lambda,y=max_c)) + geom_point(aes(col=lik_func&gt;lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position = <span style="color: #FFABAB;">"none"</span>)+ylab(bquote(max(bgroup(<span style="color: #FFABAB;">"|"</span>,beta,<span style="color: #FFABAB;">"|"</span>))))
+
+plt <span style="color: #C04040;">&lt;-</span> ((plt_a+plt_b)/(plt_c +plt_d)&amp; stat_smooth(geom=<span style="color: #FFABAB;">'line'</span>,alpha=0.2) &amp; xlab(bquote(lambda))) + plot_layout(guides = <span style="color: #FFABAB;">"collect"</span>)+plot_annotation(title=cancer)
+od <span style="color: #C04040;">&lt;-</span> fs::path(<span style="color: #FFABAB;">"org/fgem_elastic_fits"</span>)
+fs::dir_create(od)
+ggsave(plt,filename=fs::path(od,cancer,ext=<span style="color: #FFABAB;">"png"</span>))
+})
+
+plt_a <span style="color: #C04040;">&lt;-</span>semi_join(cv_results,any_cg)  <span style="color: #C04040;">%&gt;%</span>
+  filter(lambda&gt;0) <span style="color: #C04040;">%&gt;%</span>
+  ggplot(aes(x=lambda,y=l0n)) + geom_point(aes(col=lik_func&gt;lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position =<span style="color: #FFABAB;">"none"</span>)+ylab(<span style="color: #FFABAB;">"L0 Norm"</span>)
+plt_b <span style="color: #C04040;">&lt;-</span>semi_join(cv_results,any_cg)  <span style="color: #C04040;">%&gt;%</span>
+  filter(lambda&gt;0) <span style="color: #C04040;">%&gt;%</span>
+  ggplot(aes(x=lambda,y=l1n)) + geom_point(aes(col=lik_func&gt;lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position =<span style="color: #FFABAB;">"none"</span>)+ylab(<span style="color: #FFABAB;">"L1 Norm"</span>)
+plt_c <span style="color: #C04040;">&lt;-</span>semi_join(cv_results,any_cg)  <span style="color: #C04040;">%&gt;%</span>
+  filter(lambda&gt;0) <span style="color: #C04040;">%&gt;%</span>
+  ggplot(aes(x=lambda,y=l2n)) + geom_point(aes(col=lik_func&gt;lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position = <span style="color: #FFABAB;">"none"</span>)+ylab(<span style="color: #FFABAB;">"L2 Norm"</span>)
+plt_d <span style="color: #C04040;">&lt;-</span>semi_join(cv_results,any_cg)  <span style="color: #C04040;">%&gt;%</span>
+  filter(lambda&gt;0) <span style="color: #C04040;">%&gt;%</span>
+  ggplot(aes(x=lambda,y=max_c)) + geom_point(aes(col=lik_func&gt;lik_unif))+geom_vline(xintercept=bcvbv)+ theme(legend.position = <span style="color: #FFABAB;">"none"</span>)+ylab(bquote(max(bgroup(<span style="color: #FFABAB;">"|"</span>,beta,<span style="color: #FFABAB;">"|"</span>))))
+((plt_a+plt_b)/(plt_c +plt_d) &amp; stat_smooth(geom=<span style="color: #FFABAB;">'line'</span>,alpha=0.2)) &amp;xlab(bquote(lambda)) &amp; facet_wrap(~cancer,scales=<span style="color: #FFABAB;">"free_y"</span>)
+
+sup_post <span style="color: #C04040;">&lt;-</span> post_results <span style="color: #C04040;">%&gt;%</span>
+  semi_join(any_cg) <span style="color: #C04040;">%&gt;%</span>
+  mutate(isIntoGen = (value == 1))
+
+
+plot_post <span style="color: #C04040;">&lt;-</span> inner_join(post_results,cbd) <span style="color: #C04040;">%&gt;%</span>
+  mutate(isIntoGen = (value == 1))
+iig <span style="color: #C04040;">&lt;-</span> filter(plot_post, isIntoGen)
+plot_post <span style="color: #C04040;">%&gt;%</span> 
+  ggplot(aes(x=exp(uniform_post),y=exp(functional_post),col=isIntoGen))+
+  geom_point() +
+ geom_text_repel(
+   data = iig,
+   aes(label=Gene)) + 
+  facet_wrap(~cancer) + 
+  geom_abline(slope = 1)+
+  xlab(<span style="color: #FFABAB;">"Uniform Posterior"</span>)+ylab(<span style="color: #FFABAB;">"Functional Posterior"</span>)
+
+GO_def <span style="color: #C04040;">&lt;-</span> readRDS(<span style="color: #FFABAB;">"data/GO_Definitions.RDS"</span>) <span style="color: #C04040;">%&gt;%</span> select(feature_name,Term)
+GO_def <span style="color: #C04040;">&lt;-</span> bind_rows(GO_def,tibble(feature_name=<span style="color: #FFABAB;">"Intercept"</span>,Term=<span style="color: #FFABAB;">""</span>)) <span style="color: #C04040;">%&gt;%</span> distinct()
+
+best_res <span style="color: #C04040;">&lt;-</span> unnest(cbd,Beta) <span style="color: #C04040;">%&gt;%</span>
+  inner_join(GO_def)  <span style="color: #C04040;">%&gt;%</span>
+  mutate(label=paste0(feature_name,<span style="color: #FFABAB;">":\n"</span>,Term)) <span style="color: #C04040;">%&gt;%</span> nest(Beta=c(<span style="color: #FFABAB;">"Beta"</span>,<span style="color: #FFABAB;">"feature_name"</span>,<span style="color: #FFABAB;">"label"</span>,<span style="color: #FFABAB;">"Term"</span>))
+
+pp <span style="color: #C04040;">&lt;-</span> inner_join(post_results,best_res) <span style="color: #C04040;">%&gt;%</span>
+  mutate(is_IntoGen = (value == 1)) <span style="color: #C04040;">%&gt;%</span> 
+  nest(post=c(<span style="color: #FFABAB;">"Gene"</span>,<span style="color: #FFABAB;">"uniform_post"</span>,<span style="color: #FFABAB;">"functional_post"</span>,<span style="color: #FFABAB;">"value"</span>,<span style="color: #FFABAB;">"is_IntoGen"</span>))
+
+<span style="color: #FFE203;">line_break</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(x){
+  stringr::str_replace_all(x,<span style="color: #FFABAB;">"([^,]+),([^,]+),([^,]+),"</span>,<span style="color: #FFABAB;">"\\1,\\2,\\3,\n"</span>)
+}
+
+pp <span style="color: #C04040;">%&gt;%</span> pwalk(<span style="color: #C8FF03;">function</span>(cancer,Beta,post,...){
+  iig <span style="color: #C04040;">&lt;-</span> filter(post, is_IntoGen)
+  post_diff <span style="color: #C04040;">&lt;-</span> mutate(post,pd=exp(functional_post)-exp(uniform_post)) <span style="color: #C04040;">%&gt;%</span> arrange(pd)
+  top_diff <span style="color: #C04040;">&lt;-</span> bind_rows(slice(post_diff,(n()-2):n()),slice(post_diff,1:3))
+
+  nBPGOdf <span style="color: #C04040;">&lt;-</span> bind_rows(select(BPGOdf,feature_name=feature,Gene),tibble(Gene=top_diff$Gene,feature_name=<span style="color: #FFABAB;">"Intercept"</span>))
+  BP_assignment <span style="color: #C04040;">&lt;-</span> inner_join(top_diff,nBPGOdf) <span style="color: #C04040;">%&gt;%</span> semi_join(Beta) <span style="color: #C04040;">%&gt;%</span> nest(features=feature_name) <span style="color: #C04040;">%&gt;%</span> mutate(feature_list=map_chr(features,~paste0(.x$feature_name[.x$feature_name!=<span style="color: #FFABAB;">"Intercept"</span>],collapse=<span style="color: #FFABAB;">","</span>))) <span style="color: #C04040;">%&gt;%</span>
+    transmute(Gene=Gene,
+              uniform_post=exp(uniform_post),
+              functional_post=exp(functional_post),
+              isIntoGen=is_IntoGen,
+              GO_features=line_break(feature_list))
+
+
+  post_plot <span style="color: #C04040;">&lt;-</span> post <span style="color: #C04040;">%&gt;%</span> 
+    ggplot(aes(x=exp(uniform_post),y=exp(functional_post),col=is_IntoGen))+
+    geom_point() +
+    geom_text_repel(
+      data = iig,
+      aes(label=Gene),col=<span style="color: #FFABAB;">"blue"</span>) + 
+    geom_abline(slope = 1)+
+    xlab(<span style="color: #FFABAB;">"Uniform Posterior"</span>)+
+    ylab(<span style="color: #FFABAB;">"Functional Posterior"</span>)
+  coeff_plot <span style="color: #C04040;">&lt;-</span> filter(Beta,Beta!=0) <span style="color: #C04040;">%&gt;%</span> ggplot(aes(x=Beta,y=label))+geom_point()+geom_vline(xintercept=0)
+  plt <span style="color: #C04040;">&lt;-</span> (coeff_plot+post_plot+plot_layout(guides = <span style="color: #FFABAB;">"collect"</span>)+plot_annotation(title=cancer))
+  od <span style="color: #C04040;">&lt;-</span> fs::path(<span style="color: #FFABAB;">"org/fgem_post_plot"</span>)
+  fs::dir_create(od)
+  ggsave(plt, filename=fs::path(od, cancer, ext=<span style="color: #FFABAB;">"png"</span>),width=11,height=11/(1920/1080))
+})
+</pre>
+</div>
+
+
+<div class="org-src-container">
+<pre class="src src-R">  <span style="color: #FFE203;">log_pbinom</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(lp,x){
+      mean((x*lp)+(1-x)*log(-expm1(lp)))
+    }
+
+  <span style="color: #FFE203;">prior_post_plot</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(data,cancer,valid_data,cohort,...){
+    log<span style="color: #C04040;">&lt;-</span><span style="color: #99D6FF;">TRUE</span>
+    cancer_list <span style="color: #C04040;">&lt;-</span> valid_data$Gene
+    ym <span style="color: #C04040;">&lt;-</span> qs::qread(fs::path(<span style="color: #FFABAB;">"data/y_models/"</span>,cancer,ext=<span style="color: #FFABAB;">"qs"</span>))
+    xm <span style="color: #C04040;">&lt;-</span> qs::qread(fs::path(<span style="color: #FFABAB;">"data/x_models/"</span>,cancer,ext=<span style="color: #FFABAB;">"qs"</span>))
+    stopifnot(all(data$feature_name <span style="color: #C04040;">%in%</span> colnames(xm)))
+    x <span style="color: #C04040;">&lt;-</span> xm[,data$feature_name,drop=<span style="color: #99D6FF;">FALSE</span>]
+    unifp <span style="color: #C04040;">&lt;-</span> fgem:::gen_u(fgem:::fgem_null(ym),x[,<span style="color: #FFABAB;">"Intercept"</span>,drop=<span style="color: #99D6FF;">FALSE</span>],ym,log=log)
+                                          <span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">unifp &lt;- fgem:::prior_mean(BF,log=log)</span>
+    cancer_vec <span style="color: #C04040;">&lt;-</span> rownames(x) <span style="color: #C04040;">%in%</span> cancer_list
+    fp <span style="color: #C04040;">&lt;-</span> fgem:::gen_u(data$Beta,x,ym,log=log)
+    tibble(cancer=cancer, cross_entropy_functional = -log_pbinom(fp,cancer_vec),
+           cross_entropy_uniform = -log_pbinom(unifp,cancer_vec),
+           cross_entropy_ratio=cross_entropy_functional-cross_entropy_uniform,
+           cohort=cohort)
+  }
+
+validation_df <span style="color: #C04040;">&lt;-</span> pmap_dfr(all_rc,prior_post_plot)
+</pre>
+</div>
+
+
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #FFE203;">log_pbinom</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(lp,x){
+  mean((x*lp)+(1-x)*log(-expm1(lp)))
+}
+
+ <span style="color: #FFE203;">prior_post_plot</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(data,cancer,valid_data,...){
+   log<span style="color: #C04040;">&lt;-</span><span style="color: #99D6FF;">TRUE</span>
+   cancer_list <span style="color: #C04040;">&lt;-</span> unique(valid_data$Gene)
+   ym <span style="color: #C04040;">&lt;-</span> qs::qread(fs::path(<span style="color: #FFABAB;">"data/y_models/"</span>,cancer,ext=<span style="color: #FFABAB;">"qs"</span>))
+   xm <span style="color: #C04040;">&lt;-</span> qs::qread(fs::path(<span style="color: #FFABAB;">"data/x_models/"</span>,cancer,ext=<span style="color: #FFABAB;">"qs"</span>))
+   stopifnot(all(data$feature_name <span style="color: #C04040;">%in%</span> colnames(xm)))
+   x <span style="color: #C04040;">&lt;-</span> xm[,data$feature_name,drop=<span style="color: #99D6FF;">FALSE</span>]
+
+   unifp <span style="color: #C04040;">&lt;-</span> fgem:::gen_u(fgem:::fgem_null(ym),x[,<span style="color: #FFABAB;">"Intercept"</span>,drop=<span style="color: #99D6FF;">FALSE</span>],ym,log=log)
+
+
+   fp <span style="color: #C04040;">&lt;-</span> fgem:::gen_u(data$Beta,x,ym,log=log)
+   cancer_vec <span style="color: #C04040;">&lt;-</span> rownames(x) <span style="color: #C04040;">%in%</span> cancer_list
+
+   tibble(cancer=cancer,
+          cross_entropy_functional = log_pbinom(fp,cancer_vec),
+          mean_true_functional=mean(exp(fp)[cancer_vec]),
+          mean_false_functional=mean(exp(fp)[!cancer_vec]),
+          mean_true_uniform=mean(exp(unifp)[cancer_vec]),
+          mean_false_uniform=mean(exp(unifp)[!cancer_vec]),
+          cross_entropy_uniform = log_pbinom(unifp,cancer_vec),
+          cross_entropy_ratio=cross_entropy_functional-cross_entropy_uniform)
+ }
+
+
+
+sub_comp_df <span style="color: #C04040;">&lt;-</span> select(comp_df,Gene=SYMBOL,cohort=COHORT,cancer=CANCER_TYPE,qval_cons=QVALUE_COMBINATION) <span style="color: #C04040;">%&gt;%</span> semi_join(cohort_notcga)
+
+sub_comp_l <span style="color: #C04040;">&lt;-</span> nest(sub_comp_df,valid_data=c(Gene,qval_cons,cohort))
+all_results <span style="color: #C04040;">&lt;-</span> map_df(fs::dir_ls(out_d),qs::qread) <span style="color: #C04040;">%&gt;%</span>
+        select(data,pval,qval,cancer)
+all_rc <span style="color: #C04040;">&lt;-</span> inner_join(all_results,sub_comp_l)
+
+cv_df <span style="color: #C04040;">&lt;-</span> pmap_df(all_rc,prior_post_plot)
+</pre>
+</div>
+</div>
+</div>
+
+
+
+<div id="outline-container-org3ccbfaa" class="outline-3">
+<h3 id="org3ccbfaa"><span class="todo TODO">TODO</span> Code <code>[66%]</code></h3>
+<div class="outline-text-3" id="text-org3ccbfaa">
+</div>
+<div id="outline-container-org46d0cdb" class="outline-4">
+<h4 id="org46d0cdb"><span class="done DONE">DONE</span> Write Vignette</h4>
+</div>
+<div id="outline-container-orgaae5590" class="outline-4">
+<h4 id="orgaae5590"><span class="done DONE">DONE</span> Write R package</h4>
+</div>
+<div id="outline-container-org2b0cc20" class="outline-4">
+<h4 id="org2b0cc20"><span class="todo TODO">TODO</span> Submit to CRAN (or Bioconductor)</h4>
+<div class="outline-text-4" id="text-org2b0cc20">
+</div>
+</div>
+</div>
+</div>
+
+
+
+
+<div id="outline-container-org392c63b" class="outline-2">
+<h2 id="org392c63b">Extras</h2>
+<div class="outline-text-2" id="text-org392c63b">
+</div>
+<div id="outline-container-orgd8520f9" class="outline-3">
+<h3 id="orgd8520f9">Trying GLM family function</h3>
+<div class="outline-text-3" id="text-orgd8520f9">
+<div class="org-src-container">
+<pre class="src src-R">
+
+<span style="color: #FFE203;">logexp</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(days = 1)
+{
+    <span style="color: #FFE203;">linkfun</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(mu) qlogis(mu^(1/days))
+    <span style="color: #FFE203;">linkinv</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(eta) plogis(eta)^days
+    <span style="color: #FFE203;">mu.eta</span>  <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(eta) days * plogis(eta)^(days-1) *
+                  binomial()$mu.eta(eta)
+    <span style="color: #FFE203;">valideta</span> <span style="color: #C04040;">&lt;-</span> <span style="color: #C8FF03;">function</span>(eta) <span style="color: #99D6FF;">TRUE</span>
+    link <span style="color: #C04040;">&lt;-</span> paste0(<span style="color: #FFABAB;">"logexp("</span>, days, <span style="color: #FFABAB;">")"</span>)
+    structure(list(linkfun = linkfun, linkinv = linkinv,
+                   mu.eta = mu.eta, valideta = valideta, name = link),
+              class = <span style="color: #FFABAB;">"link-glm"</span>)
+}
+(bil3 <span style="color: #C04040;">&lt;-</span> binomial(logexp(3)))
+
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org0b1890b" class="outline-3">
+<h3 id="org0b1890b">FGEM analyses</h3>
+<div class="outline-text-3" id="text-org0b1890b">
+</div>
+<div id="outline-container-orgd6b6f5a" class="outline-4">
+<h4 id="orgd6b6f5a">Run FGEM on new set of genes (ASD)</h4>
+<div class="outline-text-4" id="text-orgd6b6f5a">
+<p>
+From (<a href="#citeproc_bib_item_4">Satterstrom et al. 2020</a>)
+The Bayes Factors reported in this paper are not suitable for my method.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org592b59f" class="outline-3">
+<h3 id="org592b59f">Cancer and ExAC</h3>
+<div class="outline-text-3" id="text-org592b59f">
+<p>
+To start out with we'll use the exac allele z scores and the Biological Process GO terms.
+  To reduce multiple testing burden, 
+I'll limit the GO terms to terms with 10 or more genes with that term
+</p>
+
+<div class="org-src-container">
+<pre class="src src-R">
+z_df <span style="color: #C04040;">&lt;-</span> filter(exacdf,
+                 stringr::str_detect(feature, <span style="color: #FFABAB;">"z$"</span>)) <span style="color: #C04040;">%&gt;%</span>
+      spread(feature, value) <span style="color: #C04040;">%&gt;%</span>
+      select(-class) <span style="color: #C04040;">%&gt;%</span>
+      inner_join(min_cancer_df)
+  tres_z <span style="color: #C04040;">&lt;-</span> group_by(z_df, cancer) <span style="color: #C04040;">%&gt;%</span>
+    do(FGEM_marginal(select(., -cancer),
+                     verbose = <span style="color: #99D6FF;">FALSE</span>)) <span style="color: #C04040;">%&gt;%</span>
+    ungroup()
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+
+
+<div id="outline-container-org1206012" class="outline-2">
+<h2 id="org1206012">Trying Stan</h2>
+<div class="outline-text-2" id="text-org1206012">
+<div class="org-src-container">
+<pre class="src src-stan">data {
+  int&lt;lower=1&gt; G;  // number of data points
+  int&lt;lower=0&gt; F;  // number of clusters
+  vector[G] B;  // Bayes Factors
+  matrix[G,F] A; //Annotation Matrix
+}
+parameters {
+  vector[F] Beta; // Effect sizes
+  real Beta0; //intercept
+}
+/* transformed parameters { */
+/* vector&lt;lower=0,upper=1&gt;[G] pvec=inv_logit(A * Beta + Beta0); */
+/* } */
+model {
+  // likelihood
+  Beta0 ~ normal(0,5);
+  Beta ~ normal(0,4.5);
+  for(n in 1:G){
+    real pv=Beta0;
+    for(k in 1:F){
+      pv+=A[n,k]*Beta[k];
+    }
+    target+=log( inv_logit(pv) * B[n] + (1 - inv_logit(pv)));
+  }
+}
+
+</pre>
+</div>
+
+<p>
+<a href="simple_logistic_model.stan">simple_logistic_model.stan</a>
+</p>
+
+
+<div class="org-src-container">
+<pre class="src src-stan">data {
+  int&lt;lower=1&gt; g;  // number of data points
+  int&lt;lower=0&gt; n;  // number of clusters
+  vector[g] B;  // Bayes Factors
+  matrix[g,n] A; //Annotation Matrix
+}
+parameters {
+  vector[n] Beta; // Effect sizes
+  real Beta0; //intercept
+}
+/* transformed parameters { */
+/* vector&lt;lower=0,upper=1&gt;[G] pvec=inv_logit(A * Beta + Beta0); */
+/* } */
+model {
+  // likelihood
+  vector[g] pvec = inv_logit((A*Beta)+Beta0);
+  Beta0 ~ normal(-1,4);
+  Beta ~ normal(0,4);
+  target+=sum(log( pvec .* B + (1 - pvec)));
+}
+</pre>
+</div>
+
+<p>
+<a href="logistic_model.stan">logistic_model.stan</a>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-stan">data {
+  int&lt;lower=1&gt; g;  // number of genes
+  int&lt;lower=0&gt; n;  // number of features
+  int&lt;lower=0&gt; nnz; //number of non-zero entries in the feature matrix
+  vector[g] B;  // Bayes Factors
+  vector[nnz] w; //non-zero entries in the feature matrix
+  int v[nnz];//column indices
+  int u[g+1];//row start indices
+}
+parameters {
+  vector[n] Beta; // Effect sizes
+  real Beta0; //intercept
+}
+/* transformed parameters { */
+/* vector&lt;lower=0,upper=1&gt;[G] pvec=inv_logit(A * Beta + Beta0); */
+/* } */
+model {
+  // likelihood
+  vector[g] pvec = inv_logit(csr_matrix_times_vector(g,n,w,v,u,Beta)+Beta0);
+  Beta0 ~ normal(-1,4);
+  Beta ~ normal(0,4);
+  target+=sum(log( pvec .* B + (1 - pvec)));
+}
+</pre>
+</div>
+
+<p>
+<a href="sparse_logistic_model.stan">sparse_logistic_model.stan</a>
+</p>
+</div>
+
+<div id="outline-container-org0a0afc1" class="outline-4">
+<h4 id="org0a0afc1">The horseshoe prior</h4>
+<div class="outline-text-4" id="text-org0a0afc1">
+<p>
+Scale is a combination of scale for each component as well as a global scale  (<a href="#citeproc_bib_item_1">Carvalho, Polson, and Scott 2009</a>)
+</p>
+
+
+\begin{align*}
+\beta_{m} &\sim \mathcal{N} (0, \tau \cdot \lambda_{m})
+\\
+\lambda_{m} &\sim \text{Half-}\mathcal{C} (0, 1)
+\\
+\tau &\sim \text{Half-}\mathcal{C} (0, \tau_{0}).
+\end{align*}
+</div>
+</div>
+
+
+<div id="outline-container-orgf41693e" class="outline-3">
+<h3 id="orgf41693e">The Finnish Horseshoe</h3>
+<div class="outline-text-3" id="text-orgf41693e">
+<p>
+There has been a recent improvement to the horseshoe known as the regularized horseshoe (or informally, the "Finnish Horseshoe")
+Using (<a href="#citeproc_bib_item_3">Piironen and Vehtari 2017</a>)
+</p>
+
+<p>
+$$
+</p>
+\begin{align*}
+\beta_{m} &\sim \mathcal{N} (0, \tau \cdot \tilde{\lambda}_{m})
+\\
+\tilde{\lambda}_{m} &=
+\frac{c \lambda_{m}}
+{\sqrt{ c^{2} + \tau^{2} \lambda_{m}^{2}}}
+\\
+\lambda_{m} &\sim \text{Half-}\mathcal{C} (0, 1)
+\\
+c^{2} &\sim \text{Inv-}\mathcal{G} \, (\frac{\nu}{2}, \frac{\nu}{2} s^{2})
+\\
+\tau &\sim \text{Half-}\mathcal{C} (0, \tau_{0}).
+\end{align*}
+<p>
+$$
+</p>
+
+
+
+<div class="org-src-container">
+<pre class="src src-stan">  data {
+    int&lt;lower=1&gt; g;  // number of genes
+    int&lt;lower=0&gt; n;  // number of features
+    int&lt;lower=0&gt; nnz; //number of non-zero entries in the feature matrix
+    real m0 ;           // Expected number of large slopes
+    vector[g] B;  // Bayes Factors
+    vector[nnz] w; //non-zero entries in the feature matrix
+    int v[nnz];//column indices
+    int u[g+1];//row start indices
+
+  }
+  transformed data {
+    real slab_scale = 3;    // Scale for large slopes
+    real slab_scale2 = square(slab_scale);
+    real slab_df = 25;      // Effective degrees of freedom for large slopes
+    real half_slab_df = 0.5 * slab_df;
+  }
+  parameters {
+    vector[n] beta_tilde; // Effect sizes
+    real Beta0; //intercept
+    vector&lt;lower=0&gt;[n] lambda;
+    real&lt;lower=0&gt; c2_tilde;
+    real&lt;lower=0&gt; tau_tilde;
+    real&lt;lower=0&gt; sigma;
+  }
+transformed parameters{
+  vector[n] beta;
+  {
+    real tau0 = (m0 / (n - m0)) * (sigma / sqrt(1.0 * g));
+    real tau = tau0 * tau_tilde; // tau ~ cauchy(0, tau0)
+
+    // c2 ~ inv_gamma(half_slab_df, half_slab_df * slab_scale2)
+    // Implies that marginally beta ~ student_t(slab_df, 0, slab_scale)
+    real c2 = slab_scale2 * c2_tilde;
+
+    vector[n] lambda_tilde = sqrt( c2 * square(lambda) ./ (c2 + square(tau) * square(lambda)) );
+
+    // beta ~ normal(0, tau * lambda_tilde)
+    beta = tau * lambda_tilde .* beta_tilde;
+
+  }
+
+}
+  model {
+
+    // likelihood
+    vector[g] pvec = inv_logit(csr_matrix_times_vector(g,n,w,v,u,beta)+Beta0);
+    beta_tilde ~ normal(0, 1);
+    Beta0 ~ normal(-1,2);
+    lambda ~ cauchy(0, 1);
+    tau_tilde ~ cauchy(0, 1);
+    c2_tilde ~ inv_gamma(half_slab_df, half_slab_df);
+    target+=sum(log( pvec .* B + (1 - pvec)));
+  }
+
+</pre>
+</div>
+
+
+<p>
+<a href="sparse_finnish_horseshoe_logistic_model.stan">sparse_finnish_horseshoe_logistic_model.stan</a>
+</p>
+
+
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #C04040;">options</span>(mc.cores = parallel::detectCores())
+  <span style="color: #C04040;">library</span>(rstan)
+  <span style="color: #C04040;">library</span>(tidyverse)
+  <span style="color: #C04040;">library</span>(fgem)
+
+
+
+  data(<span style="color: #FFABAB;">"BPGOdf"</span>)
+  cancer_df <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"data/driverMAPS_results_20TumorTypes/GBM.qs"</span>)
+  go_df <span style="color: #C04040;">&lt;-</span> select(BPGOdf,Gene,feature) <span style="color: #C04040;">%&gt;%</span> mutate(Gene=as.character(Gene)) <span style="color: #C04040;">%&gt;%</span> filter(Gene <span style="color: #C04040;">%in%</span> cancer_df$Gene)
+
+
+
+genelist_go <span style="color: #C04040;">&lt;-</span> nest(go_df,
+                    gene_l = Gene) <span style="color: #C04040;">%&gt;%</span>
+  mutate(gene_l = map(gene_l, <span style="color: #FFABAB;">"Gene"</span>))
+
+bg_go <span style="color: #C04040;">&lt;-</span> filter(genelist_go,lengths(gene_l)&gt;=15) <span style="color: #C04040;">%&gt;%</span>
+  sample_n(100,replace=<span style="color: #99D6FF;">FALSE</span>) <span style="color: #C04040;">%&gt;%</span> unnest(gene_l)
+
+big_stan_data_sparse <span style="color: #C04040;">&lt;-</span> tidybayes::compose_data(g = nrow(cancer_df),
+                                            n = length(unique(bg_go$feature)),
+                                            nnz = nrow(bg_go),
+                                            B = cancer_df$BF,
+                                            m0=10,
+                                            !!!(fgem::trip2sparseMatrix(
+                                                        as.character(bg_go$gene_l),
+                                                        bg_go$feature,
+                                                        total_rownames = cancer_df$Gene,
+                                                        add_intercept = <span style="color: #99D6FF;">FALSE</span>,
+                                                        csr = <span style="color: #99D6FF;">TRUE</span>)))
+
+
+
+  golist <span style="color: #C04040;">&lt;-</span> c(<span style="color: #FFABAB;">"GO:0008625"</span>,<span style="color: #FFABAB;">"GO:0000003"</span>)
+xdf <span style="color: #C04040;">&lt;-</span> filter(genelist_go, feature <span style="color: #C04040;">%in%</span> golist) <span style="color: #C04040;">%&gt;%</span>
+  unnest(gene_l)
+
+stan_data <span style="color: #C04040;">&lt;-</span> tidybayes::compose_data(g = nrow(cancer_df),
+                                     n = length(unique(xdf$feature)),
+                                     B = cancer_df$BF,
+                                     A=fgem::trip2sparseMatrix(
+                                             as.character(xdf$gene_l),
+                                             xdf$feature,
+                                             total_rownames = cancer_df$Gene,
+                                             add_intercept = <span style="color: #99D6FF;">FALSE</span>,
+                                             csr = <span style="color: #99D6FF;">FALSE</span>))
+
+stan_data_sparse <span style="color: #C04040;">&lt;-</span> tidybayes::compose_data(g = nrow(cancer_df),
+                                            n = length(unique(xdf$feature)),
+                                            nnz = nrow(xdf),
+                                            B = cancer_df$BF,
+                                            !!!(fgem::trip2sparseMatrix(
+                                                        as.character(xdf$gene_l),
+                                                        xdf$feature,
+                                                        total_rownames = cancer_df$Gene,
+                                                        add_intercept = <span style="color: #99D6FF;">FALSE</span>,
+                                                        csr = <span style="color: #99D6FF;">TRUE</span>)))
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-R">  <span style="color: #C04040;">options</span>(mc.cores = parallel::detectCores())
+    <span style="color: #C04040;">library</span>(rstan)
+    <span style="color: #C04040;">library</span>(tidyverse)
+    <span style="color: #C04040;">library</span>(fgem)
+
+cancerf <span style="color: #C04040;">&lt;-</span> fs::path_ext_remove(fs::path_file(fs::dir_ls(<span style="color: #FFABAB;">"../data/fdr_models/"</span>)))
+go_df <span style="color: #C04040;">&lt;-</span> select(BPGOdf,Gene,feature) <span style="color: #C04040;">%&gt;%</span> mutate(Gene=as.character(Gene)) 
+
+
+
+genelist_go <span style="color: #C04040;">&lt;-</span> nest(go_df,
+                      gene_l = Gene) <span style="color: #C04040;">%&gt;%</span>
+    mutate(gene_l = map(gene_l, <span style="color: #FFABAB;">"Gene"</span>))
+
+  bg_go <span style="color: #C04040;">&lt;-</span> filter(genelist_go,lengths(gene_l)&gt;=15) <span style="color: #C04040;">%&gt;%</span>
+    sample_n(100,replace=<span style="color: #99D6FF;">FALSE</span>) <span style="color: #C04040;">%&gt;%</span> unnest(gene_l)
+<span style="color: #C8FF03;">for</span>(cancer_t <span style="color: #C8FF03;">in</span> cancerf){
+  cancer_df <span style="color: #C04040;">&lt;-</span> qs::qread(glue::glue(<span style="color: #FFABAB;">"../data/driverMAPS_results_20TumorTypes/{cancer_t}.qs"</span>))
+  x <span style="color: #C04040;">&lt;-</span> fgem::trip2sparseMatrix(
+                                                          as.character(bg_go$gene_l),
+                                                          bg_go$feature,
+                                                          total_rownames = cancer_df$Gene,
+                                                          add_intercept = <span style="color: #99D6FF;">FALSE</span>,
+               csr = <span style="color: #99D6FF;">FALSE</span>)
+  <span style="color: #C8FF03;">if</span>(NCOL(x)&gt;10){
+  xl <span style="color: #C04040;">&lt;-</span> extract_sparse_parts(x)
+big_stan_data_sparse <span style="color: #C04040;">&lt;-</span> tidybayes::compose_data(g = nrow(x),
+                                                n = NCOL(x),
+                                                nnz = length(xl$w),
+                                                B = cancer_df$BF,
+                                                m0=10,
+                                                !!!xl
+                                              )
+
+
+nhsf <span style="color: #C04040;">&lt;-</span> stan(file=<span style="color: #FFABAB;">"sparse_finnish_horseshoe_logistic_model.stan"</span>,
+             data=big_stan_data_sparse,
+            chains=4,iter=1000,
+            pars=c(<span style="color: #FFABAB;">"beta"</span>,<span style="color: #FFABAB;">"Beta0"</span>,<span style="color: #FFABAB;">"lp__"</span>),
+            control=list(adapt_delta=0.99, max_treedepth=15),cores=9)
+  saveRDS(nhsf,fs::path(<span style="color: #FFABAB;">"../data/fhs/"</span>,cancer_t,ext=<span style="color: #FFABAB;">"RDS"</span>))
+  }
+}
+
+
+<span style="color: #5D6A70;">#  </span><span style="color: #5D6A70;">Elapsed Time: 14.8989 seconds (Warm-up)</span>
+<span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">Chain 1:                12.5116 seconds (Sampling)</span>
+<span style="color: #5D6A70;">#</span><span style="color: #5D6A70;">Chain 1:                27.4105 seconds (Total)</span>
+
+dlfit <span style="color: #C04040;">&lt;-</span> stan(file=<span style="color: #FFABAB;">"org/logistic_model.stan"</span>,
+             model_name=cancer_t,
+             data=stan_data,
+             chains=1,iter=2000)
+
+
+
+
+
+
+</pre>
+</div>
+
+
+
+<div class="org-src-container">
+<pre class="src src-R">xl <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"~/tmp/x_mats.qs"</span>)
+yl <span style="color: #C04040;">&lt;-</span> qs::qread(<span style="color: #FFABAB;">"~/tmp/yl.qs"</span>)
+rstan_options(auto_write = <span style="color: #99D6FF;">TRUE</span>)
+
+x <span style="color: #C04040;">&lt;-</span> xl[[1]]
+y <span style="color: #C04040;">&lt;-</span> yl[[1]]
+walk(names(xl),
+     <span style="color: #C8FF03;">function</span>(cancer_t){
+  out_f <span style="color: #C04040;">&lt;-</span> fs::path(<span style="color: #FFABAB;">"data/stan_fits"</span>,cancer_t,ext=<span style="color: #FFABAB;">"RDS"</span>)
+  <span style="color: #C8FF03;">if</span>(!fs::file_exists(out_f)){
+    x <span style="color: #C04040;">&lt;-</span> xl[[cancer_t]]
+    y <span style="color: #C04040;">&lt;-</span> yl[[cancer_t]]
+    G <span style="color: #C04040;">&lt;-</span> nrow(x)
+    F <span style="color: #C04040;">&lt;-</span> ncol(x)
+
+    saveRDS(lfit,out_f)
+  }
+})
+</pre>
+</div>
+
+<style>.csl-entry{text-indent: -1.5em; margin-left: 1.5em;}</style><h2 class='citeproc-org-bib-h2'>Bibliography</h2>
+<div class="csl-bib-body">
+  <div class="csl-entry"><a name="citeproc_bib_item_1"></a>Carvalho, Carlos M., Nicholas G. Polson, and James G. Scott. 2009. “Handling Sparsity via the Horseshoe.” In <i>Proceedings of the Twelth International Conference on Artificial Intelligence and Statistics</i>, edited by David van Dyk and Max Welling, 5:73–80. Proceedings of Machine Learning Research. Hilton Clearwater Beach Resort, Clearwater Beach, Florida USA: PMLR. <a href="http://proceedings.mlr.press/v5/carvalho09a.html">http://proceedings.mlr.press/v5/carvalho09a.html</a>.</div>
+  <div class="csl-entry"><a name="citeproc_bib_item_2"></a>Gonzalez-Perez, Abel, Christian Perez-Llamas, Jordi Deu-Pons, David Tamborero, Michael P Schroeder, Alba Jene-Sanz, Alberto Santos, and Nuria Lopez-Bigas. 2013. “Intogen-Mutations Identifies Cancer Drivers Across Tumor Types.” <i>Nature Methods</i> 10 (11):1081–82. <a href="https://doi.org/10.1038/nmeth.2642">https://doi.org/10.1038/nmeth.2642</a>.</div>
+  <div class="csl-entry"><a name="citeproc_bib_item_3"></a>Piironen, Juho, and Aki Vehtari. 2017. “Sparsity Information and Regularization in the Horseshoe and Other Shrinkage Priors.” <i>Electronic Journal of Statistics</i> 11 (2):5018–51. <a href="https://doi.org/10.1214/17-ejs1337si">https://doi.org/10.1214/17-ejs1337si</a>.</div>
+  <div class="csl-entry"><a name="citeproc_bib_item_4"></a>Satterstrom, F. Kyle, Jack A. Kosmicki, Jiebiao Wang, Michael S. Breen, Silvia De Rubeis, Joon-Yong An, Minshi Peng, et al. 2020. “Large-Scale Exome Sequencing Study Implicates Both Developmental and Functional Changes in the Neurobiology of Autism.” <i>Cell</i> 180 (3):568–84.e23. <a href="https://doi.org/10.1016/j.cell.2019.12.036">https://doi.org/10.1016/j.cell.2019.12.036</a>.</div>
+</div>
 </div>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Nicholas Knoblauch</p>
-<p class="date">Created: 2020-05-20 Wed 12:28</p>
+<p class="date">Created: 2020-07-30 Thu 11:26</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

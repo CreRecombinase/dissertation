@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2020-05-20 Wed 11:54 -->
+<!-- 2020-07-30 Thu 11:26 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Functional Enrichment by Expectation Maximization</title>
@@ -260,26 +260,46 @@ for the JavaScript code in this tag.
 <li><a href="#org7dc987a">Method</a>
 <ul>
 <li><a href="#org07da710">Model</a></li>
-<li><a href="#orgcb1189c">Algorithm</a></li>
-<li><a href="#orgfc91d5e">Jaccard index for binary feature overlap</a></li>
-<li><a href="#orgbc74c13">Validation against COSMIC Cancer Gene Census</a></li>
+<li><a href="#org5facbbf">Validation against intOGen</a></li>
 <li><a href="#orgac60054">Data</a></li>
 <li><a href="#org3d7e31d">Software</a></li>
 </ul>
 </li>
 <li><a href="#org37638e0">Results</a>
 <ul>
-<li><a href="#org865903a">COSMIC validation</a></li>
+<li><a href="#org3fca551">FGEM identifies biologically relevant gene-level annotations</a></li>
+<li><a href="#org3d9b10f">FGEM integrates multiple gene-level annotations to reprioritize genes</a></li>
+<li><a href="#orgd2b0148"></a></li>
+<li><a href="#orgf83eeb8">Highly enriched single features</a></li>
 </ul>
 </li>
-<li><a href="#org5c9eeca">Discussion</a></li>
+<li><a href="#org5c9eeca">Discussion</a>
+<ul>
+<li><a href="#org90142d2">Consequences of the latent variable approach</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
 
 <div id="outline-container-org7c05cae" class="outline-2">
 <h2 id="org7c05cae">Introduction</h2>
+<div class="outline-text-2" id="text-org7c05cae">
+<p>
+When interpreting the results of a genome-scale genetic association study, be it a GWAS, a whole exome sequencing study, or a whole genome sequencing study, there are two questions that are of interest:
+</p>
+<ol class="org-ol">
+<li>which genes are associated with the trait of interest, and 2) what are the common properties of the genes that contribute to disease risk. The answer to one of these questions can inform the other.</li>
+</ol>
+<p>
+Obviously, identifying a set of properties common to causal genes is made much easier if the set of causal genes is known with certainty. Furthermore, if the set of causal genes is not known, but
+prior knowledge about the properties of the causal genes is available, that prior knowledge can be incorporated to implicate genes that might otherwise not have been identified due to a lack of statistical power.
+Prior information can also be used to deprioritize genes that might otherwise be implicated, despite being false positives.  Despite the complementarity of these 
+</p>
 </div>
+</div>
+
+
 
 <div id="outline-container-org7dc987a" class="outline-2">
 <h2 id="org7dc987a">Method</h2>
@@ -289,7 +309,7 @@ for the JavaScript code in this tag.
 <h3 id="org07da710">Model</h3>
 <div class="outline-text-3" id="text-org07da710">
 <p>
-Suppose we have gathered genetic data for a set of individuals to identify which genes are causally related to a disease or trait of interest.  For each gene \(g \in \{1 \dots G\}\), let the indicator variable \(z_g=1\) indicate that
+Suppose we have gathered genetic data for a set of individuals to identify which genes are causally related to a disease or trait of interest. For each gene \(g \in \{1 \dots G\}\), let the indicator variable \(z_g=1\) indicate that
 gene \(g\) is causaully related to our trait or disease of interest.  We can summarise the evidence for and against our hypothesis that \(z_g=1\) using a bayes factor:
 </p>
 
@@ -308,11 +328,11 @@ We define the vector \(\boldsymbol{\beta}\) and the function \(\pi(\boldsymbol{\
 </p>
 
 <p>
-\[P\pi(\boldsymbol{\beta},\textbf{a}_g) =  \frac{1}{1+e^{-(\beta_{0}+\sum_{f=1}^F{A_{f,g}\beta_f})}} =  (z_g=1|\textbf{a}_g,\boldsymbol{\beta})\]
+\[\pi(\boldsymbol{\beta},\textbf{a}_g) =  \frac{1}{1+e^{-(\beta_{0}+\sum_{f=1}^F{A_{f,g}\beta_f})}} =  P(z_g=1|\textbf{a}_g,\boldsymbol{\beta})\]
 </p>
 
 <p>
-We can compute the likelihood of a particular value of \(\boldsymbol{\beta}\) as:
+We can compute the likelihood of a particular value of \(\boldsymbol{\beta}\) by treating the data from each gene as coming from a two component mixture model (where \(z_g=1\) and where \(z_g=0\)) and marginalizing over the two components
 </p>
 
 <p>
@@ -328,140 +348,121 @@ By factorizing out the term \(\prod_{g=1}^{G} P(x_g|z_g=0)\) which does not depe
 \[P(\textbf{x}|\boldsymbol{\beta},\textbf{A}) \propto \prod_{g=1}^{G}[\pi(\boldsymbol{\beta},\textbf{a}_g)B_g+(1-\pi(\boldsymbol{\beta},\textbf{a}_g))]\]
 </p>
 
-
 <p>
-Given a particular value of \(\boldsymbol{\beta}\), we arrive at a new posterior:
+Given a particular value of \(\boldsymbol{\beta}\), and a bayes factor \(B_g\), we arrive at a new posterior probability that \(z_g=1\):
 </p>
 
 <p>
-\[P(z_g=1 | x_g, \boldsymbol{\beta},\textbf{a}_g) = \frac{\pi(\boldsymbol{\beta},\textbf{a}_g) B_g}{\pi(\boldsymbol{\beta} , \textbf{a}_g) B_g + 1 - \pi(\boldsymbol{\beta},\textbf{a}_g)}\]
-</p>
-</div>
-</div>
-
-
-<div id="outline-container-orgcb1189c" class="outline-3">
-<h3 id="orgcb1189c">Algorithm</h3>
-<div class="outline-text-3" id="text-orgcb1189c">
-<p>
-Our goal is both to estimate \(\boldsymbol{\beta}\) as well as \(P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)\) for each gene.  We use the EM algorithm <a class='org-ref-reference' href="#EM_algo">EM_algo</a> to
-obtain a maximum likelihood estimate for \(\boldsymbol{\beta}\).  If \(\textbf{z}\) is our latent variable then our complete data likelihood is:
+\[P(z_g=1 | B_g, \boldsymbol{\beta},\textbf{a}_g) = \frac{\pi(\boldsymbol{\beta},\textbf{a}_g) B_g}{\pi(\boldsymbol{\beta} , \textbf{a}_g) B_g + 1 - \pi(\boldsymbol{\beta},\textbf{a}_g)}\]
 </p>
 
-<p>
-\[P(\textbf{x},\textbf{z}|\boldsymbol{\beta},\textbf{A}) = 
-\prod_{g=1}^G \left[P(z_g|\boldsymbol{\beta},\textbf{a}_g) P(x_g|z_g)\right] = 
-\prod_{g=1}^G \left[\pi(\boldsymbol{\beta},\textbf{a}_g)^{z_g} (1-\pi(\boldsymbol{\beta},\textbf{a}_g))^{1-z_g}B_g^{z_g}\right]\] 
-</p>
 
 <p>
-From which we form the \(Q\) function
-</p>
-
-<p>
-\[ Q(\boldsymbol{\beta}|\boldsymbol{\beta}_n) = \sum_{g=1}^G \left[P(z_g=1|x_g,\boldsymbol{\beta}_n,\textbf{a}_g) \log\left(P(x_g,z_g=1|\boldsymbol{\beta})\right) +
-P(z_g=0|x_g,\boldsymbol{\beta}_n,\textbf{a}_g) \log\left(P(x_g,z_g=0|\boldsymbol{\beta})\right) \right] = 
-\sum_{g=1}^G \left [u_g(\log(\pi(\boldsymbol{\beta_n},\textbf{a}_g))+B_g)+(1-u_g)\log(1-\pi(\boldsymbol{\beta_n},\textbf{a}_g)) \right]\]
-</p>
-
-<p>
-Where \(u_g=P(z_g=1|x_g,\boldsymbol{\beta_n},\textbf{a}_g) = \frac{\pi(\boldsymbol{\beta_n},\textbf{a}_g)B_g}{\pi(\boldsymbol{\beta_n},\textbf{a}_g)B_g+1-\pi(\boldsymbol{\beta_n},\textbf{a}_g)}\)
-</p>
-
-<p>
-The model fitting procedure proceeds as follows 
-</p>
-
-<ul class="org-ul">
-<li>Start with an initial guess of \(\boldsymbol{\beta}\)</li>
-<li>Repeat until \(Q(\boldsymbol{\beta}|\boldsymbol{\beta}_{n-1})-Q(\boldsymbol{\beta}|\boldsymbol{\beta}_n)< \text{tol}\):
-<ul class="org-ul">
-<li>Compute \(P(z_g=1|x_g,\boldsymbol{\beta_n},\textbf{a}_g)\)</li>
-<li>Maximize the likelihood for \(\boldsymbol{\beta}\) using proportional logistic regression</li>
-</ul></li>
-</ul>
-</div>
-
-
-
-
-<div id="outline-container-orgc892bac" class="outline-4">
-<h4 id="orgc892bac">Feature selection</h4>
-<div class="outline-text-4" id="text-orgc892bac">
-<p>
-The number of gene-level features one might include in such a model is very large.  It is impossible, from both a computability 
+Our goal is both to estimate \(\boldsymbol{\beta}\) for a relevant set of features as well as \(P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)\) for each gene.  We use a penalized maximum-likelihood
+ approach to estimate \(\boldsymbol{\beta}\), from which we then \(P(Z_g=1|\textbf{a}_g,\boldsymbol{\beta},x_g)\). The number of gene-level features one might include in such a model is very large.  It is impossible, from both a computability 
 and interpretability standpoint, to include all conceivable features in the model. A related but distinct issue is that of collinearity.
-As the number of features in the model increases, there is a higher probability that some subset of features will be collinear with one-another,
-which can complicate model-fitting.  To avoid this issue, we employ a multi-stage model fitting procedure. In the first step, all single-feature-plus-intercept
-models are fit, and their $p$-value 
+As the number of features in the model increases, the probability that some subset of features will be collinear with one-another increases,
+which can complicate model-fitting, as \(\beta\) becomes unidentifiable. This is especially important when a binary, hierarchical feature set like the Gene Ontology.To avoid this issue, 
+we employ a multi-stage model fitting procedure. 
+In the first step, all single-feature-plus-intercept models are fit, and a $p$-value is obtained for each model byt comparing to the intercept-only model via the likelihood ratio test.  
 </p>
 
 <p>
-We employed a forward selection procedure to construct a multivariate model.  We begin the procedure by 
-fitting all features in single-feature models.  We test the significance of each model against an intercept-only model using the likelihood ratio test.
-From this set of univariate models multivariate models all of the nonsignificant (false discovery rate of 0.05) univariate features for each cancer type
- were removed from the analysis.  In the case of KICH, no features were significant after multiple testing correction (minimum \(q\) value: 0.104 correspodning to GO:0071456, "cellular response to hypoxia"), and in the case of CHOL,
-only one feature was significant after multiple testing correction (GO:0008285 " negative regulation of cell population proliferation", \(q\) value: 0.00909). Significant features were then 
-further pruned using a jaccard index similarity cutoff.
+From this set of single-feature models, all of the nonsignificant (i.e features with Benjamini-Hochberg adjusted $p$-values greater than 0.05) univariate features for each cancer type
+were removed from the analysis.  
 </p>
 </div>
-</div>
-</div>
-
-<div id="outline-container-orgfc91d5e" class="outline-3">
-<h3 id="orgfc91d5e">Jaccard index for binary feature overlap</h3>
-<div class="outline-text-3" id="text-orgfc91d5e">
+<div id="outline-container-org11c3e99" class="outline-4">
+<h4 id="org11c3e99">Joint Model</h4>
+<div class="outline-text-4" id="text-org11c3e99">
 <p>
-The Jaccard index that measures the similarity of two sets.  GO terms are binary features (gene is either a member of a GO term or it is not), and can be 
-models as a set, where the genes in the GO terms are the elements of the set. The definition of the Jaccard Index is:
+Significant features for each cancer type were then combined in a joint model and fit by maximizing the marginalized likelihood, penalized with an elastic-net penalty.  
 </p>
 
 <p>
-\[ J(A,B) = \frac{|A \cap B |}{A \cup B} = \frac{| A \cap B|}{|A|+|B|-|A \cap B|} \]
+The Limited Memory Broyden-Fletcher-Goldfarb-Shanno algorithm (LM-BFGS) (<a href="#citeproc_bib_item_2">Byrd et al. 1995</a>)  is among the most popular algorithms 
+for unconstrained optimization over scalar, differentiable functions. 
 </p>
 
 <p>
-The strategy for feature selection works as follows: first take the most significant single-feature model,
-and then remove the most similar features to the selected feature (i.e the features with a jaccard similarity above 0.1).
-Then fit all 2 term models that include the most significant feature, select the feature with the highest significance when tested against the single 
-feature model, and remove all features similar to the features in the selected model. This process of testing all available \(n\) feature models, against the
-(greedily) best $n-1$-feature model, and removing from the candidate pool features similar to the chosen $n$th feature, is repeated until the most significant model in the \(n\) term vs
-\(n-1\) comparison is not significant at \(p<0.05\) by the likelihood ratio test.
+One limitation of LM-BFGS, is that the function that is being optimized must be differentiable.  Unfortunately, sparsity-inducing $l<sub>1</sub>$-regularized models of the form
 </p>
-</div>
-</div>
 
-
-<div id="outline-container-orgbc74c13" class="outline-3">
-<h3 id="orgbc74c13">Validation against COSMIC Cancer Gene Census</h3>
-<div class="outline-text-3" id="text-orgbc74c13">
 <p>
-The Catalogue of Somatic Mutations in Cancer (COSMIC) Cancer Gene Census (CGC) <a class='org-ref-reference' href="#COSMIC">COSMIC</a> is an effort to catalogue genes which contain mutations
-causally implicated in cancer. To date, the CGC has identified  To validate the FGEM models, CGC genes were used as a gold standard.    
+\[f(\boldsymbol{\theta})=p(\boldsymbol{\theta} | \textbf{x}) + C \Vert \boldsymbol{\theta} \Vert_1\] are not differentiable when any of the elements of the parameter vector \(\boldsybmol{\theta}\) are 0.  The Orthant-wise limited-memory quasi-Newton method is a variant of LM-BFGS which is designed precisely for 
+fitting $l<sub>1</sub>$-regularized, sparsity inducing models. 
 </p>
 </div>
 </div>
 
+<div id="outline-container-orgd6f402b" class="outline-4">
+<h4 id="orgd6f402b">Regularization by (relaxed) elastic-net</h4>
+<div class="outline-text-4" id="text-orgd6f402b">
+<p>
+Our multivariate fitting procedure consists of two steps.  The first emphasizes feature selection, and the second emphasizes shrinkage.  In the first step, we minimize the objective function corresponding to the negative of the elastic-net penalized log-likelihood:
+\[ -\mathcal{L}(\textbf{x}|\boldsymbol{\beta},\textbf{A}) + \lambda\left( \frac{1-\alpha}{2} \sum_{j=2}^F\beta_j^2 + \alpha \sum_{j=2}^F|\beta_j| \right) \]
+</p>
 
+<p>
+Where \(\mathcal{L}(\textbf{x}|\boldsymbol{\beta},\textbf{A}) = \sum_{g=1}^{G}[\log\left(\pi(\boldsymbol{\beta},\textbf{a}_g)B_g+(1-\pi(\boldsymbol{\beta},\textbf{a}_g))\right)]\).
+</p>
+
+<p>
+The overall level of sparsity in the model is controlled by the parameter \(\lambda\), while the proportion of \(l_1\) vs \(l_2\) penalty is determined by \(\alpha\).  As a default, the value of \(\alpha\) is fixed at 0.85, and \(\lambda\) 
+takes on 100 values starting at zero, and ending at \(\lambda_{\text{max}}\), on a log scale.  \(\lambda_{\text{max}}\) is defined as the smallest value of \(\lambda\) for which the objective function is minimized, and all coefficients 
+but the intercept are 0 (the intercept term is not subject to the elastic net penalty). The optimal value of \(\lambda\) is chosen using 10-fold cross-validation.  
+</p>
+
+<p>
+In the second step, features with \(\beta_f=0\) are removed from the analysis, and cross-validation over 100 values of \(\lambda\) occurs again, this time with \(\alpha = 0\), meaning there is no \(l1\) penalty.  The motivation for this two-stage
+procedure comes from the "relaxed" lasso (<a href="#citeproc_bib_item_6">Hastie, Tibshirani, and Tibshirani 2017</a>), wherein the lasso is used for feature selection, and the model is refit without a lasso penalty.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1175ff8" class="outline-4">
+<h4 id="org1175ff8">Removal of highly enriched features</h4>
+<div class="outline-text-4" id="text-org1175ff8">
+<p>
+    A subset of features were remvoed after the univariate feature-selection stage as they exhibited enrichment estimates in excess of credulity. Features which corresponded to posterior probabilities in excess of 0.3 were 
+recorded and excluded from consideration for inclusion in the joint model (they were however included when calculating the FDR-adjusted p-values for the univariate tests).  
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5613966" class="outline-4">
+<h4 id="org5613966">Comparison with Fisher's Exact test</h4>
+<div class="outline-text-4" id="text-org5613966">
+<p>
+In the case of a single binary feature, one can apply a Bayes Factor cutoff to obtain a contingency table and assess the enrichment of the feature using Fisher's Exact test.
+ We compared FGEM with Fisher's exact test, using an FDR cutoff of 0.1, and compared the $p$-values to those obtained from the single-feature, FGEM the likelihood ratio test $p$-values.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org5facbbf" class="outline-3">
+<h3 id="org5facbbf">Validation against intOGen</h3>
+<div class="outline-text-3" id="text-org5facbbf">
+<p>
+IntOGen is a database of cancer driver genes (<a href="#citeproc_bib_item_5">Gonzalez-Perez et al. 2013</a>).  It is populated by an ensemble method that incorporates seven different methods for identifying cancer driver genes.  
+It weights each of the 7 methods according to their ability to predict membership in the The Catalogue of Somatic Mutations in Cancer (COSMIC) Cancer Gene Census (CGC) (<a href="#citeproc_bib_item_7">Sondka et al. 2018</a>).
+To validate the FGEM models, we compared the posterior under the functional model to the functional posterior under the uniform model.  In every cancer type, validated cancer genes had a higher functional posterior than 
+uniform posterior, while genes that were not previously identified as cancer genes had on average lower functional posterior compared to uniform (see table). 
+</p>
+</div>
+</div>
 
 <div id="outline-container-orgac60054" class="outline-3">
 <h3 id="orgac60054">Data</h3>
 <div class="outline-text-3" id="text-orgac60054">
-</div>
-<div id="outline-container-orgec5c161" class="outline-4">
-<h4 id="orgec5c161">Prognostic</h4>
-<div class="outline-text-4" id="text-orgec5c161">
-<p>
-The Human Pathology Atlas is a dataset of 900,000 patient survival profiles across 17 types of cancersurvival data <a class='org-ref-reference' href="#uhlen17_pathol_atlas_human_cancer_trans">uhlen17_pathol_atlas_human_cancer_trans</a>
-</p>
-</div>
 </div>
 
 <div id="outline-container-org535aaa0" class="outline-4">
 <h4 id="org535aaa0">Gene-Level Summary Statistics</h4>
 <div class="outline-text-4" id="text-org535aaa0">
 <p>
-A set of Bayes factors from a study of cancer driver genes <a class='org-ref-reference' href="#zhao19_detail_model_posit_selec_improv">zhao19_detail_model_posit_selec_improv</a>.  For each of 20 TCGA tumor types, roughly 20,000 genes were analyzed and the 
+A set of Bayes factors from a study of cancer driver genes (<a href="#citeproc_bib_item_10">Zhao et al. 2019</a>).  For each of 20 TCGA tumor types, roughly 20,000 genes were analyzed and the 
 posterior probability that each gene (in each cancer type) was a causal gene was assessed and summarized via Bayes Factor.  
 </p>
 </div>
@@ -475,7 +476,7 @@ posterior probability that each gene (in each cancer type) was a causal gene was
 <li><a id="orgf07b23c"></a>Gene Ontology<br>
 <div class="outline-text-5" id="text-orgf07b23c">
 <p>
-The "Biological Process" Gene Ontology <a class='org-ref-reference' href="#GO">GO</a>  was downloaded from the Bioconductor package <code>GO.db</code> <a class='org-ref-reference' href="#godb">godb</a>. Of the 10,930 possible biological process gene ontology terms, the 2,198 terms that 
+The "Biological Process" Gene Ontology (<a href="#citeproc_bib_item_9">The Gene Ontology Consortium 2018</a>)  was downloaded from the Bioconductor package <code>GO.db</code> (<a href="#citeproc_bib_item_3">Carlson 2020</a>). Of the 10,930 possible biological process gene ontology terms, the 2,198 terms that 
 include 10 or more genes were analyzed, so as to reduce the multiple testing burden.  
 </p>
 </div>
@@ -489,8 +490,8 @@ include 10 or more genes were analyzed, so as to reduce the multiple testing bur
 <h3 id="org3d7e31d">Software</h3>
 <div class="outline-text-3" id="text-org3d7e31d">
 <p>
-Our method is distributed as a freely available R package <a href="https://github.com/CreRecombinase/FGEM">FGEM</a> cite:R .FGEM relies on the <code>SQUAREM</code> package to accelerate EM convergence  <a class='org-ref-reference' href="#squarem">squarem</a>   
-and the hot-path functions are implemented as C++ functions using the <code>RcppArmadillo</code> <a class='org-ref-reference' href="#RcppArmadillo">RcppArmadillo</a> package.  
+Our method is distributed as a freely available R package <a href="https://github.com/CreRecombinase/FGEM">FGEM</a> (<a href="#citeproc_bib_item_8">Team 2020</a>) .FGEM relies on the <code>SQUAREM</code> package to accelerate EM convergence  (<a href="#citeproc_bib_item_4">Du and Varadhan 2020</a>)   
+and the hot-path functions are implemented as C++ functions using the <code>RcppEigen</code> (<a href="#citeproc_bib_item_1">Bates and Eddelbuettel 2013</a>) package.  
 </p>
 </div>
 </div>
@@ -500,179 +501,48 @@ and the hot-path functions are implemented as C++ functions using the <code>Rcpp
 <div id="outline-container-org37638e0" class="outline-2">
 <h2 id="org37638e0">Results</h2>
 <div class="outline-text-2" id="text-org37638e0">
-</div>
-<div id="outline-container-org865903a" class="outline-3">
-<h3 id="org865903a">COSMIC validation</h3>
-<div class="outline-text-3" id="text-org865903a">
-<p>
-The cross-entropy of the FGEM model for each cancer type was compared to the cross-entropy of the intercept-only
-FGEM model using the COSMIC census genes as ground truth.  For each of the 20 cancer types FGEM had lower cross-entropy 
-(higher likelihood ratio)
+
+<div class="figure">
+<p><img src="./fisher_vs_fgem.png" alt="fisher_vs_fgem.png">
 </p>
+</div>
+</div>
+
+<div id="outline-container-org3fca551" class="outline-3">
+<h3 id="org3fca551">FGEM identifies biologically relevant gene-level annotations</h3>
+</div>
+
+<div id="outline-container-org3d9b10f" class="outline-3">
+<h3 id="org3d9b10f">FGEM integrates multiple gene-level annotations to reprioritize genes</h3>
+<div class="outline-text-3" id="text-org3d9b10f">
+
+<div class="figure">
+<p><img src="./fgem_posterior_plot.png" alt="fgem_posterior_plot.png">
+</p>
+</div>
 
 
-<table>
+<div class="figure">
+<p><img src="./fgem_enrichment_plot.png" alt="fgem_enrichment_plot.png">
+</p>
+</div>
+</div>
+</div>
 
 
-<colgroup>
-<col  class="org-left">
 
-<col  class="org-right">
+<div id="outline-container-orgd2b0148" class="outline-3">
+<h3 id="orgd2b0148"></h3>
+</div>
 
-<col  class="org-right">
-
-<col  class="org-right">
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-left">cancer</th>
-<th scope="col" class="org-right">cross entropy functional</th>
-<th scope="col" class="org-right">cross entropy uniform</th>
-<th scope="col" class="org-right">cross entropy ratio</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="org-left">BLCA</td>
-<td class="org-right">-95662.4678891365</td>
-<td class="org-right">-85246.945544574</td>
-<td class="org-right">-10415.5223445625</td>
-</tr>
-
-<tr>
-<td class="org-left">BRCA</td>
-<td class="org-right">-118449.351908682</td>
-<td class="org-right">-90864.7631741114</td>
-<td class="org-right">-27584.5887345709</td>
-</tr>
-
-<tr>
-<td class="org-left">CESC</td>
-<td class="org-right">-147468.020375775</td>
-<td class="org-right">-79847.4862860612</td>
-<td class="org-right">-67620.5340897143</td>
-</tr>
-
-<tr>
-<td class="org-left">CHOL</td>
-<td class="org-right">-54147.2464991959</td>
-<td class="org-right">-50321.7386081126</td>
-<td class="org-right">-3825.50789108334</td>
-</tr>
-
-<tr>
-<td class="org-left">ESCA</td>
-<td class="org-right">-118908.27548448</td>
-<td class="org-right">-84631.9895615394</td>
-<td class="org-right">-34276.2859229405</td>
-</tr>
-
-<tr>
-<td class="org-left">GBM</td>
-<td class="org-right">-92362.5624198571</td>
-<td class="org-right">-73787.0866635762</td>
-<td class="org-right">-18575.4757562809</td>
-</tr>
-
-<tr>
-<td class="org-left">HNSC</td>
-<td class="org-right">-141820.887516856</td>
-<td class="org-right">-97862.081096597</td>
-<td class="org-right">-43958.806420259</td>
-</tr>
-
-<tr>
-<td class="org-left">KICH</td>
-<td class="org-right">-109133.000058618</td>
-<td class="org-right">-96625.4414397593</td>
-<td class="org-right">-12507.5586188592</td>
-</tr>
-
-<tr>
-<td class="org-left">KIRC</td>
-<td class="org-right">-101543.318511605</td>
-<td class="org-right">-80891.7016637173</td>
-<td class="org-right">-20651.6168478874</td>
-</tr>
-
-<tr>
-<td class="org-left">KIRP</td>
-<td class="org-right">-95512.8357907782</td>
-<td class="org-right">-84980.3471977415</td>
-<td class="org-right">-10532.4885930367</td>
-</tr>
-
-<tr>
-<td class="org-left">LIHC</td>
-<td class="org-right">-110051.739122586</td>
-<td class="org-right">-91896.1246808558</td>
-<td class="org-right">-18155.6144417298</td>
-</tr>
-
-<tr>
-<td class="org-left">LUAD</td>
-<td class="org-right">-177084.209088335</td>
-<td class="org-right">-115584.2079699</td>
-<td class="org-right">-61500.0011184357</td>
-</tr>
-
-<tr>
-<td class="org-left">LUSC</td>
-<td class="org-right">-157500.378816593</td>
-<td class="org-right">-106769.242183055</td>
-<td class="org-right">-50731.1366335384</td>
-</tr>
-
-<tr>
-<td class="org-left">PAAD</td>
-<td class="org-right">-318932.227641074</td>
-<td class="org-right">-66508.8323704442</td>
-<td class="org-right">-252423.39527063</td>
-</tr>
-
-<tr>
-<td class="org-left">PRAD</td>
-<td class="org-right">-891940.514321957</td>
-<td class="org-right">-76779.4406090754</td>
-<td class="org-right">-815161.073712881</td>
-</tr>
-
-<tr>
-<td class="org-left">SARC</td>
-<td class="org-right">-636965.982410518</td>
-<td class="org-right">-81431.9753511472</td>
-<td class="org-right">-555534.007059371</td>
-</tr>
-
-<tr>
-<td class="org-left">SKCM</td>
-<td class="org-right">-133127.342562248</td>
-<td class="org-right">-121032.432355748</td>
-<td class="org-right">-12094.9102065007</td>
-</tr>
-
-<tr>
-<td class="org-left">TGCT</td>
-<td class="org-right">-760084.365698844</td>
-<td class="org-right">-105591.835808511</td>
-<td class="org-right">-654492.529890333</td>
-</tr>
-
-<tr>
-<td class="org-left">UCEC</td>
-<td class="org-right">-111681.722486175</td>
-<td class="org-right">-86440.4633034317</td>
-<td class="org-right">-25241.2591827432</td>
-</tr>
-
-<tr>
-<td class="org-left">UCS</td>
-<td class="org-right">-99619.9782423041</td>
-<td class="org-right">-81147.3017795327</td>
-<td class="org-right">-18472.6764627714</td>
-</tr>
-</tbody>
-</table>
+<div id="outline-container-orgf83eeb8" class="outline-3">
+<h3 id="orgf83eeb8">Highly enriched single features</h3>
+<div class="outline-text-3" id="text-orgf83eeb8">
+<p>
+As stated in the Methods section, Features which corresponded to posterior probabilities in excess of 0.3 were excluded from consideration for inclusion in the joint model.  One consequence of FGEM's latent variable approach
+is that it is possible to encounter a scenario analogous to the "separation" problem in logistic regression.  In logistic regression, if one (or several) predictors predict an output perfectly, the likelihood for that 
+feature is not maximized at a finite parameter value. Because there is high overlap in the Gene Ontology feature-set, little information is lost by excluding these problematic features.
+</p>
 </div>
 </div>
 </div>
@@ -681,30 +551,44 @@ FGEM model using the COSMIC census genes as ground truth.  For each of the 20 ca
 <div id="outline-container-org5c9eeca" class="outline-2">
 <h2 id="org5c9eeca">Discussion</h2>
 <div class="outline-text-2" id="text-org5c9eeca">
+</div>
+<div id="outline-container-org90142d2" class="outline-3">
+<h3 id="org90142d2">Consequences of the latent variable approach</h3>
+<div class="outline-text-3" id="text-org90142d2">
+<p>
+The latent variable \(z_i\) in the FGEM model is by definition unobserved, 
+One of the most salient features of FGEM as compared to Fisher's Exact test is that FGEM does not binarize data into significant vs insignificant.  For a particular gene set in a particular dataset,
+the enrichment of Fisher's exact test is determined by the cardinality of the entries in the 2 by 2 contingency table.  In the case of Bayes factors, genes for which the evidence is <i>in favor</i> of the null
+ hypothesis is treated identically to genes for which the evidence is <i>in favor</i> of the alternative hypothesis, but slightly below the significance cutoff.  
+</p>
+
+
+
+
 <p>
 
-<h1 class='org-ref-bib-h1'>Bibliography</h1>
-<ul class='org-ref-bib'><li><a id="EM_algo">[EM_algo]</a> <a name="EM_algo"></a>Dempster, Laird & Rubin, Maximum Likelihood from Incomplete Data via the EM Algorithm, <i>Journal of the Royal Statistical Society. Series B (Methodological)</i>, <b>39(1)</b>, 1-38 (1977). <a href="http://www.jstor.org/stable/2984875">link</a>.</li>
-<li><a id="COSMIC">[COSMIC]</a> <a name="COSMIC"></a>Sondka, Bamford, Cole, Charlotte, Ward, Dunham, & Forbes, The COSMIC Cancer Gene Census: describing genetic  dysfunction across all human cancers, <i>Nature Reviews Cancer</i>, <b>18(11)</b>, 696–705 (2018). <a href="http://dx.doi.org/10.1038/s41568-018-0060-1">link</a>. <a href="http://dx.doi.org/10.1038/s41568-018-0060-1">doi</a>.</li>
-<li><a id="uhlen17_pathol_atlas_human_cancer_trans">[uhlen17_pathol_atlas_human_cancer_trans]</a> <a name="uhlen17_pathol_atlas_human_cancer_trans"></a>Mathias Uhlen, Cheng Zhang, Sunjae Lee, , Evelina Sj\"ostedt, Linn Fagerberg, , Gholamreza Bidkhori, Rui Benfeitas, Muhammad, Arif, Zhengtao Liu, Fredrik Edfors, Kemal, Sanli, Kalle von Feilitzen, Per Oksvold, , Emma Lundberg, Sophia Hober, Peter Nilsson, , Johanna Mattsson, Jochen Schwenk, Hans, Brunnstr\"om, Bengt Glimelius, Tobias, Sj\"oblom, Per-Henrik Edqvist, Dijana, Djureinovic, Patrick Micke, Cecilia Lindskog, , Adil Mardinoglu & Fredrik Ponten, A Pathology Atlas of the Human Cancer Transcriptome, <i>Science</i>, <b>357(6352)</b>, eaan2507 (2017). <a href="https://doi.org/10.1126/science.aan2507">link</a>. <a href="http://dx.doi.org/10.1126/science.aan2507">doi</a>.</li>
-<li><a id="zhao19_detail_model_posit_selec_improv">[zhao19_detail_model_posit_selec_improv]</a> <a name="zhao19_detail_model_posit_selec_improv"></a>Siming Zhao, Jun Liu, Pranav Nanga, Yuwen, Liu, Ercument Cicek, Nicholas Knoblauch, , Chuan He, Matthew Stephens & Xin He, Detailed Modeling of Positive Selection Improves  Detection of Cancer Driver Genes, <i>Nature Communications</i>, <b>10(1)</b>, 3399 (2019). <a href="https://doi.org/10.1038/s41467-019-11284-9">link</a>. <a href="http://dx.doi.org/10.1038/s41467-019-11284-9">doi</a>.</li>
-<li><a id="GO">[GO]</a> <a name="GO"></a>The Gene Ontology Consortium, The Gene Ontology Resource: 20 years and still GOing strong, <i>Nucleic Acids Research</i>, <b>47(D1)</b>, D330-D338 (2018). <a href="https://doi.org/10.1093/nar/gky1055">link</a>. <a href="http://dx.doi.org/10.1093/nar/gky1055">doi</a>.</li>
-<li><a id="godb">[godb]</a> <a name="godb"></a>  @Manualgodb,
-    title = GO.db: A set of annotation maps describing the entire Gene Ontology,
-    author = Marc Carlson,
-    year = 2020,
-    note = R package version 3.11.0,
-  </li>
-<li><a id="squarem">[squarem]</a> <a name="squarem"></a>Yu Du & Ravi Varadhan, SQUAREM: An R Package for Off-the-Shelf Acceleration  of EM, MM and Other EM-Like Monotone Algorithms, <i>Journal of Statistical Software</i>, <b>92(7)</b>, 1-41 (2020). <a href="http://dx.doi.org/10.18637/jss.v092.i07">doi</a>.</li>
-<li><a id="RcppArmadillo">[RcppArmadillo]</a> <a name="RcppArmadillo"></a>Dirk Eddelbuettel & Conrad Sanderson, RcppArmadillo: Accelerating R with high-performance C++ linear algebra, <i>Computational	Statistics and Data Analysis</i>, <b>71</b>, 1054-1063 (2014). <a href="http://dx.doi.org/10.1016/j.csda.2013.02.005">link</a>.</li>
-</ul>
 </p>
+
+<style>.csl-entry{text-indent: -1.5em; margin-left: 1.5em;}</style><h2 class='citeproc-org-bib-h2'>Bibliography</h2>
+<div class="csl-bib-body">
+  <div class="csl-entry"><a name="citeproc_bib_item_1"></a>Bates, Douglas, and Dirk Eddelbuettel. 2013. “Fast and Elegant Numerical Linear Algebra Using the RcppEigen Package.” <i>Journal of Statistical Software</i> 52 (5):1–24. <a href="http://www.jstatsoft.org/v52/i05/">http://www.jstatsoft.org/v52/i05/</a>.</div>
+  <div class="csl-entry"><a name="citeproc_bib_item_2"></a>Byrd, Richard H., Peihuang Lu, Jorge Nocedal, and Ciyou Zhu. 1995. “A Limited Memory Algorithm for Bound Constrained Optimization.” <i>SIAM Journal on Scientific Computing</i> 16 (5). Society for Industrial &#38; Applied Mathematics (SIAM):1190–1208. <a href="http://dx.doi.org/10.1137/0916069">http://dx.doi.org/10.1137/0916069</a>.</div>
+  <div class="csl-entry"><a name="citeproc_bib_item_3"></a>Carlson, Marc. 2020. <i>GO.Db: A Set of Annotation Maps Describing the Entire Gene Ontology</i>.</div>
+  <div class="csl-entry"><a name="citeproc_bib_item_4"></a>Du, Yu, and Ravi Varadhan. 2020. “SQUAREM: An R Package for Off-the-Shelf Acceleration of EM, MM and Other EM-Like Monotone Algorithms.” <i>Journal of Statistical Software</i> 92 (7):1–41.</div>
+  <div class="csl-entry"><a name="citeproc_bib_item_5"></a>Gonzalez-Perez, Abel, Christian Perez-Llamas, Jordi Deu-Pons, David Tamborero, Michael P Schroeder, Alba Jene-Sanz, Alberto Santos, and Nuria Lopez-Bigas. 2013. “Intogen-Mutations Identifies Cancer Drivers Across Tumor Types.” <i>Nature Methods</i> 10 (11):1081–82. <a href="https://doi.org/10.1038/nmeth.2642">https://doi.org/10.1038/nmeth.2642</a>.</div>
+  <div class="csl-entry"><a name="citeproc_bib_item_6"></a>Hastie, Trevor, Robert Tibshirani, and Ryan J. Tibshirani. 2017. “Extended Comparisons of Best Subset Selection, Forward Stepwise Selection, and the Lasso.” <i>CoRR</i>. <a href="http://arxiv.org/abs/1707.08692v2">http://arxiv.org/abs/1707.08692v2</a>.</div>
+  <div class="csl-entry"><a name="citeproc_bib_item_7"></a>Sondka, Zbyslaw, Sally Bamford, Charlotte G. Cole, Sari A. Ward, Ian Dunham, and Simon A. Forbes. 2018. “The COSMIC Cancer Gene Census: Describing Genetic Dysfunction Across All Human Cancers.” <i>Nature Reviews Cancer</i> 18 (11). Springer Science and Business Media LLC:696–705. <a href="http://dx.doi.org/10.1038/s41568-018-0060-1">http://dx.doi.org/10.1038/s41568-018-0060-1</a>.</div>
+  <div class="csl-entry"><a name="citeproc_bib_item_8"></a>Team, R Core. 2020. <i>R: A Language and Environment for Statistical Computing</i>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.</div>
+  <div class="csl-entry"><a name="citeproc_bib_item_9"></a>The Gene Ontology Consortium. 2018. “The Gene Ontology Resource: 20 Years and Still GOing Strong.” <i>Nucleic Acids Research</i> 47 (D1):D330–38. <a href="https://doi.org/10.1093/nar/gky1055">https://doi.org/10.1093/nar/gky1055</a>.</div>
+  <div class="csl-entry"><a name="citeproc_bib_item_10"></a>Zhao, Siming, Jun Liu, Pranav Nanga, Yuwen Liu, A. Ercument Cicek, Nicholas Knoblauch, Chuan He, Matthew Stephens, and Xin He. 2019. “Detailed Modeling of Positive Selection Improves Detection of Cancer Driver Genes.” <i>Nature Communications</i> 10 (1):3399. <a href="https://doi.org/10.1038/s41467-019-11284-9">https://doi.org/10.1038/s41467-019-11284-9</a>.</div>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Nicholas Knoblauch</p>
-<p class="date">Created: 2020-05-20 Wed 11:54</p>
+<p class="date">Created: 2020-07-30 Thu 11:26</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
