@@ -318,7 +318,9 @@ qs::qsave(bf,"data/plot_data.qs")
 ucec_bf_df <- filter(bf, cancer == "UCEC") 
 ucec_l0n <- ucec_bf_df$l0_mean
 plot_ucec <- plot_post(ucec_bf_df$data[[1]], log = FALSE) +
-    theme_fira() + ggtitle("UCEC")
+    theme_fira() +
+    ggtitle("UCEC")+
+    theme(legend.position = "bottom")
 
 
 
@@ -327,21 +329,22 @@ brca_bf_df <- filter(bf, cancer == "BRCA")
 brca_l0n <- brca_bf_df$l0_mean
 plot_brca <- plot_post(brca_bf_df$data[[1]], log = FALSE)  +
     theme_fira() +
-    ggtitle("BRCA") 
+    ggtitle("BRCA") +
+    theme(legend.position = "bottom")
 
-(plot_brca + plot_ucec) + plot_layout(guides = "collect")
+
 
 pb_brca <- plot_beta(brca_bf_df$Beta[[1]], "BRCA",20,25)
-pb_ucec <- plot_beta(ucec_bf_df$Beta[[1]],"UCEC",20,25)
+pb_ucec <- plot_beta(ucec_bf_df$eBgita[[1]],"UCEC",20,25)
 ## (plot_beta(brca_bf_df$Beta[[1]], "BRCA",25) +
 ##  plot_beta(ucec_bf_df$Beta[[1]],"UCEC",25))
 
 plots_post <- ((plot_brca + plot_ucec) + plot_layout(guides = "collect"))
-
+plots_post <- (plot_brca + plot_ucec) + plot_layout(guides = "collect") & theme(legend.position = 'bottom')
 plots_enr <- (pb_brca + pb_ucec) & theme_fira()
 
-ggsave("org/fgem_posterior_plot.png",plot=plots_post,width=2250/300,height=(2625/300)/2,units="in")
-ggsave("org/fgem_enrichment_plot.png",plot=plots_enr,width=2250/300,height=(2625/300)/2,units="in")
+ggsave("org/fgem_posterior_plot.png", plot = plots_post, width = 2250/300, height = (2625/300)/2, units="in")
+ggsave("org/fgem_enrichment_plot.png", plot = plots_enr, width = 2250/300, height = (2625/300)/2, units="in")
                                         #/ plots_enr
 
 
