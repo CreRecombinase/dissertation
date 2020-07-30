@@ -164,8 +164,6 @@ and the hot-path functions are implemented as C++ functions using the ~RcppEigen
 
 
 
-** 
-
 ** Highly enriched single features
 
 As stated in the Methods section, Features which corresponded to posterior probabilities in excess of 0.3 were excluded from consideration for inclusion in the joint model.  One consequence of FGEM's latent variable approach

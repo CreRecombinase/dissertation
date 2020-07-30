@@ -246,20 +246,31 @@ plot_post <- function(data,
 }
 
 
-plot_beta <- function(Beta, cancer) {
-  k <- 22
+plot_beta <- function(Beta, cancer,width=25,k=10,description=FALSE) {
   tBeta <- filter(Beta, feature_name != "Intercept", Beta != 0)
   nr <- ceiling(nrow(tBeta) / k)
   BR <- range(tBeta$Beta)
   l <- nrow(tBeta)
-  Beta_p <- tBeta %>%
-    arrange(abs(Beta)) %>%
-    mutate(
-      label = str_wrap(paste0(feature_name, ":\n", description), width = 50),
-      label = factor(label, levels = label), Beta_ct = gl(n = nr, k = k, length = l),
-      feature_name = factor(feature_name, levels = feature_name),
-      idx = 1:n()
-    )
+  if (description) {
+      Beta_p <- tBeta %>%
+          arrange(abs(Beta)) %>%
+          mutate(
+              label = str_wrap(paste0(feature_name, ":\n", description), width = width),
+              label = factor(label, levels = label), Beta_ct = gl(n = nr, k = k, length = l),
+              feature_name = factor(feature_name, levels = feature_name),
+              idx = 1:n()
+          )
+  } else {
+      Beta_p <- tBeta %>%
+          arrange(abs(Beta)) %>%
+          mutate(
+              label = feature_name,
+              label = factor(label, levels = label), Beta_ct = gl(n = nr, k = k, length = l),
+              feature_name = factor(feature_name, levels = feature_name),
+              idx = 1:n()
+          )
+  }
+  
   ggplot(
     tail(Beta_p, k),
     aes(y = label, x = Beta)
@@ -309,7 +320,7 @@ ucec_l0n <- ucec_bf_df$l0_mean
 plot_ucec <- plot_post(ucec_bf_df$data[[1]], log = FALSE) +
     theme_fira() + ggtitle("UCEC")
 
-pb_ucec <- plot_beta(ucec_bf_df$Beta[[1]],"UCEC")
+
 
 
 brca_bf_df <- filter(bf, cancer == "BRCA")
@@ -319,7 +330,11 @@ plot_brca <- plot_post(brca_bf_df$data[[1]], log = FALSE)  +
     ggtitle("BRCA") 
 
 (plot_brca + plot_ucec) + plot_layout(guides = "collect")
-pb_brca <- plot_beta(brca_bf_df$Beta[[1]], "BRCA")
+
+pb_brca <- plot_beta(brca_bf_df$Beta[[1]], "BRCA",20,25)
+pb_ucec <- plot_beta(ucec_bf_df$Beta[[1]],"UCEC",20,25)
+## (plot_beta(brca_bf_df$Beta[[1]], "BRCA",25) +
+##  plot_beta(ucec_bf_df$Beta[[1]],"UCEC",25))
 
 plots_post <- ((plot_brca + plot_ucec) + plot_layout(guides = "collect"))
 
