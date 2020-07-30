@@ -142,6 +142,11 @@ and the hot-path functions are implemented as C++ functions using the ~RcppEigen
 
 * Results
 
+
+** A probabilistic framework for gene-set enrichment and gene prioritization
+
+[[./FGEM_procedure.png]]
+
 # #+BEGIN_SRC R :results graphics :file fisher_vs_fgem.png
 #   suppressMessages(library(tidyverse))
 #   suppressMessages(library(ggsci))
