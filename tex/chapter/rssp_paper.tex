@@ -1,0 +1,490 @@
+
+\chapter{RSSp}
+
+
+
+% \section{Introduction}
+% \label{sec:org3c6cf58}
+
+% The notion of "heritability" dates back a very long time. Heritability is the motivating question in the field of genetics.  Francis Galton is in many ways the  godfather of statistical genetics (as upsetting as we may find that).
+% In the simplest definition, a trait is heritable if offspring are more similar to their parents (in regards to the trait) than they are to random members of the same population.  
+
+% \subsection*{The unreasonable effectiveness of linear models}
+% \label{sec:orgd56a398}
+
+% There is a tension in statistical molecular genetics between the generic linear nature of the statistical models used to predict phenotype from genotype, and the fundamentally non-linear nature of the molecular traits themselves.  Indeed, there is a 
+% rich tradition of mathematical biology outside of genetics for which linear systems are the exception rather than the rule.  When discussing the application of linear methods to non-linear systems, there is a common quotation by physicist Stanislaw Ulam \cite{Campbell_2004} :
+
+% \begin{quote}
+% Using a term like nonlinear science is like referring to the bulk of zoology as the study of non-elephant animals. --Stanislaw Ulam
+% \end{quote}
+
+% For geneticists, and statistical geneticists in particular, there is a powerful tendency towards linear models.  The central limit theorem being a commonly cited justification.  
+
+
+% \subsection*{Regression with Summary Statistics}
+% \label{sec:org859ce76}
+
+% An important recent development in modeling the relationship between multiple regression coefficients estimates to their univariate counterparts, by means of a reference LD matrix is known as Regression with Summary Statistics (RSS)
+% \cite{Zhu_2017}.  The key idea of RSS is the RSS likelihood, where 
+
+% \subsection*{Simulating quantitative traits}
+% \label{sec:orgaf04e86}
+
+% Under an additive model
+
+% $$ \textbf{y}= \textbf{X} \boldsymbol{\beta} + \boldsymbol{\epsilon}$$
+
+% Where \(X\) is genotype (\(n\) by \(p\)), \(\beta\) is a vector (length \(p\)) of fixed effects and \(\epsilon\) is noise/error.
+
+% Because in general \(p >>n\), we can't directly estimate the distribution of \(\beta_i\).  Instead we have univariate summary statistics, alternatively known
+% as "marginal associations".  The summary statistics we will be interested in are the marginal effect size at a particlular variant (\(j\)), which we will denote as
+% \(\hat{\beta_j}\), and the standard error of that estimate, which we will denote as \(\hat{\sigma_j^2}\)
+
+% $$ \hat{\beta_j} := (X_j^TX_j)^{-1}X_j^Ty $$
+
+% $$ \hat{\sigma_j^2} := (nX_j^TX_j)^{-1}(y-X_j\hat{\beta_j})^T(y-X_j\hat{\beta_j}) $$
+
+% \subsection*{RSS}
+% \label{sec:orgb0b15e2}
+
+% RSS relates univariate statistics to their multivariate counterparts by using the LD matrix:
+
+% $$ \hat{\boldsymbol{\beta}} | \boldsymbol{\beta} \sim N(\hat{S}\hat{R}\hat{S}^{-1},\hat{S}\hat{R}\hat{S}) $$
+
+% In the original RSS paper there were two priors on \(\beta\) that were discussed.  The first is based on the Bayesian Sparse Linear Mixed Model (BSLMM) \cite{bslmm} where effects are either "sparse" or "polygenic":
+
+% $$ \beta_j \sim \pi N(0,\sigma^2_B+\sigma^2_P)+(1-\pi) N(0,\sigma^2_P) $$
+
+% Here \(\sigma^2_B\) represents the variance of the sparse component, while \(\sigma^2_P\) represents the variance of the polygenic component. Fitting the RSS model with this prior is quite computationally demanding, 
+% as the MCMC requires computing the multivariate normal density function, which itself requires cholesky decomposition of a \(p \times p\) matrix, an \(O(p^3)\) operation.  If one assumes that \(\sigma^2_P=0\),
+% i.e that there is no polygenic component, one arrives at the BVSR model:
+
+% $$ \beta_j \sim \pi N(0,\sigma^2_B)+(1-\pi) \delta_0 $$
+
+% The posterior for the BVSR model can be approximated using variational inference. 
+
+
+% \subsubsection*{Polygenic RSS}
+% \label{sec:org040cb73}
+
+% If instead of assuming that \(\sigma^2_P=0\), one instead assumes that \(\sigma_B=0\) we arrive at the following model: 
+% $$ \beta_j \sim N(0,\sigma^2_P)$$
+% (under this formulation it must be the case that \(\pi=0\) so that the model is identifiable).  
+
+% With a normal prior (rather than a mixture of two normal distributions) and multivariate normal likelihood, we can write down the analytic form of the marginalized likelihood.
+
+% \subsubsection*{A useful fact about marginal and conditional multivariate normal distributions}
+% \label{sec:orgc3a47cb}
+
+% From Bishop's, \uline{Pattern Recognotion and Machine Learning} (Section 2.3) \cite{patternrecognition} we have this useful property about conditional and marginal multivariate normal distributions:
+
+% Given a marginal Gaussian distribution for \(\textbf{x}\) and a conditional Gaussian distribution for \(\textbf{y}\) given \(\textbf{x}\) in the form:
+% $$p(\textbf{x}) = N(\textbf{x}|\boldsymbol{\mu},\Lambda^{-1})$$
+
+% $$p(\textbf{y}|\textbf{x}) = N(\textbf{y}|A\textbf{x}+\textbf{b},L^{-1})$$
+% the marginal distribution of \(\textbf{y}\) and the conditional distribution of \(\textbf{x}\) given \(\textbf{y}\) arge given by 
+
+% $$ p(\textbf{y}) = N(\textbf{y}|A\boldsymbol{\mu}+\textbf{b},L^{-1}+A\Lambda^{-1}A^{T})$$
+% $$p(\textbf{x}|\textbf{y}) = N(\textbf{x}| \Sigma \left\{ A^{T} L ( \textbf{y} - \textbf{b} ) + \Lambda \boldsymbol{\mu} \right\} , \Sigma)$$
+
+% where :
+% $$\Sigma = (\Lambda + A^{T}LA)^{-1}$$
+
+
+% \subsection*{Derivation of the  the RSSp Posterior}
+% \label{sec:orgb539917}
+
+
+% Given this result, we can derive the posterior for \(\boldsymbol{\beta}\).
+
+% Remember that the prior for \(\boldsymbol{\beta}\) is \(\boldsymbol{\beta} \sim N(0,I_p\sigma^2_\beta)\), and that the RSS likelihood is \(\hat{\boldsymbol{\beta}} | \boldsymbol{\beta} \sim N(\hat{S}\hat{R}\hat{S}^{-1}\boldsymbol{\beta},\hat{S}\hat{R}\hat{S})\).  
+% We can replace \(\boldsymbol{\beta}\) with \(\textbf{x}\) and \(\hat{\boldsymbol{\beta}}\) with \(\textbf{y}\) by making the following substitutions:
+
+% \begin{center}
+% \begin{tabular}{ll}
+% Symbol & Replacement\\
+% \hline
+% \(\boldsymbol{\mu}\) & \(0\)\\
+% \(b\) & \(0\)\\
+% \(\Lambda^{-1}\) & \(I_p \sigma^2_\beta\)\\
+% \(A\) & \(\hat{\textbf{S}}\hat{\textbf{R}}\hat{\textbf{S}}^{-1}\)\\
+% \(L^{-1}\) & \(\hat{\textbf{S}}\hat{\textbf{R}}\hat{\textbf{S}}\)\\
+%  & \\
+% \end{tabular}
+% \end{center}
+
+% We then see that the marginalized (over $\boldsymbol{\beta}$) form of \(\hat{\boldsymbol{\beta}}\) is:
+
+% $$ \hat{\boldsymbol{\beta}}|\sigma_\beta^2 \sim N(0,\sigma_\beta^2\hat{\textbf{S}}\hat{\textbf{R}}\hat{\textbf{S}}^{-1}\hat{\textbf{S}}^{-1}\hat{\textbf{R}}\hat{\textbf{S}}+\hat{\textbf{S}}\hat{\textbf{R}}\hat{\textbf{S}})$$ 
+
+% We can rewrite this as :
+% $$\hat{\boldsymbol{\beta}}|\sigma_\beta^2 \sim  N(0,\sigma_\beta^2\hat{\textbf{S}}\hat{\textbf{R}}\hat{\textbf{S}}^{-2}\hat{\textbf{R}}\hat{\textbf{S}}+\hat{\textbf{S}}\hat{\textbf{R}}\hat{\textbf{S}}) $$
+
+% Computing the marginalized likelihood in this case, though involving only a single parameter, requires an expensive recalculation of the multivariate normal probability density function, in particular 
+% the recomputation of the determinant and inverse of \(\sigma_\beta^2\hat{\textbf{S}}\hat{\textbf{R}}\hat{\textbf{S}}^{-2}\hat{\textbf{R}}\hat{\textbf{S}}+\hat{\textbf{S}}\hat{\textbf{R}}\hat{\textbf{S}}\) for each value of 
+% \(\sigma_\beta^2\).  A common computational trick for recomputing a multivariate normal density is to precompute a cholesky decomposition of the variance as the computationally expenensive aspects of computing the multivariate normal density
+% (the determinant and inverse of the covariance matrix) rank-one updates of the cholesky decomposition    Tricks that are often applied in this setting
+
+
+
+% Our prior for \(\textbf{u}\) is 
+% $$ \textbf{u} \sim N(0,I_p\sigma^2_u)$$
+% Which means that the distribution for \(\hat{\textbf{u}}\) can be written
+% $$\hat{\textbf{u}}|\textbf{u} \sim N(R\textbf{u},R+cI_p)$$
+% Right away, we see that we can replace \(\textbf{u}\) with \(\textbf{x}\), and \(\hat{\textbf{u}}\) with \(\textbf{y}\) if we make the following substitutions:
+
+% \begin{center}
+% \begin{tabular}{ll}
+% Symbol & Replacement\\
+% \hline
+% \(\boldsymbol{\mu}\) & \(0\)\\
+% \(b\) & \(0\)\\
+% \(\Lambda^{-1}\) & \(I_p \sigma^2\)\\
+% \(A\) & \(R\)\\
+% \(L^{-1}\) & \(R+cI_p\)\\
+% \end{tabular}
+% \end{center}
+
+% We then see that the marginalized form of $\hat{\textbf{u}}$ is:
+
+% \[ \hat{\textbf{\beta}} \sim N(0,\sigma_u^2R^2+R+cI_p)\]
+
+% and that the posterior is 
+
+% \[ \textbf{u}|\hat{\textbf{u}} \sim N(\Sigma R  {(R+cI_p)}^{-1}\hat{\textbf{u}},\Sigma)\]
+
+% Where $\Sigma = {(\frac{1}{\sigma^2_u} I_p +R {(R+cI_p)}^{-1}R)}^{-1}$
+
+
+% Given the EVD of R, \(R=QD_{R}Q^{T}=Q \text{diag}\left(\lambda_j\right)Q^{T}\), we can rewrite the matrix 
+% $$L^{-1}=(QD_RQ^{T}+cI_p)^{-1}=(QD_{L^{-1}}Q)^{-1}$$ where \(D_{L^{-1}}^{-1}=\text{diag}\left( \lambda_j+c \right)^{-1}\) and \(D_L=D_{L^{-1}}^{-1}=\text{diag}\left(\frac{1}{\lambda_j+c} \right)\)
+
+% Plugging that in to the equation for \(\Sigma\): 
+
+% $$\Sigma= \left(\frac{1}{\sigma^2_u} I_p+(QD_RQ^{T})(QD_LQ^{T})(QD_RQ^{T})\right)^{-1}$$
+% $$=(\frac{1}{\sigma^2_u} I_p+QDD_LDQ^{T})^{-1}= \left( \text{diag}\left(\frac{1}{\sigma_u^2}\right) + Q\text{diag}\left(\frac{\lambda_j^2}{\lambda_j+c}\right)Q^{T} \right)^{-1} = \left(Q \text{diag}\left( \frac{1}{\sigma_u^2}+\frac{\lambda_j^2}{\lambda_j+c}\right)Q^{T}\right)^{-1}$$
+% $$=\left(Q \text{diag}\left( \frac{(\lambda_j+c)}{(\lambda_j+c)\sigma_u^2}+\frac{\lambda_j^2\sigma_u^2}{(\lambda_j+c)\sigma_u^2}\right)Q^{T}\right)^{-1}=Q \text{diag}\left(\frac{(\lambda_j+c)\sigma_u^2}{(\lambda_j+c)+\lambda_j^2\sigma_u^2} \right)Q^{T}$$
+
+
+% We'll call the diagonal matrix \(D_\Sigma\)
+
+% Simplifying further:
+
+% $$\textbf{u}|\hat{\textbf{u}} \sim N(\underbrace{Q D_\Sigma Q^{T}}_\Sigma \underbrace{QD_{R}Q^{T}}_R \underbrace{QD_LQ^{T}}_{(R+cI_p)^{-1}}\hat{\textbf{u}},\underbrace{QD_\Sigma Q^{T}}_\Sigma)$$
+
+% $$= N(QD_\Sigma D_R D_LQ^{T},QD_\Sigma Q^{T})$$
+
+% $$= N\left( Q \text{diag}\left( \frac{(\lambda_j+c)\sigma_u^2}{(\lambda_j+c)+\lambda_j^2\sigma_u^2} \times \frac{\lambda_j}{1} \times \frac{1}{\lambda_j+c} \right)Q^{T}\hat{\textbf{u}},Q \text{diag}\left(\frac{(\lambda_j+c)\sigma_u^2}{(\lambda_j+c)+\lambda_j^2\sigma_u^2} \right)Q^{T} \right)$$
+
+% $$= N\left( Q \text{diag}\left( \frac{\sigma_u^2 \lambda_j}{(\lambda_j+c)+\lambda_j^2\sigma_u^2}  \right)Q^{T}\hat{\textbf{u}},Q \text{diag}\left(\frac{(\lambda_j+c)\sigma_u^2}{(\lambda_j+c)+\lambda_j^2\sigma_u^2} \right)Q^{T} \right)$$
+% For brevity, we'll simply write:
+
+% $$\textbf{u}|\hat{\textbf{u}} \sim N \left(Q D_{\textbf{u}}Q^{T}\hat{\textbf{u}},QD_{\Sigma}Q^{T}\right)$$
+
+
+
+
+% \subsubsection*{Prediction}
+% \label{sec:org8cfb0b1}
+
+% Remember that \(\boldsymbol{\beta}=S\textbf{u}\) This means that 
+% $$\boldsymbol{\beta} \sim N( SQD_{\textbf{u}}Q^{T}\hat{\textbf{u}},SQD_\Sigma Q^{T}S^{T})$$
+
+% It also means that given a new vector of genotypes \(\tilde{\textbf{x}}\),
+
+% $$E[\tilde{\textbf{x}}\boldsymbol{\beta}]=\tilde{\textbf{x}}SQD_\textbf{u}Q^{T}\hat{\textbf{u}}$$
+
+% And that 
+
+% $$\text{Var}(\tilde{\textbf{x}}\boldsymbol{\beta})=\tilde{\textbf{x}}SQD_\Sigma Q^{T}S^{T}\tilde{\textbf{x}}^{T}$$
+
+
+
+
+
+
+
+
+% \subsection*{Simulating from genotype}
+% \label{sec:orgaeeeb37}
+
+% The main idea is that we have two parameters we want to estimate (\(PVE,c\)) from data \(\hat{u}=\frac{\hat{\beta}}{\text{se}(\hat{\beta})}\)
+
+% The path from \(PVE\) and \(c\)  to \(\hat{u}\) looks like this:
+
+% Start with an \$n\$x\(p\) matrix of column-centered genotypes (\(X\)).
+
+% For a chosen value of \(PVE\), define \(\sigma_u\) as:
+
+% $$\sigma_u=\sqrt{\frac{n}{p}PVE}$$
+
+% $$u_i \sim N(0,\sigma_u)$$
+
+% \(\beta\) is a transformation of \(u\) based on \(\sigma_y\) and \(\sigma_{x_j}\) (\(\sigma_y\) is chosen to be 1 for all simulations)
+
+
+% $$\beta_i=\frac{\sigma_y}{\sqrt{n}\sigma_{x_i}} u_i$$
+% From there we can construct \(V(X\beta)\) which we can combine with our chosen PVE value to obtain the scale(\(\tau^{-1}\)) of the residuals(\(\epsilon\)):
+
+% $$ PVE= \frac{V(X\beta)}{\tau^{-1} + V(X\beta)} \implies \tau^{-1} = V(X\beta) \left(\frac{1}{PVE}-1\right)  $$
+% $$\epsilon \sim N(0,\tau^{-1}I_n)$$
+
+
+% $$ y= X \beta + \epsilon $$
+% \(y\) is centered to have a mean of \(0\). \(\hat{\beta_i}\) and \(\text{se}(\hat{\beta_i})\) Are obtained by univariate ordinary least squares (fit without an intercept term). If there is confounding in the simulation, it's added to \(\hat{\beta}\) as \(\hat{u}_{\text{confound}}=\hat{u}+N(0,c I_p)\)
+
+
+% \subsection*{Simulating "directly" from LD}
+% \label{sec:org40b8379}
+
+% A simpler simulation strategy is to simply sample \(\hat{u}\) directly from a multivariate normal distribution, specified by \(R\) \(\sigma_u\), and \(c\).
+
+
+% $$\hat{u}_{\text{confound}} \sim N(0,\sigma_u^2R^2+R+c I_p)$$
+
+% To (greatly) accelerate the generation of samples from the multivariate normal distribution, we can use the eigenvalue decomposition of \(R\):
+
+% First remember that we can write the variance of \(\hat{u}_{\text{confound}}\) as 
+
+% $$V(\sigma_u,c)=Q(\sigma^2_uD^2+D+c I_p)Q^{T}$$
+
+% for convenience, let's define \(D^\star\) to be 
+
+% $$D^{\star}=(\sigma_uD^2+D+c I_p)$$
+% Let's also define \(R^\star\) to be 
+% $$R^\star=Q D^{\star}Q^{T}$$
+
+% A useful trick when trying to draw samples from a multivariate normal distribution
+% is to use the matrix \(A=QD^{1/2}\) and  draw \(p\) samples from a standard normal distribution, (i.e \(z_i \sim N(0,1)\)).  \(\hat{u}_{\text{confound}}=Az\) now has the desired distrubtion.
+
+
+
+
+% \subsection*{Background}
+% \label{sec:org13cff0e}
+
+% \subsubsection*{Fisher's information for multivariate normal}
+% \label{sec:orgc6a5fb9}
+
+% If we have \(n\) independent data points, each with the distribution \(f(x|\theta)\), for large \(n\), the MLE \(\hat{\theta}\) as approximately normal, with mean \(\theta\), and variance \(\frac{\tau^2(\theta)}{n}\), where 
+
+% $$ \frac{1}{\tau^2(\theta)}=E \left( \frac{d}{d \theta} \log f(X_1|\theta) \right)^2 = -E \left[ \frac{d^2}{d\theta^2} \log f(X_1|\theta) \right]$$
+% $$\mathcal{I}(\sigma_\textbf{u}^2)=\frac{1}{2}\text{tr}\left( \Sigma^{-1} \frac{\partial  \Sigma}{\partial \sigma_{\textbf{u}^2}}  \Sigma^{-1} \frac{\partial  \Sigma}{\partial \sigma_{\textbf{u}^2}} \right) \\ 
+% =\frac{1}{2}\sum_{i=1}^p \frac{\lambda_i^4}{(\sigma_\textbf{u}^2 \lambda_i^2+\lambda_i)^2} $$
+
+% In this case, \(\sqrt{n}(\hat{\theta}-\theta)\) is approximately normal with an expectation of \(0\)  and a variance given by $$\frac{1}{\sum_{i=1}^n \sigma_i^2(\theta)}$$.  (This result comes from equation 5.77 of the text of Stigler's STAT 244 class)
+
+
+
+% \subsection*{RSSp without confounding}
+% \label{sec:org68d2164}
+
+% Remember the marginalized form of \(\hat{u}\) (or check out the \texttt{RSSp\_Posterior} post)
+
+% $$ \hat{\textbf{u}}|\sigma_u^2 \sim N(0,\sigma_u^2R^2+R)$$
+% Also remember that we have diagonalized the LD matrix:
+
+% $$\sigma^2_uR^2+R \\ = \sigma_u^2QD_R^2Q^{T} + Q D_{R} Q^{T} \\ =Q(D_\textbf{u})Q^{T}$$
+
+% Where \(D_R=\text{diag}\left(\lambda_i\right)\) and \(D_\textbf{u}=\text{diag}\left(\sigma_u^2\lambda_i^2+\lambda_i\right)\)
+
+% If we transform \(\hat{\textbf{u}}\), multiplying it by \(Q^{T}\), then instead of having a multivariate  \(\hat{\textbf{u}}|\sigma_u^2\) , we now have \(p\) univariate normals, with densities given by 
+
+% $$(Q^{T}\hat{\textbf{u}})_i|\sigma_u^2  \sim N(0,\sigma_u^2\lambda_i^2+\lambda_i)$$
+
+% If we call \((Q^{T}\hat{\textbf{u}})_i\) \(\hat{q}_i\) then we can write the log-likelihood as:
+
+
+
+% The first derivative wrt. \(\sigma_u^2\) is
+
+% $$\sum_{i=1}^p -\frac{(\lambda_i^2 \sigma_u^2 + \lambda_i - \hat{q}_i^2)}{2 (\lambda^2 \sigma_u^2 + \lambda_i)^2}$$
+
+% The second derivative wrt. \(\sigma_u^2\) is :
+
+% $$\sum_{i=1}^p  \frac{\lambda_i (\lambda_i^2 \sigma_u^2 + \lambda_i - 2 \hat{q}_i^2)}{2 (\lambda_i^2 \sigma_u^2 + \lambda_i)^3}$$
+
+% \subsection*{RSSp with confounding}
+% \label{sec:org33ff459}
+
+
+% $$ \hat{\textbf{u}}|\sigma_u^2,c \sim N(0,\sigma_u^2R^2+R+cI_p)$$
+
+% $$\sigma^2_uR^2+R+cI_p \\ = \sigma_u^2QD_R^2Q^{T} + Q D_{R} Q^{T} + cI_p \\ =\sigma_u^2QD_R^2Q^{T}+QD_LQ^{T} \\ =Q(\sigma_u^2D^2_R + D_L)Q^{T} \\ =Q(D_\textbf{u})Q^{T}$$
+% Where \(D_R=\text{diag}\left(\lambda_i\right)\) ,\(D_L=\text{diag}\left(\lambda_i+c\right)\) and \(D_\textbf{u}=\text{diag}\left(\sigma_u^2\lambda_i^2+\lambda_i+c\right)\)
+
+% If we transform \(\hat{\textbf{u}}\), multiplying it by \(Q^{T}\), then instead of having a multivariate  \(\hat{\textbf{u}}|\sigma_u^2,c\) , we now have \(p\) univariate normals, with densities given by 
+
+% $$(Q^{T}\hat{\textbf{u}})_i|\sigma_u^2,c  \sim N(0,\sigma_u^2\lambda_i^2+\lambda_i+c)$$
+
+% If we call \((Q^{T}\hat{\textbf{u}})_i\) \(\hat{q}_i\) then we can write the log-likelihood as:
+
+% Finally, the cross term is:
+%  $$\frac{\lambda_i^2 (c + \lambda_i^2 \sigma_u^2 + \lambda_i - 2 \hat{q}_i^2)}{2 (c + \lambda_i^2 \sigma_u^2 + \lambda_i)^3}$$
+% If  we define \(\theta = \left\{ \sigma_u^2 , c \right\}\), and \(H_{.,.,i}\) to be the symmetric 2x2 Hessian matrix:
+
+% $$H_{.,.,i}=\begin{bmatrix}\frac{\lambda_i^4 (c + \lambda_i^2 \sigma_u^2 + \lambda_i - 2 \hat{q}_i^2)}{2 (c + \lambda_i^2 \sigma_u^2 + \lambda_i)^3} & \frac{\lambda_i^2 (c + \lambda_i^2 \sigma_u^2 + \lambda_i - 2 \hat{q}_i^2)}{2 (c + \lambda_i^2 \sigma_u^2 + \lambda_i)^3}\\\frac{\lambda_i^2 (c + \lambda_i^2 \sigma_u^2 + \lambda_i - 2 \hat{q}_i^2)}{2 (c + \lambda_i^2 \sigma_u^2 + \lambda_i)^3} & \frac{c + \lambda_i^2 \sigma_u^2+ \lambda_i - 2 \hat{q}_i^2 }{2 (c  + \lambda_i^2 \sigma_u^2+ \lambda_i)^3}\end{bmatrix} =H_{.,.,i}=\frac{c + \lambda_i^2 \sigma_u^2 + \lambda_i - 2 \hat{q}_i^2}{2 (c + \lambda_i^2 \sigma_u^2 + \lambda_i)^3}   
+% \begin{bmatrix} \lambda_i^4 & \lambda_i^2\\ \lambda_i^2 & 1\end{bmatrix}
+% =\frac{c + \lambda_i^2 \sigma_u^2 + \lambda_i - 2 \hat{q}_i^2}{2 (c + \lambda_i^2 \sigma_u^2 + \lambda_i)^3} \begin{bmatrix}\lambda_i^2 \\ 1 \end{bmatrix} \begin{bmatrix}\lambda_i^2 & 1 \end{bmatrix}$$
+% Then
+
+% $$\sigma^2_i(\theta_j) = E \left( \frac{d}{d\theta_j} \log f_i(X_i|\theta) \right)^2 = H^{-1}_{j,j,i}$$
+
+
+
+% This means that 
+% In this case, \(\sqrt{p}(\hat{\theta}-\theta)\) is approximately normal with an expectation of \(0\)  and a variance given by  $$\left(\sum_{i=1}^p \sigma_i^2(\theta)\right)^{-1}=\left(\sum_{i=1}^p - \frac{c + \lambda_i^2 \sigma_u^2 + \lambda_i - 2 \hat{q}_i^2}{2 (c + \lambda_i^2 \sigma_u^2 + \lambda_i)^3}   
+% \begin{bmatrix} \lambda_i^4 & \lambda_i^2\\ \lambda_i^2 & 1\end{bmatrix}\right)^{-1}$$
+
+
+
+% Note that the case of mutually independent SNPs (i.e \(R=I_p\)). 
+
+% $$H^{-1}=\left(\sum_{i=1}^p - \frac{c +  \sigma_u^2 + 1 - 2 \hat{q}_i^2}{2 (c + \sigma_u^2 + 1)^3}   
+% \begin{bmatrix} 1 & 1\\ 1 & 1\end{bmatrix}\right)^{-1}=\sum_{i=1}^p - \frac{2 (c + \sigma_u^2 + 1)^3}{c +  \sigma_u^2 + 1 - 2 \hat{q}_i^2}
+% \left(\begin{bmatrix} 1 & 1\\ 1 & 1\end{bmatrix}\right)^{-1}$$
+
+% The matrix \(\begin{bmatrix} 1 & 1\\ 1 & 1\end{bmatrix}\) is singular, as are all constant multiples of this matrix.  This is perhaps not surprising given that in the case that all SNPs are unlinked, variance arising from \(\sigma_u^2\) and \(c\) are entirely indistinguishable.  This is born out in simulation:
+
+
+% \section{Materials and Methods}
+% \label{sec:org762fc74}
+
+% \subsection*{Data}
+% \label{sec:org079c51d}
+
+
+
+
+% To estimate the effectiveness of RSSp at estimating heritability, in contrast to ldsc and GCTA, a large sample-size simulation was used.  To make the simulations as realistic as possible, real individual-level genotypes were used.  Although it incurred great additional
+% computational expense, the sample-size of the simulation was as large as possible, at up to ten thousand individuals.
+
+% \subsubsection*{UK Biobank Data}
+% \label{sec:org642e65e}
+
+% Individuals from the UK biobank were used to simulate a GWAS.  A random subset of 12,000 individauls were randomly drawn from the 487,409 total individuals in the UK biobank dataset.  Using GCTA, a relatedness matrix was obtained from the 12,000 individuals.
+% If two individuals had an estimated relatedness in excess of 0.05, one of the two individuals was removed.  (GCTA removes individuals to maximize the total sample size, as opposed to random selection of one of the two individuals).  After removing closely related 
+% individuals, 10,000 individuals were randomly selected to be the samples for which phenotypes would be simulated
+
+
+
+% \subsubsection*{Welcome Trust Case Control consortium}
+% \label{sec:orgec3f022}
+
+
+
+
+% \subsection*{GWAS simulation}
+% \label{sec:orgad711ec}
+
+% Traits were simulated using a modified version the \texttt{simu} software. For the polygenic simulation setting, 80 traits were simulated at heritabilities between 0.1 and 0.8 in increments of 0.1, with 10 traits
+% being simulated at each heritability.  After simulating the phenotype, GWAS summary statistics using GCTA's implementation of the \texttt{fastGWA} mixed linear model-based GWAS.  Following standard procedure in a GWAS,
+% 10 principle components were used as covariates. 
+
+
+% \subsection*{Linkage disequilibrium}
+% \label{sec:org828aaeb}
+
+% For a reference LD panel, we used either the same sample that was used for the simulation, or a separate, equal sized, 
+% non-overlapping subset of the UK biobank individuals were used as a reference panel.  
+
+
+% \subsubsection*{LDshrink, a shrinkage estimator for Linkage Disequilibrium}
+% \label{sec:orgae044da}
+
+% To improve the estimate of LD, I used the method LDshrink, developed by Wen and Stephens \cite{Wen_2010}, which uses an estimate of 
+% the recombination rate, as well an estiamte of the effective population size to improve the estimate of correlation between variants.
+
+% If \(\boldsymbol{X}\) is a \(n \times p\) matrix of genotype dosages, such that \(X_{i,j}\) represents the number of effect alleles at the \$j\$th variant in the \$i\$th individual, and \(\hat{\boldsymbol{\Sigma}}\) is the \(p \times p\)  the estimate of covariance between
+% variants, where:
+
+% $$\boldsymbol{\hat{\Sigma}} = (1-\theta)^2 \textbf{S}+\frac{\theta}{2} \left(1-\frac{\theta}{2}\right)\textbf{I}$$, where 
+% $$ S_{jk} = \begin{cases}
+% \text{Cov}(\boldsymbol{X}_{.j},\boldsymbol{X}_{.k}), \text{if } j=k \\
+% e^{-\frac{\rho_{jk}}{2n}}\text{Cov}(\boldsymbol{X}_{.j},\boldsymbol{X}_{.k}), \text{otherwise}\\
+% \end{cases} $$
+% and \(\rho_{jk}\) is an estimate of the population-scaled recombination rate between variants \(j\) and \(k\). Populating the \(\rho\) parameter requires an estimate
+% of the population-scaled recombination rate at the the sites in the simulation.  The method pyrho is a fast, demography-aware method for inferance of fine-scale recombination rates, and is based on
+% fused-LASSO \cite{Spence_2019}. The British in England and Scotland (GBR) invdividuals from the 1000 genomes project \cite{1kg} were used in the estimation of the local recombination rate.
+
+
+% \subsection*{Method}
+% \label{sec:org259b807}
+
+
+
+% \section{Results}
+% \label{sec:org26555b8}
+
+
+% \subsection*{Simulation results}
+% \label{sec:orgdb752e7}
+
+% \subsubsection*{WTCCC simulations}
+% \label{sec:org75a6a66}
+
+% \begin{itemize}
+% \item RSSp vs LDSC
+% \label{sec:org48df19d}
+
+% \item RSSp vs GCTA
+% \label{sec:org43d585c}
+% \end{itemize}
+
+
+% \subsubsection*{UK biobank simulations}
+% \label{sec:org0fa2c7f}
+
+% \section{Discussion}
+% \label{sec:orge95691e}
+
+% \subsection{Limitations}
+% \label{sec:org2dc1c0d}
+
+% \subsubsection{The assumption of polygenicity}
+% \label{sec:orgefbe2e8}
+
+% \subsubsection{The implicit relationship between effect-size and allele frequency}
+% \label{sec:org3cb4dd7}
+
+% \subsubsection{Reference LD panel}
+% \label{sec:org73e10c3}
+
+% I am currently unaware of any method for assessing suitability of a reference LD panel for use with a particular set of GWAS summary statistics.  This is extremely unfortunate, as every 
+% method both for fine-mapping and for heritability estimation from summary statistics condition on the LD information being "correct", which is to say that that it is both observed without error, and that the LD information provided,
+% be it LD scores or LD matrix, were estimated from the sample on which the GWAS was performed.  
+
+
+% \subsection{Practical considerations when working with the LD matrix}
+% \label{sec:org5745037}
+
+% Considering only singlue nucleotide polymorphisms, the human genome likely has hundreds of millions single nucleotide loci at which there is standing variation in the extant human population \cite{humgenref}.  Indeed, the number of distinct single nucleotide
+% polymorphisms cataloged to date is in the hundreds of millions \cite{humgenref}.  While the number of known variants is only set to increase, it is hihgly unlikely to exceed 400 million by an order of magnitude (The 3 billion odd base pairs in the human genome provides
+% a hard upper bound).  If one were to try to store the pairwise LD between the 400 million most common variants using a simple double-precision floating point representation, the storage requirement would be approximately 1.28 exabytes.  While by no means impossible to store
+% all 1.28 exabytes, doing so would not be practical.  
+
+% \subsubsection{Linkage Disequilibrium and Genetic Linkage}
+% \label{sec:orgd025d4b}
+
+% Genetic linkage is the source of a great deal of linkage disequilibrium, and can be discounted as a source of linkage disequilibrium for most pairs of variants, as a random pair of variants are unlikely to lie on the same chromosome.  
+% \begin{itemize}
+% \item {\bfseries\sffamily TODO} check this out a little more.
+% \label{sec:orgc90530a}
+% In fact, a remarkable property of human population genetics is the extent to which the distribution of alleles in the population match expectation under HW equilibrium
+
+% Most pairs of variants are not physically linked, and
+% \end{itemize}
+
+% % \subsection{{\bfseries\sffamily TODO} check out this claim}
+% % \label{sec:org5dad7d9}
+% % In a randomly mating population, Variants in HW equilibrium 
+% \subsection{Rank Deficiency of the LD matrix}
+% \label{sec:org48c0ea3}
+
+% A practical issue that immediately arises with the infinitesimal assumption that every oberved variant contributes a non-zero effect to variance in the trait is that the observed genotype matrix is rank deficient.  Even with the modified assumption
+% that only variants above a given allele frequency make a non-zero contribution to sample variance in the trait, in all but the very largest of datasets, the number of variants genotyped greatly exceeds the number of individuals genotyped.  For individual-level
+% data methods, which operate on the GRM, this is generally not an issue, as the GRM (for distantly related individuals) is often full rank.  The LD matrix is not.
+
+
+

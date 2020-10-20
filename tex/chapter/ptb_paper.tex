@@ -1,0 +1,484 @@
+\chapter{Fine-mapping Genome-wide Association Study Summary Statistics Using Functional Annotations}
+
+\section*{Introduction}
+\label{sec:org59556ac}
+
+\subsection*{Importance of assigning SNP to gene, the logic of genetics as a means of understanding biology}
+\label{sec:org1481578}
+
+For any particular trait, variation at the vast majority of genetic loci is of infinitesimal consequence to that trait.  The causal
+effect that a variant has on a trait induces a statistical association bewteen the presence of the variant and the trait of interest.
+For a variant to have a causal effect on an organism-level trait, there must be a chain of causal events starting with the DNA-sequence,
+ level change, proceeding through one (or more often many) molecular intermediates, before it is observable at the organismal level.  
+
+The job of the biologist is to characterize the diversity of living organisms, the physical, chemical and the molecular basis of that activity, and the ways
+ those parts relate to one-another.
+
+
+ The goal of a genome-wide association study (GWAS) is to identify a subset of variants with high statistical association with a trait of interest.
+One of the major obstacles in any GWAS (or any association based statistical inference) is that the causality is but one   When
+performing an association study to identify loci at which variation is consequential, many observed associations are 
+
+It is commonly understood in human genetics that for the vast majority of trait-variant associations, 
+ between between any traita trait exceed the number of variants with a 
+
+The pathways through which causal variants influence a trait is a subset of all pathways involved in the trait.  
+
+
+I think it is useful at this point to make a brief digression to discuss the distinction between a "variant" and a "gene". The gene
+is a key player in the paradigm of causality in biological systems. To have a meaningful "causal variant"
+
+The classical definition of a gene is a "unit of heredity" cite\textsubscript{gene}\textsubscript{book} .  Inherent then to the idea of the gene is that it is functionional.  Historically,
+the gene was defined as that which gave rise to (i.e caused) that which was heritable.
+According to the classical definition, the notion of a "functional gene" is purely redundant.  
+
+If the definition of a genetic variant is physical, while the concept of a "causal", genetic factor, that of a gene, is conceptual, 
+it is not clear whether one can arrive at a meaningful definition of a "causal variant".  
+
+To sidestep this philosophical issue, I will use a definition of a causal variant based on a hypothetical experiment.  Imagine two organisms that are
+genetically identical everywhere but the locus of interest.  If there is a consistent, detectable difference between pairs of individuals in regards to our trait
+ of interest, despite being raised in identical environments, we will deem this variant to have a causal relationship on our trait of interest.
+
+Unfortunately in the case of humans such experiments are impossible, and so we must rely on another operational definition of causality.
+
+Rather than a single link between variant and trait, we can construct a chain of causality from variant to molecular intermediate, and then from molecular intermediate to trait
+of interest.  In the case of molecular intermediates, there are two broad categories of variant to molecular-intermediate causal relationships that are especially tractable for 
+validation.  By virtue of the mapping of the human genome and our knowledge of the central dogma of molecular biology cite\textsubscript{crick1958protein} , by knowing the position and sequence
+of a variant one can immediately know with the variant lies within an exon (or splice-site boudary) of a characterized gene.  If so, it is a simple bioinformatic exercise to 
+ascertain the consequence of the change in DNA sequence on primary (and increasingly secondary and tertiary) amino acid structure.  Characterizing how changes in protein
+structure contribute to changes in protein function is a sub-discipline of biology all its own; but this is a question of "how" a variant-gene pair interact, and not a question of 
+"if" they interact.  The functional consequence of the majority of human genetic variation falls into the second category of variant to molecular-intermediate causal relationships.  
+This second category consists of all other mechanisms of causality, perhaps the best understood of which are the "regulatory variants". 
+
+
+\subsection*{Something about closest gene}
+\label{sec:org76964d1}
+
+
+
+
+\subsection*{Something about other work with this pipeline}
+\label{sec:orge66998a}
+
+
+
+
+\subsection*{Why do we do fine mapping?}
+\label{sec:org5f4032d}
+
+\subsection*{Why do we do GWAS?}
+\label{sec:orgaf8c4b4}
+
+When constructing an estimator for a continuous trait of interest, statistical theory tells us that ordinary least square (OLS),
+ also known as multiple linear regression, will provide us with estimator that minimizes the sum of squares of the residuals.
+
+What has come to be known as the "GWAS algorithm", wherein univariate associations are estimated rather than multivariate associations.
+In the case where predictors are uncorrelated, the univarite and multivariate associations will be equal.  Because the correlation between variants is 
+spatially structured, with physically proximal variants being more likely to be correlated (in linkage disequilibrium) than physically distal variants, 
+the GWAS algorithm identifies regions of high association
+
+
+\subsection*{Much of GWAS signal is non-coding}
+\label{sec:org3ac0b01}
+
+Surveys of GWAS association have found that a majority of GWAS signal comes from non-coding regions of the genome.  It is believed that the majority 
+of this functional variation is regulatory in nature.  Rather than modifying the function of a gene product directly, the activity of the product is modified
+by modulating the abundance of the product through regulatory mechanisms: increasing or decreasing the baseline rate of transcription or degradation.  
+
+Fine mapping can be considered on several levels.
+
+On a statistical level, we reintroduce the multivariate regression concept.  In a Bayesian approach,
+we model the observed univariate effect sizes as coming from some unobserved distribution of true effects,
+that are then obscured by noise and LD.
+
+On a biological level, a locus has been fine mapped if the mechanism underlying the statistical association at the locus can be explained.
+
+
+
+\subsection*{Partitioning the heritability of gestational duration}
+\label{sec:org0c751ad}
+
+
+
+
+\section*{Materials and Methods}
+\label{sec:org39326e2}
+
+\subsection*{Data}
+\label{sec:org702e301}
+\subsubsection*{Samples}
+\label{sec:orgbbced86}
+\begin{itemize}
+\item Term vs Preterm
+\label{sec:org84e798f}
+Placentas were collected from six African American women (\(\geq 18\) years old) following spontaneous labor.
+Three of the women delivered at term (\(\geq 37\) weeks), and three delievered preterm.
+; all were vaginal deliveries of singleton pregnancies. 
+Within 1 hour of delivery, 5 x 5 cm pieces of the membranes were sampled from a distant location of the rupture site. 
+Pieces were placed in DMEM-HAMS F12 media containing 10\% FBS and 1\% pen/strep.
+ Samples were kept at 4°C and processed within 24 hours of tissue collection. 
+
+\item Tissue
+\label{sec:org5ff2260}
+\end{itemize}
+\subsubsection*{Functional Genomic Assays}
+\label{sec:org6fc5644}
+\begin{itemize}
+\item ATAC-seq
+\item promoter capture HI-C
+\item RNA-seq
+\item ChIP-seq
+\begin{itemize}
+\item H3K27ac
+\item H3K4me1
+\item H3K4me3
+\end{itemize}
+\end{itemize}
+
+
+\subsubsection*{Other annotations}
+\label{sec:org4f58a59}
+
+
+\begin{itemize}
+\item LD score regression baseline
+\label{sec:org97696e5}
+\end{itemize}
+
+\subsection*{Methods}
+\label{sec:org53944c4}
+
+
+\subsubsection*{Data Processing}
+\label{sec:orgc908098}
+
+\begin{itemize}
+\item Gene Expression
+\label{sec:orgbe0b3e5}
+The gene expression data consist of 54 \texttt{.fastq} files.  27 of these files correspond to samples from term pregnancies (\texttt{pltl=TL}), and 27 correspond to preterm (\texttt{pltl=PL}).  For each term and preterm there are three 
+individuals \texttt{id=1,2,3}, for a total of 6 individuals.  Cell lines underwent one three treatments:
+
+\begin{enumerate}
+\item treatment with a decidualizing media (\texttt{treatment=dec})
+\item treatment with a control media(\texttt{treatment=ctr}) or
+\item treatment with a trophoblast conditioned media (\texttt{TCM}).
+\end{enumerate}
+
+For each of these three term and three preterm individuals, and for each of the three treatment conditions, RNA seq was gathered in triplicate (\texttt{rep=1,2,3}), bringing to total sample size to 54 
+$$ \left((3 \text{replicates}) \times (3 \text{conditions})  \times (3 \text{individuals})\right) \times (2 \text{gestational durations})=54$$
+
+Natural questions one might want to ask of this data:
+
+\begin{enumerate}
+\item What differences in gene expression between individuals who had term labors as opposed to preterm labors do we observe after accounting for other known sources of variation?
+\item What genes are differentially expressed between \texttt{ctr} and \texttt{dec} treated cell lines? What genes are differentially expressed between \texttt{dec} and \texttt{TCM} cell lines?
+\item How does the \textbf{response to treatment} (\texttt{ctr} vs \texttt{dec} and \texttt{dec} vs \texttt{TCM}) \textbf{differ} between individuals who had \textbf{term labors} and individuals who had \textbf{preterm labors}?
+\end{enumerate}
+
+There are other factors which we are not directly interested in, but which we would like to account for in performing our analysis:
+
+\begin{enumerate}
+\item The passage number of the cell line when RNA was gathered
+\item The within-individual effect on gene expression (we have 9 measurements per-individual)
+\item The growth rate of the cell line
+\end{enumerate}
+
+Because the growth rate can be expressed as a linear combination of the individual, we cannot estimate both effects with our generalized linear model.  We chose to account for the individual-level effect rather
+than the growth rate effect, and hope that the individual level effect accounts for the differences in growth rate. Passage number is not confounded with treatment or individual, and so can be accounted for by incorporation
+in the model.
+
+
+With the exception of passage number, all of the covariates of our model are categorical, and there are several ways of encoding a categorical model, which can change how the coefficient estimates are interpreted.
+Certain coding lend themselves to testing certain hypotheses.  For testing question 2 (what genes are differentially expressed between \texttt{ctr} and \texttt{dec}, between \texttt{dec} and TCM), we will use a "treatment" coding,
+wherein \texttt{dec} is the "reference" level.  This means one can interepret the estimates for the \texttt{ctr} and \texttt{TCM} coefficients as the change in average expression in each of those condtions relative to the \texttt{dec} condition.
+For testing question 1, we will use a "sum" coding, meaning instead of setting either term or preterm, which would carry on in our interpretation of other coefficients (i.e the \texttt{ctr} and \texttt{TCM} effects would also be 
+interpreted as relative to either \texttt{dec}-term or \texttt{dec}-preterm), the term-preterm coefficient can be interpreted as differences in the mean expression relative to one-another.  The choice of sum coding for the term vs preterm covariate 
+is especilly important when considering question 3, how response to treatment differs between term and preterm individuals.  To formally test this hypothesis (that individuals with term births respond differently to either \texttt{dec} or \texttt{TCM} as compared to 
+individuals with preterm births), we can test for an \emph{interaction} between the preterm effect and each of the two treatment effects.  Our interpretation of these two coefficients, which I will refer to as \texttt{TCM\_itx} and \texttt{ctr\_itx},
+exactly corresponds to the hypothesis we wish to test.  To capture the individual level effects, instead of comparing to a particular individual, we again used a sum coding, meaning for each term and preterm, 
+1 covariate captures the difference between the individual 1 and individual three,and another captures the difference betweeen individual 2 and individual three.  Like passage number, individual-level effects are important to
+incorporate in the model, but effect-size estimates are not of direct relevance.
+
+Hypothesis 2 is actually two hypotheses, and requires two tests. The \texttt{TCM} vs \texttt{dec} test (\texttt{treatmentTCM}) and the \texttt{ctrl} vs \texttt{dec} test (\texttt{treatmentctr}).
+We are currently ignoring the \texttt{TCM} vs \texttt{ctrl} test, though differences between \texttt{TCM} and \texttt{control} are captured implicitly.  To test the significance of the \texttt{treatmentTCM} paramter we compare the fit of
+a model with passage number ( 1 parameter), cell-line (4 parameters), term/pretern status (1 parameter) and both treatment parameters, to one with passage number, cell-line, term/preterm status and only the \texttt{ctrlvsdec} paramter.
+To test the significance of the \texttt{treatmentctr} parameter, we compared the same full model to a reduced model without the \texttt{treatmentctr} parameter.
+
+
+\begin{itemize}
+\item Data preproccessing and Null Hypothesis Significance Testing
+\label{sec:org653e6dd}
+
+We used the R packace \texttt{DESeq2} \cite{DESeq2} to identifiy a set of genes considered "differentially expressed" between two conditions (e.g between term and preterm, or between TCM treated cells and controls).
+After using the pseudo-alignment tool \texttt{salmon} \cite{salmon} to obtain transcript-level abundance estimates (using gencode 19 as a source of transcripts).  The abundance estimates were loaded into R 
+using the \texttt{tximeta} package, \cite{tximeta} which was also used to summarize the transcript-level abundance estimates into gene-level abundance estimates.  Genes with counts lower than 10 were excluded from consideration
+for differential expression, as were genes for which the gene level abundance estimate was above zero in less than 5 samples.  For the main effect tests (i.e term vs preterm, control vs decidualized, and TCM vs decidualized) 
+ I used the built-in Wald test functionality for null hypothesis significance testing.  \texttt{DESeq2} includes composite null hypothesis testing functionality when using the Wald test; instead of testing against the null hypothesis 
+that \(\beta =  0\), one can test against the hypothesis that \(\lvert \beta \rvert \leq \theta\) where \(\theta\) is some threshold value.  Rather than adding a fold-change cutoff on top of a test against an effect size of 0, with the composite test the FDR results remain interpretable: 
+\$p\$-values and adjusted \$p\$-values correspond to the specific null hypothesis of interest.
+\end{itemize}
+\end{itemize}
+
+
+
+
+
+
+\subsubsection*{A pipeline for fine-mapping GWAS summary statistics using functional annotations}
+\label{sec:org24e3fbe}
+
+
+
+Fine mapping proceeded in three stages. In the first stage we partitioned the genome into 1,703 regions approximately independent regions using breakpoints derived by Berisa et al(39).
+ Next, we constructed a SNP-level prior probability of causality, informed by the functional genomic datathat a particular SNP is causal. For this, we collected. 
+To estimate the functionally informed SNP-level prior, We employed a Bayesian hierarchical model (TORUS(42)).  
+TORUS uses SNP-level annotations and GWAS summary statistics to estimate the extent to which SNPs with functional genomic annotations are likely to be causal for a trait of interest.  
+TORUS takes as input GWAS summary statistics and genomic annotations, and for each annotation outputs multivariate enrichment estimates that corresponding to estimates from a logistic regression: 
+the additive change in log odds for a variant being causal, conditioned on all other annotations being held constant.  
+We ran TORUS with the gestational age GWAS summary statistics and the reproducible H3K27ac and H3K4me1 peaks from the treated samples along with the pcHi-C contact regions to obtain enrichment estimates, 
+and from those enrichment estimates constructed a SNP-level prior. Lastly, fine mapping was performed using a summary statistics-based version of the “Sum of Single Effects” model (SuSiE(43)).  
+In the summary statistics-based version of SuSiE, the inputs are the GWAS summary statistics in a region, the SNP-level prior for every GWAS variant, and an estimate of the LD between variants. 
+As an estimate of LD, we used the unrelated European individuals from the 1000 Genomes project as a reference panel. SuSiE (as implemented in the R package “susieR”) was run on the 10 regions 
+believed to have one or more causal variants with FDR 0.1 as estimated by TORUS. For each region, SuSiE was run with a uniform prior (default setting of SuSiE) and with an informed prior learned 
+by TORUS. The parameter L of SuSiE (maximum number of causal variants) is set at 3 when running SuSiE. This conservative setting ensures that the results are robust to possible LD mismatch between 
+the reference panel and the GWAS samples. In fact, when L = 1, the PIP of a SNP depends only on its summary statistic (effect size and standard error), prior effect size and the number of SNPs in the locus, 
+but not LD structure.  
+
+
+\subsubsection*{Stratified LD score regression}
+\label{sec:org3173e32}
+
+We use a subset of the LD score regression feature set, excluding the "flanking"
+We assessed how much of the heritability of  gestational duration is contained within ATAC-seq, H3K4me1, H3K4me3, H3K27ac and pcHi-C peaks using stratified LD score regression (S-LDSC).
+Stratified LD score regression is a generalization of LD score regression, a method for estimating the heritability of a trait using SNP-level GWAS summary statistics and SNP-level estimates
+ of the amount of genetic variation tagged at each variant, known as LD scores.  Under the LD-score regression model, the expected value of the GWAS summary statistic for a variant (specifically 
+the expected value of the \(\chi^2\) statistic) is a linear function of the LD score at that site, and h2, the per-SNP heritability, and a an intercept parameter.  Under the S-LDSC model, rather than estimating a 
+single per-SNP heritability parameter, a parameter is estimated for each of several functional annotations.  In a standard S-LDSC analysis, user-provided annotations are combined with a “baseline” set of genomic
+ annotations from publicly available datasets.  For this analysis, stratified LD scores were calculated using the peaks identified as reproducible across either treated or untreated samples as annotations and the 
+1000 Genomes Phase 3 European individuals (Price Lab website) as a reference LD panel, using only the HapMap3 SNP list (also from the Price Lab website). Stratified LD regression was performed on the gestational 
+duration GWAS using the endometrial-tissue derived LD scores and the “baseline” LD scores contained in version 2.2 of the LD score regression baseline LD model. We include all annotations from the baseline LD model 
+except those “flanking” annotations. This resulted in a total of 64 baseline annotations used in our S-LDSC analysis.  
+
+
+\subsubsection*{Gene-level summary of fine-mapping results}
+\label{sec:org3f48450}
+
+SNPs were assigned to genes according to the following criteria:  a SNP that is in the \(5'\) UTR (or 2kb upstream of the \(5'\) UTR), \(3'\) UTR, or exon for a gene is assigned to that gene.
+A SNP that is within a promoter-capture HiC contact, (as called by CHiCAGO \cite{chicago}) is assigned the gene corresponding to the promoter of the promoter-target pair.  If the target, i.e
+the non-promoter region in the promoter-capture HiC contact, lies within the gene body (the \(5'\) UTR, the \(3'\) UTR, or an exon) of a gene, that SNP is assigned to both the gene containing the variant
+as well as the gene corresponding to the promoter of the promoter-capture HiC contact.  
+
+
+\section*{Results}
+\label{sec:orgb8d6bf0}
+
+\subsubsection*{Differential Gene Expression}
+\label{sec:org098c284}
+
+The 10 most significantly differentially expressed genes (with log foldchange greater than 0.1) between decidualized and control treated cells are listed below.  Overall, \(5,556\) genes were differentially expressed 
+with an FDR-adjusted \$p\$-value \(\let 0.05\) 
+
+
+\begin{center}
+\begin{tabular}{lrrrrrrl}
+Gene & baseMean & lfc & lfcSE & stat & pvalue & padj & Symbol\\
+\hline
+ENSG00000241878 & 2203.06095812493 & -2.63811408279249 & 0.0617860097282469 & -41.0791066449486 & 0 & 0 & PISD\\
+ENSG00000173376 & 787.387126350961 & -5.19118135975621 & 0.145403609697395 & -35.0141332141042 & 1.37119881563879e-268 & 1.28433337066807e-264 & NDNF\\
+ENSG00000000971 & 11512.6959095595 & -3.29749645620167 & 0.103835033225775 & -30.794004266837 & 3.15247168609693e-208 & 1.96850840318846e-204 & CFH\\
+ENSG00000189221 & 511.103036912099 & -5.38020325466972 & 0.174729286861368 & -30.2193372932329 & 1.31979964268312e-200 & 6.18095167659574e-197 & MAOA\\
+ENSG00000096060 & 544.192019495445 & -3.74257941492074 & 0.127232870836908 & -28.6292322963453 & 2.90783780875367e-180 & 1.08945051342765e-176 & FKBP5\\
+ENSG00000103196 & 4844.5202868114 & -2.96785457269295 & 0.101952368598515 & -28.1293569940141 & 4.28696395031363e-174 & 1.14725279544607e-170 & CRISPLD2\\
+ENSG00000127083 & 403.853556508709 & -7.59404983320883 & 0.262461451685612 & -28.552954291305 & 2.5814665226377e-179 & 8.05976872809533e-176 & OMD\\
+ENSG00000154734 & 23894.2194022511 & -3.8881743687223 & 0.136599866619144 & -27.7319038625723 & 2.88049984468767e-169 & 6.74505044881677e-166 & ADAMTS1\\
+ENSG00000117594 & 1749.18587803769 & -5.78233560847664 & 0.205014424361509 & -27.7167600580961 & 4.38574941100242e-169 & 9.12869374625648e-166 & HSD11B1\\
+ENSG00000102359 & 4662.04163083593 & -1.48985550001169 & 0.0539314875834455 & -25.7707614287708 & 1.88668108504607e-146 & 2.71870744355139e-143 & SRPX2\\
+\end{tabular}
+\end{center}
+
+
+
+
+The 10 most significantly differentially expressed genes (with log foldchange greater than 0.1) between TCM and decidualized are listed below.  Overall, \(2,063\) genes were differentially expressed with an FDR-adjusted \$p\$-value
+\(\let 0.05\)
+
+\begin{center}
+\begin{tabular}{lrrrrrrl}
+Gene & baseMean & lfc & lfcSE & stat & pvalue & padj & Symbol\\
+\hline
+ENSG00000112096 & 8416.47874618391 & 3.26529920025782 & 0.100894468299604 & 31.372376044032 & 4.81944217099616e-216 & 8.63210287247122e-212 & SOD2\\
+ENSG00000085662 & 3980.78563514388 & 2.91874084748462 & 0.122136671742218 & 23.0785791628076 & 7.59938922609469e-118 & 6.8056330214291e-114 & AKR1B1\\
+ENSG00000125968 & 376.302628179624 & -4.15846786879287 & 0.234863577277688 & -17.280107523843 & 6.64240782681647e-67 & 3.96573888620366e-63 & ID1\\
+ENSG00000090339 & 285.479325812462 & 2.86064629723526 & 0.162419981253602 & 16.9969622944654 & 8.64870365226869e-65 & 3.87267327789461e-61 & ICAM1\\
+ENSG00000184557 & 187.012826954626 & 3.51189509328271 & 0.210967822592787 & 16.1725852376474 & 7.87243572539151e-59 & 2.82006392554974e-55 & SOCS3\\
+ENSG00000163739 & 153.466019848696 & 5.10330340310707 & 0.315710129156228 & 15.8477759851386 & 1.45644723230352e-56 & 4.34773772963139e-53 & CXCL1\\
+ENSG00000153993 & 510.080681806658 & -3.06413536866769 & 0.188415895078898 & -15.7318753145879 & 9.14615851662136e-56 & 2.34024064558864e-52 & SEMA3D\\
+ENSG00000022267 & 4105.37266861699 & -1.02152367139338 & 0.0631357860517502 & -14.5959008198304 & 2.9824703023507e-48 & 6.67737819817542e-45 & FHL1\\
+ENSG00000108691 & 1086.11977953111 & 3.82470231312946 & 0.256461281561911 & 14.5234488825959 & 8.60685434836518e-48 & 1.71285964703965e-44 & CCL2\\
+ENSG00000196639 & 290.037343440195 & 1.55777977763131 & 0.101478319494975 & 14.365430812081 & 8.52747842673172e-47 & 1.52735666101192e-43 & HRH1\\
+\end{tabular}
+\end{center}
+
+The 10 most differntially expressed genes (with log foldchange greater than 0.1) between term and preterm are listed below.  Overall \(293\) genes were differentially expressed with an FDR-adjusted \$p\$-value
+\(\let 0.05\)
+
+
+\begin{center}
+\begin{tabular}{lrrrrrrl}
+Gene & baseMean & lfc & lfcSE & stat & pvalue & padj & Symbol\\
+\hline
+ENSG00000215030 & 283.627692548687 & 4.44154672910905 & 0.197260870737167 & 22.0091633626305 & 2.35293834074141e-107 & 4.31105362790642e-103 & RPL13P12\\
+ENSG00000243137 & 289.172956909552 & -2.82078174177672 & 0.162271064887656 & -16.7668939848295 & 4.26213501589916e-63 & 3.90454188806522e-59 & PSG4\\
+ENSG00000204623 & 241.333386629181 & -1.30422634229455 & 0.0858890418525873 & -14.0207215765823 & 1.1642484623628e-44 & 7.11045344247043e-41 & ZNRD1-AS1\\
+ENSG00000214263 & 100.281686744523 & -3.3664511550809 & 0.241881685090736 & -13.504334376766 & 1.47440283127172e-41 & 6.75350216864012e-38 & RPSAP53\\
+ENSG00000180818 & 228.788752072931 & 1.96396517193748 & 0.146827162259544 & 12.6949614993074 & 6.30609525769308e-37 & 2.31080554622905e-33 & HOXC10\\
+ENSG00000164308 & 1496.56406758913 & 1.66529192474447 & 0.14992920999534 & 10.4402065801129 & 1.62456790905623e-25 & 4.96088887162138e-22 & ERAP2\\
+ENSG00000228630 & 217.558002688764 & 1.12913422209953 & 0.101546688028438 & 10.1345917043726 & 3.8799103635282e-24 & 1.01553882400805e-20 & HOTAIR\\
+ENSG00000229129 & 27.2613573088703 & -2.29978561618594 & 0.220808600420333 & -9.96240912717355 & 2.22602049511921e-23 & 5.09814343894678e-20 & ACTG1P2\\
+ENSG00000123388 & 53.7974150671342 & 0.999468074353188 & 0.0916946507015464 & 9.8093843803477 & 1.0259252653353e-22 & 2.08855585683038e-19 & HOXC11\\
+ENSG00000184139 & 18.8474884748001 & -1.69731070932694 & 0.169165352617587 & -9.44230413977145 & 3.64670510216487e-21 & 6.68149308818647e-18 & RPL7AP28\\
+\end{tabular}
+\end{center}
+
+
+The 10 most differentially expressed in response to TCM between term and preterm:
+
+
+\begin{center}
+\begin{tabular}{lrrrrrrl}
+Gene & baseMean & lfc & lfcSE & stat & pvalue & padj & Symbol\\
+\hline
+ENSG00000248290 & 56.3060830965029 & -11.3708438370543 & 1.15761172579473 & -9.82267506771144 & 8.99250078427802e-23 & 1.9063202412591e-18 & TNXA\\
+ENSG00000202058 & 1.02348880783835 & 19.0138255932175 & 1.99525574218746 & 9.52951804181856 & 1.58015108683395e-21 & 1.67488114448965e-17 & RN7SKP80\\
+ENSG00000204169 & 1.60894295779467 & 21.2280134549622 & 2.28485281047697 & 9.29075753047341 & 1.53194078688212e-20 & 1.0825204247038e-16 & AGAP7\\
+ENSG00000234354 & 1.14594753118312 & 18.1438163680562 & 2.05268604367353 & 8.83906061717341 & 9.65267409590197e-19 & 5.11567595397565e-15 & RPS26P47\\
+ENSG00000264943 & 0.907334968589337 & 8.42772343751438 & 1.11982657693011 & 7.52591839766666 & 5.23510298334258e-14 & 2.21957896287759e-10 & SH3GL1P2\\
+ENSG00000229927 & 13.3773990786151 & -11.7047427577152 & 1.84380821847691 & -6.34813460555237 & 2.17941356119831e-10 & 7.70023134730717e-07 & RHEBP1\\
+ENSG00000241506 & 45.0338056619634 & -16.164723556265 & 2.6152086687969 & -6.18104541680852 & 6.36784918970401e-10 & 1.92845764246479e-06 & PSMC1P1\\
+ENSG00000224065 & 2.44872824355415 & -8.53886483324948 & 1.55386781130291 & -5.49523245873126 & 3.90196084160479e-08 & 0.000100151918294363 & SRIP2\\
+ENSG00000225383 & 0.281653442218075 & 12.385589890256 & 2.26012139756688 & 5.48005514375894 & 4.25193294329576e-08 & 0.000100151918294363 & SFTA1P\\
+ENSG00000082684 & 0.677448319404064 & 19.6149849221018 & 3.59715018689297 & 5.45292353751963 & 4.95483780813905e-08 & 0.00010503760669474 & SEMA5B\\
+\end{tabular}
+\end{center}
+
+
+The 10 most differentially expressed in response to decidualization  between term and preterm:
+
+\begin{center}
+\begin{tabular}{lrrrrrrl}
+Gene & baseMean & lfc & lfcSE & stat & pvalue & padj & Symbol\\
+\hline
+ENSG00000237350 & 18.5720072459637 & 17.8428026417172 & 1.96819300714926 & 9.06557567113848 & 1.23947992965519e-19 & 1.71060625091713e-15 & CDC42P6\\
+ENSG00000096060 & 544.192019495445 & -0.558225855491023 & 0.0983680459601443 & -5.67486982223067 & 1.38794161109042e-08 & 9.57749108732946e-05 & FKBP5\\
+ENSG00000151746 & 444.859351474391 & -0.419830708141823 & 0.0782917201087972 & -5.36238963147585 & 8.21281495284414e-08 & 0.000377816863880673 & BICD1\\
+ENSG00000128165 & 328.124629809368 & 0.997971569200906 & 0.189755823589507 & 5.25924079863702 & 1.44651367558133e-07 & 0.00049908338091745 & ADM2\\
+ENSG00000135069 & 1585.32819798959 & 0.718227635508469 & 0.139203235706376 & 5.15956135548056 & 2.47529096099488e-07 & 0.000683229811053806 & PSAT1\\
+ENSG00000130592 & 14.9422266906843 & 4.26655624932499 & 0.841106594095765 & 5.07255118349388 & 3.92517512426001e-07 & 0.000902855698165208 & LSP1\\
+ENSG00000229927 & 13.3773990786151 & -9.29688989919429 & 1.85219386192746 & -5.01939353665691 & 5.18348631502876e-07 & 0.00102196135191017 & RHEBP1\\
+ENSG00000185742 & 191.75722455162 & 0.970866322233869 & 0.194574753867597 & 4.98968290045747 & 6.04784878505914e-07 & 0.00104332951353251 & C11orf87\\
+ENSG00000134259 & 29.2749528407391 & 1.96503570297394 & 0.404307611110411 & 4.86024909987984 & 1.17238141545689e-06 & 0.00179778176830229 & NGF\\
+ENSG00000151849 & 171.858131269951 & -0.546358050652862 & 0.114573454756351 & -4.76862683258291 & 1.85485880077114e-06 & 0.00229603791602188 & CENPJ\\
+\end{tabular}
+\end{center}
+
+
+
+
+\subsubsection*{Candidate Loci}
+\label{sec:org91a5cf4}
+
+
+After running torus with the \texttt{utme3treatedhic} model, the 
+
+\begin{center}
+\begin{tabular}{lr}
+Genome Coordinates & Torus FDR\\
+\hline
+chr5:156628700\textsubscript{158825698} & 4.34873e-19\\
+chr1:21736588\textsubscript{23086883} & 4.32503e-07\\
+chr3:126214943\textsubscript{128194861} & 7.54558e-07\\
+chr3:154714218\textsubscript{156008700} & 0.00184647\\
+chr3:121974097\textsubscript{123517768} & 0.0025014\\
+chr9:79471208\textsubscript{81079055} & 0.00797933\\
+chr4:174264132\textsubscript{176570716} & 0.0271795\\
+chr3:139954597\textsubscript{141339097} & 0.0357716\\
+chr3:137371083\textsubscript{139954597} & 0.0398372\\
+chr2:73174848\textsubscript{75630086} & 0.0399825\\
+chr4:48123600\textsubscript{53877433} & 0.165297\\
+chr1:25516845\textsubscript{27401867} & 0.194959\\
+chr16:87647349\textsubscript{89041165} & 0.206434\\
+chr14:103012102\textsubscript{105001723} & 0.208049\\
+chr20:62190180\textsubscript{62965163} & 0.23811\\
+\end{tabular}
+\end{center}
+
+
+
+
+\subsubsection*{Top genes by PIP}
+\label{sec:org28d8484}
+
+The top 10 genes by the sum of their pip, along with the differential expression results of those genes.
+
+
+\begin{center}
+\begin{tabular}{lrrrrrrrr}
+Symbol & pip\textsubscript{tot} & n\textsubscript{snp} & lfc\textsubscript{ctr} & padj\textsubscript{ctr} & lfc\textsubscript{tcm} & padj\textsubscript{tcm} & lfc\textsubscript{pltl} & padj\textsubscript{pltl}\\
+\hline
+HAND2 & 1.28179606925677 & 7158 & -2.23759157248032 & 1.15442671326195e-68 & -0.364071029095047 & 0.16717276581158 & 0.0721563397000508 & 1\\
+DGUOK & 1.21581990041705 & 4361 & -0.245440961586176 & 0.344418376743711 & -0.0899822717699489 & 1 & -0.034050240439783 & 1\\
+TCEA2 & 1.09638339958657 & 1868 & 0.204705242127291 & 0.804860693174385 & -0.179151701064746 & 1 & -0.0563513843758279 & 1\\
+GNAQ & 1.08606307476728 & 4883 & -0.187640502782884 & 0.599182184867343 & -0.0621407197771685 & 1 & 0.0618004295563982 & 1\\
+PRPF6 & 1.02950170621996 & 1854 & 0.210132992161562 & 0.386015027573235 & -0.114972467383023 & 1 & -0.062379784796158 & 1\\
+WNT4 & 0.962177911076728 & 3629 & -2.54291903671432 & 1.5637793092339e-10 & -2.13092205484758 & 8.05244333615408e-07 & 0.598361516224967 & 0.759491266302394\\
+ZBTB38 & 0.957132321012147 & 3723 & -0.214094500489547 & 0.492458420804084 & 0.768519699512583 & 6.72599231182378e-10 & 0.0946968254818461 & 1\\
+FOXL2 & 0.951591253502074 & 5525 & 0.66319001433322 & 1.45829212797463e-05 & 0.331618985236894 & 0.268232754554001 & 0.0933774092494432 & 1\\
+MARK3 & 0.941075407442078 & 5310 & 0.190605276311148 & 0.327421344818865 & -0.0848482770422101 & 1 & -0.0863154453730306 & 1\\
+ADCY5 & 0.931985932433318 & 3113 & 0.654016467315399 & 0.215468170915549 & -0.437181962547982 & 0.829170087982234 & 0.165536653360006 & 1\\
+\end{tabular}
+\end{center}
+
+
+We can refine our top 10 list of genes by removing genes not differentially expressed across one of the three conditions tested
+
+\begin{center}
+\begin{tabular}{lrrrrrrrr}
+Symbol & pip\textsubscript{tot} & n\textsubscript{snp} & lfc\textsubscript{ctr} & padj\textsubscript{ctr} & lfc\textsubscript{tcm} & padj\textsubscript{tcm} & lfc\textsubscript{pltl} & padj\textsubscript{pltl}\\
+\hline
+HAND2 & 1.28179606925677 & 7158 & -2.23759157248032 & 1.15442671326195e-68 & -0.364071029095047 & 0.16717276581158 & 0.0721563397000508 & 1\\
+WNT4 & 0.962177911076728 & 3629 & -2.54291903671432 & 1.5637793092339e-10 & -2.13092205484758 & 8.05244333615408e-07 & 0.598361516224967 & 0.759491266302394\\
+ZBTB38 & 0.957132321012147 & 3723 & -0.214094500489547 & 0.492458420804084 & 0.768519699512583 & 6.72599231182378e-10 & 0.0946968254818461 & 1\\
+FOXL2 & 0.951591253502074 & 5525 & 0.66319001433322 & 1.45829212797463e-05 & 0.331618985236894 & 0.268232754554001 & 0.0933774092494432 & 1\\
+KCNAB1 & 0.922334886614852 & 3378 & 0.56203288525918 & 0.0497844067895711 & 0.168573833816718 & 1 & -0.0178115880016164 & 1\\
+TMEM57 & 0.626301354076901 & 1769 & -0.753755368377339 & 6.4443266867696e-12 & -0.326258601016149 & 0.0891765655395031 & -0.0525833226620763 & 1\\
+OCIAD2 & 0.513886006076685 & 4265 & 0.722340091755123 & 0.000630027389401085 & 0.488054583469685 & 0.115384832750851 & -0.0681986975755685 & 1\\
+MAN1C1 & 0.499039178029601 & 1956 & 0.481630700035057 & 0.0735002264925803 & -0.112996989860146 & 1 & 0.0477816201989458 & 1\\
+GATA2 & 0.488715141325343 & 317 & -0.0908687386178288 & 1 & -0.447171284421215 & 2.96949168411576e-08 & 0.0704432373636356 & 1\\
+RHCE & 0.484421560647987 & 1786 & -1.92058744387539 & 4.52498144328815e-06 & -2.34922998346376 & 8.11187346575368e-08 & 1.12475401865733 & 0.00619975547154873\\
+\end{tabular}
+\end{center}
+
+
+
+
+
+\subsubsection*{Enrichment of GWAS genes with DE gene}
+\label{sec:org087a07a}
+
+The enrichment of differentially expressed genes for high PIP genes is as follows (\$p\$-value by one-way fisher's exact test):
+
+
+\begin{center}
+\begin{tabular}{lrr}
+model & Enrichment estimate & p.value\\
+\hline
+tcm & 2.3555093138732 & 0.0361653401805752\\
+ctr & 2.01002831648154 & 0.0387536350919412\\
+pltl & 2.80981825887617 & 0.33784551828311\\
+\end{tabular}
+\end{center}
+
+
+\section*{Discussion}
+\label{sec:org53f1196}
+

@@ -1,0 +1,90 @@
+\documentclass{ucetd}
+\usepackage{subfigure,epsfig,amsfonts}
+\usepackage{natbib}
+\usepackage{amsmath}
+\usepackage{microtype}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{etoolbox}
+\AtBeginEnvironment{quote}{\singlespace\vspace{-\topsep}\small}
+\AtEndEnvironment{quote}{\vspace{-\topsep}\endsinglespace}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\usepackage{siunitx}
+\sisetup{output-exponent-marker=\ensuremath{\mathrm{e}}}
+
+\title{On estimating the genetic basis of complex traits and their molecular intermediates}
+\author{Nicholas Wilson Knoblauch}
+\department{Genetics}
+\division{Biological Sciences}
+\degree{Doctor of Philosophy}
+\date{Autumn 2020}
+
+%% Use these commands to set a dedication and epigraph text
+% \dedication{Dedication Text}
+% \epigraph{Epigraph Text}
+
+
+
+\begin{document}
+%% Basic setup commands
+% If you don't want a title page comment out the next line and uncomment the line after it:
+\maketitle
+%\omittitle
+
+% These lines can be commented out to disable the copyright/dedication/epigraph pages
+\makecopyright
+%\makededication
+%\makeepigraph
+
+
+%% Make the various tables of contents
+\tableofcontents
+\listoffigures
+\listoftables
+
+% Enter Acknowledgements here
+\include{acknowledgments}
+
+% Enter Abstract here
+\include{abstract}
+
+\mainmatter
+
+\include{chapter/intro}
+
+\include{chapter/fgem_paper2}
+
+% Chapter 02
+\include{chapter/rssp_paper}
+
+% Chapter 03
+\include{chapter/ptb_paper}
+
+% Chapter 04
+\include{chapter/conclusion}
+
+
+
+
+
+
+% Format a LaTeX bibliography
+\makebibliography
+
+% Figures and tables, if you decide to leave them to the end
+%\input{figure}
+%\input{table}
+
+\end{document}
